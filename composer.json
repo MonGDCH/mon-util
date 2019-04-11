@@ -2,6 +2,7 @@
     "name": "mongdch/utils",
     "description": "The php common utils.",
     "version": "1.0.0",
+    "license": "Apache-2.0",
     "keywords": [
         "php",
         "utils"
