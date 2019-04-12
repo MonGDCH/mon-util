@@ -66,6 +66,48 @@ class Tool
     }
 
     /**
+     * 判断是否为微信浏览器发起的请求
+     *
+     * @return boolean [description]
+     */
+    public function is_wx()
+    {
+        if(strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false){
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 判断是否为安卓发起的请求
+     *
+     * @return boolean [description]
+     */
+    public function is_android()
+    {
+        if(strpos($_SERVER['HTTP_USER_AGENT'], 'Android') !== false){
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 判断是否为苹果发起的请求
+     *
+     * @return boolean [description]
+     */
+    public function is_ios()
+    {
+        if(strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone') !== false || strpos($_SERVER['HTTP_USER_AGENT'], 'iPad') !== false){
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * 创建基于cookies的Token
      *
      * @param  String  $ticket 验证秘钥

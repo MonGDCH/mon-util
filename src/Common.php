@@ -123,6 +123,56 @@ class Common
     }
 
     /**
+     * 字符串加密方法
+     *
+     * @param  string $str 加密的字符串
+     * @return [type]      [description]
+     */
+    public function encryption($str, $salt)
+    {
+        $str = base64_encode($this->randString(4, 5) . "." . $str . "." . $this->randString(4, 5));
+        $key = base64_encode($salt);
+        $str = base64_encode($str);
+        $mix = strlen($key) >= strlen($str) ? ceil(strlen($key) / strlen($str)) : ceil(strlen($str) / strlen($key));
+        $temp = str_split($str);
+        $ftmp = str_split($key);
+        foreach($ftmp as $k => $v)
+        {
+            isset($temp[$k * $mix]) && $temp[$k * $mix] .= $v;
+        }
+        $str = str_replace(array("=", "+", "/"), array("i00i", "k00k", "z00z"), implode($temp));
+        return base64_encode($str);
+    }
+
+    /**
+     * 字符串解密方法
+     *
+     * @param  string $str 解密的字符串
+     * @return [type]      [description]
+     */
+    public function decryption($str, $salt)
+    {
+        $str = base64_decode($str);
+        if(empty($str)){
+            return '';
+        };
+        $key = base64_encode($salt);
+        $str = str_replace(array("i00i", "k00k", "z00z"), array("=", "+", "/"), $str);
+        $mix = strlen($key) >= strlen($str) ? ceil(strlen($key) / strlen($str)) : ceil(strlen($str) / strlen($key));
+        $temp = str_split($str);
+        for($k = 0; $k < strlen($key); $k++)
+        {
+            if(!isset($temp[$k * $mix + 1])){
+                break;
+            }
+            unset($temp[$k * $mix + 1]);
+        }
+        $str = base64_decode(base64_decode(implode($temp)));
+        $_arr = explode(".", $str);
+        return $_arr[1];
+    }
+
+    /**
      * 防止script里面的 XSS
      *
      * @param  [type] $str [description]
@@ -239,48 +289,6 @@ class Common
     public function ip2long_positive($ip)
     {
         return sprintf("%u", ip2long($ip));
-    }
-
-    /**
-     * 判断是否为微信浏览器发起的请求
-     *
-     * @return boolean [description]
-     */
-    public function is_wx()
-    {
-        if(strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false){
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * 判断是否为安卓发起的请求
-     *
-     * @return boolean [description]
-     */
-    public function is_android()
-    {
-        if(strpos($_SERVER['HTTP_USER_AGENT'], 'Android') !== false){
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * 判断是否为苹果发起的请求
-     *
-     * @return boolean [description]
-     */
-    public function is_ios()
-    {
-        if(strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone') !== false || strpos($_SERVER['HTTP_USER_AGENT'], 'iPad') !== false){
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -418,7 +426,7 @@ class Common
      * @param  string $str 中文字符串
      * @return [type]      [description]
      */
-    public static function get_first_char($str)
+    public function get_first_char($str)
     {
         if(empty($str)){
             return '';
@@ -498,7 +506,7 @@ class Common
      * @param string $suffix 截断显示字符
      * @return string
      */
-    public function msubstr($str, $start=0, $length, $charset = "utf-8", $suffix = true)
+    public function msubstr($str, $start = 0, $length, $charset = "utf-8", $suffix = true)
     {
         if(function_exists("mb_substr")){
             $slice = mb_substr($str, $start, $length, $charset);
