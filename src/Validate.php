@@ -28,9 +28,13 @@ namespace mon\util;
  * @method regexp 		自定义正则验证
  * @method in 			相当于in_array
  * @method notIn 		相当于!in_array
+ * @method str 			验证字符串
+ * @method arr 			验证数组
+ * @method json 		验证JSON
+ * @method xml 			验证XML
  *
  * @author Mon <985558837@qq.com>
- * @version v1.1
+ * @version v1.2
  */
 class Validate
 {
@@ -316,17 +320,6 @@ class Validate
 	}
 
 	/**
-	 * 数字
-	 *
-	 * @param  [type] $value [description]
-	 * @return [type]        [description]
-	 */
-	public function num($value)
-	{
-		return is_numeric($value);
-	}
-
-	/**
 	 * 最大值
 	 *
 	 * @param  [type] $value [description]
@@ -387,6 +380,17 @@ class Validate
 	}
 
 	/**
+	 * 验证是否为一个有效的日期
+	 *
+	 * @param  [type] $value [description]
+	 * @return [type]        [description]
+	 */
+	public function date($value)
+	{
+		return false !== strtotime($value);
+	}
+
+	/**
 	 * 最后日期
 	 *
 	 * @param  [type] $value [description]
@@ -395,7 +399,7 @@ class Validate
 	 */
 	public function after($value, $date)
 	{
-		return strtotime($value) >= strtotime($date);
+		return ($this->date($value) && strtotime($value) >= strtotime($date));
 	}
 
 	/**
@@ -407,7 +411,7 @@ class Validate
 	 */
 	public function before($value, $date)
 	{
-		return strtotime($value) <= strtotime($date);
+		return ($this->date($value) && strtotime($value) <= strtotime($date));
 	}
 
 	/**
@@ -517,17 +521,6 @@ class Validate
 	}
 
 	/**
-	 * 验证是否为一个有效的日期
-	 *
-	 * @param  [type] $value [description]
-	 * @return [type]        [description]
-	 */
-	public function date($value)
-	{
-		return false !== strtotime($value);
-	}
-
-	/**
 	 * 有效URL
 	 *
 	 * @param  [type] $value [description]
@@ -561,6 +554,67 @@ class Validate
 	}
 
 	/**
+	 * 数字
+	 *
+	 * @param  [type] $value [description]
+	 * @return [type]        [description]
+	 */
+	public function num($value)
+	{
+		return is_numeric($value);
+	}
+
+	/**
+	 * 字符串
+	 *
+	 * @param  [type] $value [description]
+	 * @return [type]        [description]
+	 */
+	public function str($value)
+	{
+		return is_string($value);
+	}
+
+	/**
+	 * 数组
+	 *
+	 * @param  [type] $value [description]
+	 * @return [type]        [description]
+	 */
+	public function arr($value)
+	{
+		return is_array($value);
+	}
+
+	/**
+	 * JSON
+	 *
+	 * @param  [type] $value [description]
+	 * @return [type]        [description]
+	 */
+	public function json($value)
+	{
+		return $this->str($value) && !is_null(json_decode($value));
+	}
+
+	/**
+	 * XML
+	 *
+	 * @param  [type] $value [description]
+	 * @return [type]        [description]
+	 */
+	public function xml($value)
+	{
+		$xmlParser = xml_parser_create(); 
+        if(!$this->str($value) || !xml_parse($xmlParser, $value, true)){ 
+            xml_parser_free($xmlParser); 
+            return false; 
+        }
+
+        return true;
+	}
+
+	/**
 	 * 只允许某些值
 	 *
 	 * @param  [type] $value [description]
@@ -583,5 +637,4 @@ class Validate
 	{
 		return !in_array($value, explode(',', $notin));
 	}
-
 }
