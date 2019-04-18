@@ -1,5 +1,5 @@
 <?php
-namespace Laf\plug;
+namespace mon\util;
 
 /**
  * 验证器
