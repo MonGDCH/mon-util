@@ -23,7 +23,7 @@ class Tool
      */
     public static function instance()
     {
-        if(is_null(self::$instance)){
+        if (is_null(self::$instance)) {
             self::$instance = new static();
         }
 
@@ -46,21 +46,19 @@ class Tool
         var_dump($var);
         $output = ob_get_clean();
         $output = preg_replace('/\]\=\>\n(\s+)/m', '] => ', $output);
-        if( PHP_SAPI == 'cli' || PHP_SAPI == 'cli-server' ){
+        if (PHP_SAPI == 'cli' || PHP_SAPI == 'cli-server') {
             // CLI模式
             $output = PHP_EOL . $label . $output . PHP_EOL;
-        }
-        else{
-            if(!extension_loaded('xdebug')){
+        } else {
+            if (!extension_loaded('xdebug')) {
                 $output = htmlspecialchars($output, $flags);
             }
             $output = '<pre>' . $label . $output . '</pre>';
         }
-        if($echo){
-            echo($output);
+        if ($echo) {
+            echo ($output);
             return;
-        }
-        else{
+        } else {
             return $output;
         }
     }
@@ -72,7 +70,7 @@ class Tool
      */
     public function is_wx()
     {
-        if(strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false){
+        if (strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false) {
             return true;
         }
 
@@ -86,7 +84,7 @@ class Tool
      */
     public function is_android()
     {
-        if(strpos($_SERVER['HTTP_USER_AGENT'], 'Android') !== false){
+        if (strpos($_SERVER['HTTP_USER_AGENT'], 'Android') !== false) {
             return true;
         }
 
@@ -100,7 +98,7 @@ class Tool
      */
     public function is_ios()
     {
-        if(strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone') !== false || strpos($_SERVER['HTTP_USER_AGENT'], 'iPad') !== false){
+        if (strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone') !== false || strpos($_SERVER['HTTP_USER_AGENT'], 'iPad') !== false) {
             return true;
         }
 
@@ -116,8 +114,6 @@ class Tool
      */
     public function createTicket($ticket, $ticket_title = "Mon", $expire = 3600)
     {
-        // 自定义Token头
-        $ticket_title = 'LAF_' . $ticket_header;
         $now = time();
         $token = md5($ticket_title . $now . $ticket);
 
@@ -141,26 +137,24 @@ class Tool
      */
     public function checkTicket($ticket, $token = null, $tokenTime = null, $ticket_title = "Mon", $destroy = true, $expire = 3600)
     {
-        // 自定义Token头
-        $ticket_title = 'LAF_' . $ticket_header;
         $token        = empty($token) ? $_COOKIE['_token_'] : $token;
         $tokenTime    = empty($tokenTime) ? $_COOKIE['_tokenTime_'] : $tokenTime;
         $now          = time();
         $result       = false;
 
-        if(empty($token) || empty($tokenTime)){
+        if (empty($token) || empty($tokenTime)) {
             return $result;
         }
 
         //校验
-        $check = md5($ticket_title.$tokenTime.$ticket);
+        $check = md5($ticket_title . $tokenTime . $ticket);
         $timeGap = $now - $tokenTime;
-        if($check == $token && $timeGap <= $expire){
+        if ($check == $token && $timeGap <= $expire) {
             $result = true;
         }
 
         // 判断是否需要清空Cookie
-        if($destroy){
+        if ($destroy) {
             setcookie("_token_", "", $now - $expire, "/");
             setcookie("_tokenTime_", "", $now - $expire, "/");
         }
@@ -184,22 +178,19 @@ class Tool
 
         // 获取标题
         $title  = implode(",", $title) . "\n";
-        $str    = @iconv('utf-8','gbk',$title); // 中文转码GBK
+        $str    = @iconv('utf-8', 'gbk', $title); // 中文转码GBK
         $len    = count($titleKey);
 
         // 遍历二维数组获取需要生成的数据
-        foreach($data as $key => $value)
-        {
+        foreach ($data as $key => $value) {
             // 遍历键列表获取对应数据中的键值
-            for($i = 0; $i < $len; $i++)
-            {
-                $val = @iconv('utf-8','gbk',$value[$titleKey[$i]]);
+            for ($i = 0; $i < $len; $i++) {
+                $val = @iconv('utf-8', 'gbk', $value[$titleKey[$i]]);
 
                 // 判断是否为最后一列数据
-                if($i == ($len - 1)){
+                if ($i == ($len - 1)) {
                     $str .= $val . "\n";
-                }
-                else{
+                } else {
                     $str .= $val . ",";
                 }
             }
@@ -207,7 +198,7 @@ class Tool
 
         // 输出头信息
         header("Content-type:text/csv");
-        header("Content-Disposition:attachment;filename=".$filename . ".csv");
+        header("Content-Disposition:attachment;filename=" . $filename . ".csv");
         header('Cache-Control:must-revalidate,post-check=0,pre-check=0');
         header('Expires:0');
         header('Pragma:public');
@@ -218,6 +209,46 @@ class Tool
     }
 
     /**
+     * 导出XML
+     *
+     * @param  array  $data     输出的数据
+     * @param  string $root     根节点
+     * @param  string $encoding 编码
+     * @return [type]           [description]
+     */
+    public function exportXML(array $data, $root = "Mon", $encoding = 'UTF-8')
+    {
+        // 清空之前的输出
+        ob_get_contents() && ob_end_clean();
+
+        header("Content-type:text/xml");
+        $xml  = "<?xml version=\"1.0\" encoding=\"{$encoding}\"?>";
+        $xml .= "<{$root}>";
+        $xml .= $this->dataToXML($data);
+        $xml .= "</{$root}>";
+
+        return $xml;
+    }
+
+    /**
+     * 递归转换数组数据为XML，只作为exportXML的辅助方法使用
+     *
+     * @param  array  $data [description]
+     * @return [type]       [description]
+     */
+    public function dataToXML(array $data)
+    {
+        $xml = '';
+        foreach ($data as $key => $val) {
+            $xml .= "<{$key}>";
+            $xml .= (is_array($val) || is_object($val)) ? $this->dataToXML($val) : $val;
+            $xml .= "</{$key}>";
+        }
+
+        return $xml;
+    }
+
+    /**
      * 隐藏银行卡号
      *
      * @param  string $id 银行卡号
@@ -225,7 +256,7 @@ class Tool
      */
     public function hideBankcard($id)
     {
-        if(empty($id)){
+        if (empty($id)) {
             return '';
         }
         //截取银行卡号前4位
@@ -243,7 +274,7 @@ class Tool
      */
     public function hideMoble($id)
     {
-        if(empty($id)){
+        if (empty($id)) {
             return '';
         }
         return substr_replace($id, '****', 3, 4);
@@ -279,13 +310,12 @@ class Tool
      */
     public function hidestr($string, $start = 0, $length = 0, $re = '*')
     {
-        if(empty($string)){
+        if (empty($string)) {
             return false;
         }
         $strarr = array();
         $mb_strlen = mb_strlen($string);
-        while($mb_strlen)
-        {
+        while ($mb_strlen) {
             $strarr[] = mb_substr($string, 0, 1, 'utf8');
             $string = mb_substr($string, 1, $mb_strlen, 'utf8');
             $mb_strlen = mb_strlen($string);
@@ -293,22 +323,70 @@ class Tool
         $strlen = count($strarr);
         $begin  = $start >= 0 ? $start : ($strlen - abs($start));
         $end    = $last   = $strlen - 1;
-        if($length > 0){
+        if ($length > 0) {
             $end  = $begin + $length - 1;
-        }
-        elseif($length < 0){
+        } elseif ($length < 0) {
             $end -= abs($length);
         }
 
-        for($i=$begin; $i<=$end; $i++)
-        {
+        for ($i = $begin; $i <= $end; $i++) {
             $strarr[$i] = $re;
         }
-        if($begin >= $end || $begin >= $last || $end > $last){
+        if ($begin >= $end || $begin >= $last || $end > $last) {
             return false;
         }
 
         return implode('', $strarr);
     }
 
+    /**
+     * 发送TCP请求
+     *
+     * @param  [type] $ip     [description]
+     * @param  [type] $port   [description]
+     * @param  [type] $cmd    [description]
+     * @param  [type] &$iRecv [description]
+     * @return [type]         [description]
+     */
+    public function sendCmdTCP($ip, $port, $cmd, &$iRecv)
+    {
+        $iRecv = "";
+        $wbuff = $cmd;
+        $socket = socket_create(AF_INET, SOCK_STREAM, 0);
+        @socket_connect($socket, $ip, $port);
+        @socket_send($socket, $wbuff, strlen($wbuff), 0);
+        socket_recv($socket, $iRecv, 16384, 0);
+        socket_close($socket);
+    }
+
+    /**
+     * 发送UDP请求
+     *
+     * @param  [type] $ip   [description]
+     * @param  [type] $port [description]
+     * @param  [type] $cmd  [description]
+     * @return [type]       [description]
+     */
+    public static function sendCmdUDP($ip, $port, $cmd, &$result)
+    {
+        $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+        if ($socket === false) {
+            $errorcode = socket_last_error();
+            $errormsg = socket_strerror($errorcode);
+            return false;
+        }
+        $result = @socket_connect($socket, $ip, $port);
+        if ($result < 0) {
+            return false;
+        }
+        @socket_set_option($socket, SOL_SOCKET, SO_BROADCAST, 1);
+
+        $iSent = @socket_write($socket, $cmd, strlen($cmd));
+        if ($iSent === false) {
+            if (socket_last_error() != SOCKET_EWOULDBLOCK) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

@@ -2,11 +2,11 @@
 namespace mon\util;
 
 /**
-* 树结构数据操作类
-*
-* @author Mon <985558837@qq.com>
-* @version 1.0
-*/
+ * 树结构数据操作类
+ *
+ * @author Mon <985558837@qq.com>
+ * @version 1.0
+ */
 class Tree
 {
     /**
@@ -36,7 +36,7 @@ class Tree
         'icon'      => array('│', '├', '└'),    // 分级前缀
         'tpl'       => array(                   // html生成模板
             'ul'    => '<li value="@id" @selected @disabled>@name @childlist</li>',
-            'option'=> '<option value="@id" @selected @disabled>@spacer@name</option>',
+            'option' => '<option value="@id" @selected @disabled>@spacer@name</option>',
         ),
     );
 
@@ -47,7 +47,7 @@ class Tree
      */
     public static function instance()
     {
-        if(is_null(self::$instance)){
+        if (is_null(self::$instance)) {
             self::$instance = new static();
         }
 
@@ -70,7 +70,7 @@ class Tree
      */
     public function init($config = array())
     {
-        if($config){
+        if ($config) {
             $this->config = array_merge($this->config, $config);
         }
         return $this;
@@ -97,13 +97,12 @@ class Tree
     public function getChild($pid)
     {
         $result = array();
-        foreach($this->data as $value)
-        {
-            if(!isset($value[ $this->config['pid'] ])){
+        foreach ($this->data as $value) {
+            if (!isset($value[$this->config['pid']])) {
                 // 不存在对应子键，跳过
                 continue;
             }
-            if($value[ $this->config['pid'] ] == $pid){
+            if ($value[$this->config['pid']] == $pid) {
                 $result[] = $value;
             }
         }
@@ -121,19 +120,17 @@ class Tree
     public function getChildren($pid, $self = false)
     {
         $result = array();
-        foreach($this->data as $value)
-        {
-            if(!isset($value[ $this->config['pid'] ])){
+        foreach ($this->data as $value) {
+            if (!isset($value[$this->config['pid']])) {
                 // 不存在对应子键，跳过
                 continue;
             }
 
-            if($value[ $this->config['pid'] ] == $pid){
+            if ($value[$this->config['pid']] == $pid) {
                 $result[] = $value;
                 // 递归获取
-                $result = array_merge( $result, $this->getChildren( $value['id'] ) );
-            }
-            elseif($self && $value[ $this->config['id'] ] == $pid){
+                $result = array_merge($result, $this->getChildren($value['id']));
+            } elseif ($self && $value[$this->config['id']] == $pid) {
                 $result[] = $value;
             }
         }
@@ -152,9 +149,8 @@ class Tree
     {
         $result = array();
         $list = $this->getChildren($pid, $self);
-        foreach($list as $item)
-        {
-            $result[] = $item[ $this->config['id'] ];
+        foreach ($list as $item) {
+            $result[] = $item[$this->config['id']];
         }
 
         return $result;
@@ -171,27 +167,25 @@ class Tree
         $result = array();
         $pid = 0;
 
-        foreach($this->data as $value)
-        {
-            if(!isset($value[ $this->config['id'] ]) || !isset($value[ $this->config['pid'] ])){
+        foreach ($this->data as $value) {
+            if (!isset($value[$this->config['id']]) || !isset($value[$this->config['pid']])) {
                 // 不存在对应节点，跳过
                 continue;
             }
-            if($value[ $this->config['id'] ] == $id){
+            if ($value[$this->config['id']] == $id) {
                 // 获取当前节点父节点ID
-                $pid = $value[ $this->config['pid'] ];
+                $pid = $value[$this->config['pid']];
                 break;
             }
         }
         // 存在父级节点
-        if($pid){
-            foreach($this->data as $v)
-            {
-                if(!isset($value[ $this->config['id'] ])){
+        if ($pid) {
+            foreach ($this->data as $v) {
+                if (!isset($value[$this->config['id']])) {
                     // 不存在对应节点，跳过
                     continue;
                 }
-                if($value[ $this->config['id'] ] == $pid){
+                if ($value[$this->config['id']] == $pid) {
                     // 获取当前节点父节点ID
                     $result = $value;
                     break;
@@ -213,25 +207,24 @@ class Tree
     {
         $result = array();
         $pid = 0;
-        foreach($this->data as $value)
-        {
-            if(!isset($value[ $this->config['id'] ]) || !isset($value[ $this->config['pid'] ])){
+        foreach ($this->data as $value) {
+            if (!isset($value[$this->config['id']]) || !isset($value[$this->config['pid']])) {
                 // 不存在对应节点，跳过
                 continue;
             }
-            if($value[ $this->config['id'] ] == $id){
-                if($self){
+            if ($value[$this->config['id']] == $id) {
+                if ($self) {
                     // 包含自身
                     $result[] = $value;
                 }
                 // 获取父级ID
-                $pid = $value[ $this->config['pid'] ];
+                $pid = $value[$this->config['pid']];
                 break;
             }
         }
 
         // 存在父级节点
-        if($pid){
+        if ($pid) {
             $result = array_merge($this->getParents($pid, true), $result);
         }
 
@@ -249,9 +242,8 @@ class Tree
     {
         $result = array();
         $list = $this->getParents($id, $self);
-        foreach($list as $item)
-        {
-            $result[] = $item[ $this->config['id'] ];
+        foreach ($list as $item) {
+            $result[] = $item[$this->config['id']];
         }
 
         return $result;
@@ -269,22 +261,19 @@ class Tree
         $tree = array();
         // 创建基于主键的数组引用
         $refer = array();
-        foreach($this->data as $key => $data)
-        {
-            $refer[ $data[ $this->config['id'] ] ] =& $this->data[$key];
+        foreach ($this->data as $key => $data) {
+            $refer[$data[$this->config['id']]] = &$this->data[$key];
         }
-        foreach($this->data as $key => $data)
-        {
+        foreach ($this->data as $key => $data) {
             // 判断是否存在parent
-            $parentId =  $data[ $this->config['pid'] ];
-            if($this->config['root'] == $parentId){
+            $parentId =  $data[$this->config['pid']];
+            if ($this->config['root'] == $parentId) {
                 $this->data[$key]['haschild'] = 1;
-                $tree[] =& $this->data[$key];
-            }
-            elseif(isset($refer[$parentId])){
-                $parent =& $refer[$parentId];
+                $tree[] = &$this->data[$key];
+            } elseif (isset($refer[$parentId])) {
+                $parent = &$refer[$parentId];
                 $this->data[$key]['_mark_'] = $this->config['icon'][2];
-                $parent[$mark][] =& $this->data[$key];
+                $parent[$mark][] = &$this->data[$key];
             }
         }
         return $tree;
@@ -300,13 +289,12 @@ class Tree
     public function rollbackTree($data, $mark = 'child')
     {
         $result = array();
-        foreach($data as $k => $v)
-        {
+        foreach ($data as $k => $v) {
             // 判断是否存在子集
             $child = isset($v[$mark]) ? $v[$mark] : array();
-            unset($v[ $mark ]);
+            unset($v[$mark]);
             $result[] = $v;
-            if($child){
+            if ($child) {
                 // 递归合并
                 $result = array_merge($result, $this->rollbackTree($child, $mark));
             }
@@ -332,38 +320,36 @@ class Tree
         $ret = '';
         $number = 1;
         $childs = $this->getChild($pid);
-        if($childs){
+        if ($childs) {
             $total = count($childs);
-            foreach($childs as $value)
-            {
-                $id = $value[ $this->config['id'] ];
+            foreach ($childs as $value) {
+                $id = $value[$this->config['id']];
                 $j = $k = '';
-                if($number == $total){
+                if ($number == $total) {
                     $j .= $this->config['icon'][2];
                     $k = $itemprefix ? $this->config['nbsp'] : '';
-                }
-                else{
+                } else {
                     $j .= $this->config['icon'][1];
                     $k = $itemprefix ? $this->config['icon'][0] : '';
                 }
                 $spacer = $itemprefix ? $itemprefix . $j : '';
                 // 判断是否需要选中
                 $selected = '';
-                if($selectedids){
+                if ($selectedids) {
                     $in = (is_array($selectedids)) ? $selectedids : explode(",", $selectedids);
                     $selected = in_array($id, $in) ? "selected" : '';
                 }
                 // 判断是否需要禁用
                 $disabled = '';
-                if($disabledids){
+                if ($disabledids) {
                     $in = (is_array($disabledids)) ? $disabledids : explode(",", $disabledids);
                     $disabled = in_array($id, $in) ? "disabled" : '';
                 }
                 $value = array_merge($value, array('selected' => $selected, 'disabled' => $disabled, 'spacer' => $spacer));
-                $value = array_combine(array_map(function($k){
-                            return '@' . $k;
-                        }, array_keys($value)), $value);
-                $nstr = strtr((($value["@{$this->config['pid']}"] == 0 || $this->getChild($id) ) && $toptpl ? $toptpl : $itemtpl), $value);
+                $value = array_combine(array_map(function ($k) {
+                    return '@' . $k;
+                }, array_keys($value)), $value);
+                $nstr = strtr((($value["@{$this->config['pid']}"] == 0 || $this->getChild($id)) && $toptpl ? $toptpl : $itemtpl), $value);
                 $ret .= $nstr;
                 $ret .= $this->getTreeOption($id, $itemtpl, $selectedids, $disabledids, $itemprefix . $k . $this->config['nbsp'], $toptpl);
                 $number++;
@@ -387,27 +373,26 @@ class Tree
         $itemtpl = is_null($itemtpl) ? $this->config['tpl']['ul'] : $itemtpl;
         $str = '';
         $childs = $this->getChild($pid);
-        if($childs){
-            foreach ($childs as $value)
-            {
-                $id = $value[ $this->config['id'] ];
+        if ($childs) {
+            foreach ($childs as $value) {
+                $id = $value[$this->config['id']];
                 unset($value['child']);
                 // 判断是否需要选中
                 $selected = '';
-                if($selectedids){
+                if ($selectedids) {
                     $in = (is_array($selectedids)) ? $selectedids : explode(",", $selectedids);
                     $selected = in_array($id, $in) ? "selected" : '';
                 }
                 // 判断是否需要禁用
                 $disabled = '';
-                if($disabledids){
+                if ($disabledids) {
                     $in = (is_array($disabledids)) ? $disabledids : explode(",", $disabledids);
                     $disabled = in_array($id, $in) ? "disabled" : '';
                 }
                 $value = array_merge($value, array('selected' => $selected, 'disabled' => $disabled));
-                $value = array_combine(array_map(function($k){
-                            return '@' . $k;
-                        }, array_keys($value)), $value);
+                $value = array_combine(array_map(function ($k) {
+                    return '@' . $k;
+                }, array_keys($value)), $value);
                 $nstr = strtr($itemtpl, $value);
                 $childdata = $this->getTreeUl($id, $itemtpl, $selectedids, $disabledids, $wraptag, $wrapattr);
                 $childlist = $childdata ? "<{$wraptag} {$wrapattr}>" . $childdata . "</{$wraptag}>" : "";
@@ -433,17 +418,16 @@ class Tree
     {
         $str = '';
         $childs = $this->getChild($myid);
-        if($childs){
-            foreach ($childs as $value)
-            {
+        if ($childs) {
+            foreach ($childs as $value) {
                 $id = $value['id'];
                 unset($value['child']);
                 $selected = in_array($id, (is_array($selectedids) ? $selectedids : explode(',', $selectedids))) ? 'selected' : '';
                 $disabled = in_array($id, (is_array($disabledids) ? $disabledids : explode(',', $disabledids))) ? 'disabled' : '';
                 $value = array_merge($value, array('selected' => $selected, 'disabled' => $disabled));
-                $value = array_combine(array_map(function($k){
-                            return '@' . $k;
-                        }, array_keys($value)), $value);
+                $value = array_combine(array_map(function ($k) {
+                    return '@' . $k;
+                }, array_keys($value)), $value);
                 $bakvalue = array_intersect_key($value, array_flip(['@url', '@caret', '@class']));
                 $value = array_diff_key($value, $bakvalue);
                 $nstr = strtr($itemtpl, $value);
@@ -478,16 +462,14 @@ class Tree
         $n = 0;
         $data = [];
         $number = 1;
-        if($childs){
+        if ($childs) {
             $total = count($childs);
-            foreach ($childs as $id => $value)
-            {
+            foreach ($childs as $id => $value) {
                 $j = $k = '';
-                if($number == $total){
+                if ($number == $total) {
                     $j .= $this->config['icon'][2];
                     $k = $itemprefix ? $this->config['nbsp'] : '';
-                }
-                else{
+                } else {
                     $j .= $this->config['icon'][1];
                     $k = $itemprefix ? $this->config['icon'][0] : '';
                 }
@@ -511,20 +493,18 @@ class Tree
     public function getTreeList($data = [], $field = 'name')
     {
         $arr = [];
-        foreach($data as $k => $v)
-        {
+        foreach ($data as $k => $v) {
             $childlist = isset($v['childlist']) ? $v['childlist'] : [];
             unset($v['childlist']);
             $v[$field] = $v['spacer'] . ' ' . $v[$field];
             $v['haschild'] = ($childlist || $v['pid'] == 0) ? 1 : 0;
-            if ($v['id']){
+            if ($v['id']) {
                 $arr[] = $v;
             }
-            if ($childlist){
+            if ($childlist) {
                 $arr = array_merge($arr, $this->getTreeList($childlist, $field));
             }
         }
         return $arr;
     }
-
 }

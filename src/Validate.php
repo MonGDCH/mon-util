@@ -108,42 +108,38 @@ class Validate
 	 */
 	public function check(array $data = [])
 	{
-		if(!empty($data) && is_array($data)){
+		if (!empty($data) && is_array($data)) {
 			$this->data = array_merge($this->data, $data);
 		}
 
 		// 解析验证规则
 		$errorItme = null;
 		// 判断是否存在验证场景，获取验证字段
-		if(!empty($this->checkScope) && is_array($this->checkScope)){
-			foreach($this->checkScope as $v)
-			{
-				if(isset($this->rule[$v])){
+		if (!empty($this->checkScope) && is_array($this->checkScope)) {
+			foreach ($this->checkScope as $v) {
+				if (isset($this->rule[$v])) {
 					$checkrule[$v] = $this->rule[$v];
 				}
 			}
 			$this->checkScope = null;
-		}
-		else{
+		} else {
 			$checkrule = $this->rule;
 		}
 
-		foreach($checkrule as $dataItem => $rules)
-		{
+		foreach ($checkrule as $dataItem => $rules) {
 			// 存在节点，验证节点
-			if(isset($this->data[$dataItem])){
+			if (isset($this->data[$dataItem])) {
 				// 分割获取验证规则
 				$rule = explode("|", $rules);
-				$value= $this->data[$dataItem];
+				$value = $this->data[$dataItem];
 				// 解析规则
 				$status = $this->analysis($value, $rule);
-				if($status !== true){
+				if ($status !== true) {
 					// 验证错误，返回[错误节点，错误规则]
 					$errorItme = [$dataItem, $status];
 					break;
 				}
-			}
-			else{
+			} else {
 				// 不存在节点，返回节点不存在
 				$errorItme = [$dataItem, 'nofound'];
 				break;
@@ -151,32 +147,28 @@ class Validate
 		}
 
 		// 判断是否存在错误节点
-		if(!empty($errorItme)){
+		if (!empty($errorItme)) {
 			// 判断是否存在错误提示信息, 存在返回错误提示信息
-			if(isset($this->message[$errorItme[0]])){
+			if (isset($this->message[$errorItme[0]])) {
 				// 字符串，直接返回提示
-				if(is_string($this->message[ $errorItme[0] ])){
-					return $this->message[ $errorItme[0] ];
+				if (is_string($this->message[$errorItme[0]])) {
+					return $this->message[$errorItme[0]];
 				}
 				// 数组，返回对应节点提示
-				elseif(isset( $this->message[ $errorItme[0] ][ $errorItme[1] ] )){
-					return $this->message[ $errorItme[0] ][ $errorItme[1] ];
-				}
-				else{
+				elseif (isset($this->message[$errorItme[0]][$errorItme[1]])) {
+					return $this->message[$errorItme[0]][$errorItme[1]];
+				} else {
 					// 返回默认提示
 					return $errorItme[0] . ' check Error';
 				}
-			}
-			elseif( $errorItme[1] == 'nofound' ){
+			} elseif ($errorItme[1] == 'nofound') {
 				// 不存在节点
-				return $errorItme[0].' is not found';
-			}
-			else{
+				return $errorItme[0] . ' is not found';
+			} else {
 				// 返回默认提示
 				return $errorItme[0] . ' check Error';
 			}
-		}
-		else{
+		} else {
 			return true;
 		}
 	}
@@ -226,10 +218,10 @@ class Validate
 	 */
 	public function scope($item)
 	{
-		if(is_array($item)){
+		if (is_array($item)) {
 			$this->checkScope = $item;
 		}
-		if(is_string($item) && isset($this->scope[$item])){
+		if (is_string($item) && isset($this->scope[$item])) {
 			$this->checkScope = $this->scope[$item];
 		}
 
@@ -249,19 +241,17 @@ class Validate
 	protected function analysis($value, $rule)
 	{
 		$resule = true;
-		foreach($rule as $key => $type)
-		{
+		foreach ($rule as $key => $type) {
 			// 分割获取规则参数，支持二维。例子：max:9
 			$item = explode(":", $type);
-			if(count($item) > 1){
+			if (count($item) > 1) {
 				$status = $this->checkItem($value, $item[0], $item[1]);
-			}
-			else{
+			} else {
 				$status = $this->checkItem($value, $item[0]);
 			}
 
 			// 判断验证是否通过,失败返回当前校验失败的规则名称
-			if(!$status){
+			if (!$status) {
 				$resule = $item[0];
 				break;
 			}
@@ -277,11 +267,10 @@ class Validate
 	 */
 	protected function checkItem($value, $rule, $rule_data = null)
 	{
-		if($rule_data !== null){
-			$resule = call_user_func_array( array($this, $rule), array($value, $rule_data) );
-		}
-		else{
-			$resule = call_user_func_array( array($this, $rule), array($value) );
+		if ($rule_data !== null) {
+			$resule = call_user_func_array(array($this, $rule), array($value, $rule_data));
+		} else {
+			$resule = call_user_func_array(array($this, $rule), array($value));
 		}
 
 		return $resule;
@@ -295,10 +284,9 @@ class Validate
 	 */
 	protected function getLength($value)
 	{
-		if(is_array($value)){
+		if (is_array($value)) {
 			$length = count($value);
-		}
-		else{
+		} else {
 			$length = mb_strlen((string)$value, 'UTF-8');
 		}
 
@@ -424,12 +412,12 @@ class Validate
 	public function regexp($value, $regexp)
 	{
 		// 判断是否存在'/'，不存在则补上
-		if(strpos($regexp, '/') !== 0){
-            // 不是正则表达式则两端补上/
-            $regexp = '/^' . $regexp . '$/';
-        }
+		if (strpos($regexp, '/') !== 0) {
+			// 不是正则表达式则两端补上/
+			$regexp = '/^' . $regexp . '$/';
+		}
 
-        return preg_match($regexp, $value) === 1;
+		return preg_match($regexp, $value) === 1;
 	}
 
 	/**
@@ -517,7 +505,7 @@ class Validate
 	 */
 	public function id($value)
 	{
-		return $this->int($value) && ($value > 0) ;
+		return $this->int($value) && ($value > 0);
 	}
 
 	/**
@@ -528,7 +516,7 @@ class Validate
 	 */
 	public function url($value)
 	{
-        return false !== filter_var($value, FILTER_VALIDATE_URL);
+		return false !== filter_var($value, FILTER_VALIDATE_URL);
 	}
 
 	/**
@@ -605,13 +593,13 @@ class Validate
 	 */
 	public function xml($value)
 	{
-		$xmlParser = xml_parser_create(); 
-        if(!$this->str($value) || !xml_parse($xmlParser, $value, true)){ 
-            xml_parser_free($xmlParser); 
-            return false; 
-        }
+		$xmlParser = xml_parser_create();
+		if (!$this->str($value) || !xml_parse($xmlParser, $value, true)) {
+			xml_parser_free($xmlParser);
+			return false;
+		}
 
-        return true;
+		return true;
 	}
 
 	/**

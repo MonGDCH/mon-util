@@ -134,8 +134,8 @@ class UploadImg
         $path = empty($path) ? $this->path : $path;
         $name = empty($name) ? $this->name : $name;
 
-        if(!is_dir($path)){
-            if(!mkdir($path, 0755, true)){
+        if (!is_dir($path)) {
+            if (!mkdir($path, 0755, true)) {
                 $this->error = 'save image failed, file directory does not exist';      // 保存图片失败，文件目录不存在
                 return false;
             }
@@ -144,7 +144,7 @@ class UploadImg
         $file_name = $this->buildName($name) . '.' . $suffix;
         $path = $path . DIRECTORY_SEPARATOR . $file_name;
         $save = file_put_contents($path, $img);
-        if($save === false){
+        if ($save === false) {
             $this->error = 'save image failed';     // 保存图片失败
             return false;
         }
