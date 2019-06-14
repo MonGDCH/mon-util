@@ -19,7 +19,7 @@ composer require mongdch/mon-util
 
 ## 版本
 
-### 1.0.2
+### 1.0.1
 
 * 增强Common类、Tool类功能函数
 * 增加From类、Instance类
