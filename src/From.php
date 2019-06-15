@@ -45,7 +45,7 @@ class Form
      */
     public static function __callStatic($name, $arguments)
     {
-        return call_user_func_array([FormBuilder::instance(), $name], $arguments);
+        return call_user_func_array([FormBuilder::instance(), $name], (array)$arguments);
     }
 }
 
@@ -597,7 +597,7 @@ class FormBuilder
      * @param  string  $selected
      * @return string
      */
-    protected function getSelectedValue($value, $selected)
+    protected function getSelectedValue($value, array $selected)
     {
         if (is_array($selected)) {
             return in_array($value, $selected) ? 'selected' : null;
@@ -698,7 +698,7 @@ class FormBuilder
 
         $posted = $this->getValueAttribute($name);
 
-        return is_array($posted) ? in_array($value, $posted) : (bool)$posted;
+        return is_array($posted) ? in_array($value, (array)$posted) : (bool)$posted;
     }
 
     /**

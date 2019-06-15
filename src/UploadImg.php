@@ -1,6 +1,8 @@
 <?php
 namespace mon\util;
 
+use mon\util\exception\UploadException;
+
 /**
  * base64图片上传类
  *
@@ -22,25 +24,6 @@ class UploadImg
      * @var string
      */
     protected $name = '';
-
-    /**
-     * 错误信息
-     *
-     * @var [type]
-     */
-    protected $error;
-
-    /**
-     * 获取错误信息
-     *
-     * @return [type] [description]
-     */
-    public function getError()
-    {
-        $error = $this->error;
-        $this->error = '';
-        return $error;
-    }
 
     /**
      * 设置默认文件保存路径
@@ -97,8 +80,7 @@ class UploadImg
     {
         $img_base64 = explode('base64,', $data);
         if (!$img_base64) {
-            $this->error = 'no picture data was obtained';      // 未获取到图片数据
-            return false;
+            throw new UploadException('未获取到图片数据', 1);
         }
 
         $img = base64_decode(trim($img_base64[1]));
@@ -115,8 +97,7 @@ class UploadImg
                 $img_suffix = "gif";
                 break;
             default:
-                $this->error = 'img type failed';       // 图片类型错误
-                return false;
+                throw new UploadException('图片类型错误', 2);
         }
 
         return $this->saveImg($img, $img_suffix, $path, $name);
@@ -133,20 +114,16 @@ class UploadImg
     {
         $path = empty($path) ? $this->path : $path;
         $name = empty($name) ? $this->name : $name;
-
-        if (!is_dir($path)) {
-            if (!mkdir($path, 0755, true)) {
-                $this->error = 'save image failed, file directory does not exist';      // 保存图片失败，文件目录不存在
-                return false;
-            }
+        // 检测目录是否存在, 不存在则创建
+        if (!is_dir($path) && !mkdir($path, 0755, true)) {
+            throw new UploadException('保存图片失败，文件目录不存在', 3);
         }
 
         $file_name = $this->buildName($name) . '.' . $suffix;
         $path = $path . DIRECTORY_SEPARATOR . $file_name;
         $save = file_put_contents($path, $img);
         if ($save === false) {
-            $this->error = 'save image failed';     // 保存图片失败
-            return false;
+            throw new UploadException('保存图片失败', 4);
         }
 
         return $file_name;
