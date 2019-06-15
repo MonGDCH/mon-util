@@ -6,11 +6,14 @@ namespace mon\util;
  *
  * @method ip 			验证IP地址
  * @method moble		验证手机号码
+ * @method tel			验证固定电话号码
  * @method email 		验证邮箱
  * @method china 		验证中文
  * @method language 	验证字母数字
- * @method alpha 		验证字符
- * @method account  	验证账号，只允许字母、数字和下划线 破折号
+ * @method alpha 		验证字母
+ * @method lower 		验证小写字母
+ * @method upper 		验证大写字母
+ * @method account  	验证账号，只允许字母、数字和下划线、破折号
  * @method id  			验证ID, 大于0的正整数
  * @method num 			验证数字
  * @method max 			验证最大值
@@ -20,6 +23,7 @@ namespace mon\util;
  * @method minLength 	验证最小长度
  * @method required 	验证不能为空
  * @method date   		验证是否为一个有效的日期
+ * @method timestamp   	验证是否为一个有效的时间戳
  * @method after 		验证最后日期
  * @method before 		验证最早日期
  * @method url 			验证URL
@@ -34,7 +38,7 @@ namespace mon\util;
  * @method xml 			验证XML
  *
  * @author Mon <985558837@qq.com>
- * @version v1.2
+ * @version v1.3
  */
 class Validate
 {
@@ -47,6 +51,13 @@ class Validate
 	 * @var array
 	 */
 	public $rule = [];
+
+	/**
+	 * 当前验证规则
+	 *
+	 * @var array
+	 */
+	public $checkRule = [];
 
 	/**
 	 * 待验证的数据
@@ -94,11 +105,14 @@ class Validate
 	protected $regex = [
 		'ip'		=> '/((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)/',
 		'moble'		=> '/^[1][3456789][0-9]{9}$/',
+		'tel'		=> '/^(0\d{2,3}-\d{7,8})(-\d{1,4})?$/',
 		'email'		=> '/^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/',
 		'china'		=> '/^[\x{4e00}-\x{9fa5}]+$/u',	// 中文
 		'language'	=> '/^\w*$/',					// 英文数字
 		'alpha'		=> '/^[A-Za-z]+$/',				// 只允许英文
 		'account'	=> '/^[A-Za-z0-9\-\_]+$/',		// 只允许字母、数字和下划线 破折号
+		'lower'		=> '/^[a-z]+$/',				// 小写字母
+		'upper'		=> '/^[A-Z]+$/',				// 大写字母
 	];
 
 	/**
@@ -114,23 +128,24 @@ class Validate
 
 		// 解析验证规则
 		$errorItme = null;
+		$checkRule = empty($this->checkRule) ? $this->rule : $this->checkRule;
 		// 判断是否存在验证场景，获取验证字段
 		if (!empty($this->checkScope) && is_array($this->checkScope)) {
 			foreach ($this->checkScope as $v) {
-				if (isset($this->rule[$v])) {
-					$checkrule[$v] = $this->rule[$v];
+				if (isset($checkRule[$v])) {
+					$scopeRule[$v] = $checkRule[$v];
 				}
 			}
 			$this->checkScope = null;
 		} else {
-			$checkrule = $this->rule;
+			$scopeRule = $checkRule;
 		}
 
-		foreach ($checkrule as $dataItem => $rules) {
+		foreach ($scopeRule as $dataItem => $rules) {
+			// 分割获取验证规则
+			$rule = explode("|", $rules);
 			// 存在节点，验证节点
 			if (isset($this->data[$dataItem])) {
-				// 分割获取验证规则
-				$rule = explode("|", $rules);
 				$value = $this->data[$dataItem];
 				// 解析规则
 				$status = $this->analysis($value, $rule);
@@ -139,7 +154,7 @@ class Validate
 					$errorItme = [$dataItem, $status];
 					break;
 				}
-			} else {
+			} elseif (in_array('required', $rule)) {
 				// 不存在节点，返回节点不存在
 				$errorItme = [$dataItem, 'nofound'];
 				break;
@@ -180,7 +195,7 @@ class Validate
 	 */
 	public function rule(array $rule = [])
 	{
-		$this->rule = $rule;
+		$this->checkRule = $rule;
 
 		return $this;
 	}
@@ -228,7 +243,6 @@ class Validate
 		return $this;
 	}
 
-
 	###############################  辅助方法  ###################################
 
 	/**
@@ -268,9 +282,9 @@ class Validate
 	protected function checkItem($value, $rule, $rule_data = null)
 	{
 		if ($rule_data !== null) {
-			$resule = call_user_func_array(array($this, $rule), array($value, $rule_data));
+			$resule = call_user_func_array([$this, $rule], [$value, $rule_data]);
 		} else {
-			$resule = call_user_func_array(array($this, $rule), array($value));
+			$resule = call_user_func_array([$this, $rule], [$value]);
 		}
 
 		return $resule;
@@ -292,7 +306,6 @@ class Validate
 
 		return $length;
 	}
-
 
 	###############################  验证规则  ###################################
 
@@ -379,6 +392,17 @@ class Validate
 	}
 
 	/**
+	 * 验证是否为一个有效的时间戳
+	 *
+	 * @param [type] $value
+	 * @return void
+	 */
+	public function timestamp($value)
+	{
+		return $this->int($value) && (strtotime(date('Y-m-d H:i:s', $value)) === $value);
+	}
+
+	/**
 	 * 最后日期
 	 *
 	 * @param  [type] $value [description]
@@ -443,6 +467,17 @@ class Validate
 	}
 
 	/**
+	 * 固定电话
+	 *
+	 * @param [type] $value
+	 * @return void
+	 */
+	public function tel($value)
+	{
+		return preg_match($this->regex['tel'], $value) === 1;
+	}
+
+	/**
 	 * 邮箱地址
 	 *
 	 * @param  [type] $value [description]
@@ -484,6 +519,28 @@ class Validate
 	public function alpha($value)
 	{
 		return preg_match($this->regex['alpha'], $value) === 1;
+	}
+
+	/**
+	 * 小写字母
+	 *
+	 * @param [type] $value
+	 * @return void
+	 */
+	public function lower($value)
+	{
+		return preg_match($this->regex['lower'], $value) === 1;
+	}
+
+	/**
+	 * 大写字母
+	 *
+	 * @param [type] $value
+	 * @return void
+	 */
+	public function upper($value)
+	{
+		return preg_match($this->regex['upper'], $value) === 1;
 	}
 
 	/**
