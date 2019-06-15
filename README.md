@@ -22,6 +22,10 @@ composer require mongdch/mon-util
 
 ## 版本
 
+### 1.0.3
+
+* 迭代发布1.0.2版本代码缺失
+
 ### 1.0.2
 
 * 验证器使用场景验证的情况下，字段未设置【required】验证规则，仍然必须存在字段BUG
