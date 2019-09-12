@@ -1,4 +1,5 @@
 <?php
+
 namespace mon\util;
 
 use mon\util\GIF;

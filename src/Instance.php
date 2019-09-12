@@ -1,4 +1,5 @@
 <?php
+
 namespace mon\util;
 
 use Exception;
@@ -46,9 +47,9 @@ trait Instance
         }
         $call = substr($method, 1);
         if (0 === strpos($method, '_') && is_callable([self::$instance, $call])) {
-            return call_user_func_array([self::$instance, $call], (array)$params);
+            return call_user_func_array([self::$instance, $call], (array) $params);
         } else {
-            throw new Exception("方法不存在 => " . $method);
+            throw new Exception("method not found => " . $method);
         }
     }
 }

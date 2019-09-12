@@ -1,4 +1,5 @@
 <?php
+
 namespace mon\util;
 
 /**
@@ -33,7 +34,7 @@ class Common
     /**
      * 字符串编码过滤（中文、英文、数字不过滤，只过滤特殊字符）
      *
-     * @param  [type] $src [description]
+     * @param  string $src 安全转码的字符串
      * @return [type]      [description]
      */
     public function encodeEX($src)
@@ -96,7 +97,7 @@ class Common
     /**
      * 字符串解码（对应encodeEX）
      *
-     * @param  [type] $src [description]
+     * @param  string $src 安全解码的字符串
      * @return [type]      [description]
      */
     public function decodeEX($src)
@@ -163,28 +164,6 @@ class Common
         $str = base64_decode(base64_decode(implode($temp)));
         $_arr = explode(".", $str);
         return $_arr[1];
-    }
-
-    /**
-     * 防止script里面的 XSS
-     *
-     * @param  [type] $str [description]
-     * @return [type]      [description]
-     */
-    public function jsformat($str)
-    {
-        $str = trim($str);
-        $str = str_replace('\\s\\s', '\\s', $str);
-        $str = str_replace(chr(10), '', $str);
-        $str = str_replace(chr(13), '', $str);
-        $str = str_replace(' ', '', $str);
-        $str = str_replace('\\', '\\\\', $str);
-        $str = str_replace('"', '\\"', $str);
-        $str = str_replace('\\\'', '\\\\\'', $str);
-        $str = str_replace("'", "\'", $str);
-        $str = str_replace(">", "", $str);
-        $str = str_replace("<", "", $str);
-        return $str;
     }
 
     /**
@@ -255,8 +234,8 @@ class Common
     /**
      * 获取余数
      *
-     * @param $bn 被除数
-     * @param $sn 除数
+     * @param  int $bn 被除数
+     * @param  int $sn 除数
      * @return int 余
      */
     public function Kmod($bn, $sn)
@@ -268,7 +247,7 @@ class Common
     /**
      * 返回正数的ip2long值
      *
-     * @param  [type] $ip ip
+     * @param  string $ip ip
      * @return [type]     [description]
      */
     public function ip2long_positive($ip)
@@ -302,7 +281,7 @@ class Common
     /**
      * 字符串转数组
      *
-     * @param  string $str 入参，待转换的字符串
+     * @param  string   $str 入参，待转换的字符串
      * @return 字符数组
      */
     public function strToMap($str)
@@ -409,22 +388,17 @@ class Common
         if (empty($str)) {
             return '';
         }
-        $fchar = ord($str{
-        0});
+        $fchar = ord($str[0]);
         if ($fchar >= ord('A') && $fchar <= ord('z')) {
-            return strtoupper($str{
-            0});
+            return strtoupper($str[0]);
         }
         $s1 = iconv('UTF-8', 'gb2312', $str);
         $s2 = iconv('gb2312', 'UTF-8', $s1);
         $s = $s2 == $str ? $s1 : $str;
-        if (empty($s{
-        1})) {
+        if (empty($s[1])) {
             return '';
         }
-        $asc = ord($s{
-        0}) * 256 + ord($s{
-        1}) - 65536;
+        $asc = ord($s[0]) * 256 + ord($s[1]) - 65536;
         if ($asc >= -20319 && $asc <= -20284) return 'A';
         if ($asc >= -20283 && $asc <= -19776) return 'B';
         if ($asc >= -19775 && $asc <= -19219) return 'C';

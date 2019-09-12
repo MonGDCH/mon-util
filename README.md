@@ -3,7 +3,6 @@
 PHP常用工具、辅助类集合，包含一些类库
 
 * Date类，时间操作
-* From类，表单操作
 * Instance类， trait单例
 * Tree类，树结构操作
 * UpdateImg类，图片上传
@@ -13,6 +12,7 @@ PHP常用工具、辅助类集合，包含一些类库
 * Image类，图片处理工具
 * UploadFile类，文件上传
 * GIF类，辅助Image类进行GIF图片处理
+* Lang类，多语言操作类
 
 ## 安装
 
@@ -21,6 +21,12 @@ composer require mongdch/mon-util
 ```
 
 ## 版本
+
+### 1.0.4
+
+* 优化代码
+* 移除Form类
+* 增加Lang多语言操作类
 
 ### 1.0.3
 

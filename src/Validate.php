@@ -1,4 +1,5 @@
 <?php
+
 namespace mon\util;
 
 /**
@@ -301,7 +302,7 @@ class Validate
 		if (is_array($value)) {
 			$length = count($value);
 		} else {
-			$length = mb_strlen((string)$value, 'UTF-8');
+			$length = mb_strlen((string) $value, 'UTF-8');
 		}
 
 		return $length;

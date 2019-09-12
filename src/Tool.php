@@ -1,4 +1,5 @@
 <?php
+
 namespace mon\util;
 
 /**
@@ -19,7 +20,7 @@ class Tool
     /**
      * 单例初始化
      *
-     * @return Auth
+     * @return Tool
      */
     public static function instance()
     {
@@ -33,10 +34,10 @@ class Tool
     /**
      * 调试方法(浏览器友好处理)
      *
-     * @param mixed $var 变量
-     * @param boolean $echo 是否输出 默认为True 如果为false 则返回输出字符串
-     * @param string $label 标签 默认为空
-     * @param boolean $strict 是否严谨 默认为true
+     * @param mixed     $var    变量
+     * @param boolean   $echo   是否输出 默认为True 如果为false 则返回输出字符串
+     * @param string    $label  标签 默认为空
+     * @param boolean   $strict 是否严谨 默认为true
      * @return void|string
      */
     public function debug($var, $echo = true, $label = null, $flags = ENT_SUBSTITUTE)
@@ -186,7 +187,6 @@ class Tool
             // 遍历键列表获取对应数据中的键值
             for ($i = 0; $i < $len; $i++) {
                 $val = @iconv('utf-8', 'gbk', $value[$titleKey[$i]]);
-
                 // 判断是否为最后一列数据
                 if ($i == ($len - 1)) {
                     $str .= $val . "\n";
@@ -220,7 +220,6 @@ class Tool
     {
         // 清空之前的输出
         ob_get_contents() && ob_end_clean();
-
         header("Content-type:text/xml");
         $xml  = "<?xml version=\"1.0\" encoding=\"{$encoding}\"?>";
         $xml .= "<{$root}>";

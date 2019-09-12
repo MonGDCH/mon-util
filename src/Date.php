@@ -1,4 +1,5 @@
 <?php
+
 namespace mon\util;
 
 /**
@@ -323,7 +324,7 @@ class Date
             if ($diff >= $chunks[$i][0]) {
                 $num   =  floor($diff / $chunks[$i][0]);
                 $since .= sprintf('%d' . $chunks[$i][1], $num);
-                $diff =  (int)($diff - $chunks[$i][0] * $num);
+                $diff =  (int) ($diff - $chunks[$i][0] * $num);
                 $count++;
                 if (!$precision || $count >= $precision) {
                     break;

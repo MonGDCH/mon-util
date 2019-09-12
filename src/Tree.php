@@ -1,4 +1,5 @@
 <?php
+
 namespace mon\util;
 
 /**
@@ -12,7 +13,7 @@ class Tree
     /**
      * 本类单例
      * 
-     * @var [type]
+     * @var Tree
      */
     protected static $instance;
 
@@ -43,7 +44,7 @@ class Tree
     /**
      * 单例初始化
      *
-     * @return Auth
+     * @return Tree
      */
     public static function instance()
     {
@@ -84,7 +85,7 @@ class Tree
      */
     public function data($arr)
     {
-        $this->data = (array)$arr;
+        $this->data = (array) $arr;
         return $this;
     }
 
@@ -129,7 +130,7 @@ class Tree
             if ($value[$this->config['pid']] == $pid) {
                 $result[] = $value;
                 // 递归获取
-                $result = array_merge($result, $this->getChildren($value['id']));
+                $result = array_merge($result, (array) $this->getChildren($value['id']));
             } elseif ($self && $value[$this->config['id']] == $pid) {
                 $result[] = $value;
             }
@@ -225,7 +226,7 @@ class Tree
 
         // 存在父级节点
         if ($pid) {
-            $result = array_merge($this->getParents($pid, true), $result);
+            $result = array_merge((array) $this->getParents($pid, true), $result);
         }
 
         return $result;
@@ -296,7 +297,7 @@ class Tree
             $result[] = $v;
             if ($child) {
                 // 递归合并
-                $result = array_merge($result, $this->rollbackTree($child, $mark));
+                $result = array_merge($result, (array) $this->rollbackTree($child, $mark));
             }
         }
 
@@ -428,7 +429,7 @@ class Tree
                 $value = array_combine(array_map(function ($k) {
                     return '@' . $k;
                 }, array_keys($value)), $value);
-                $bakvalue = array_intersect_key($value, array_flip(['@url', '@caret', '@class']));
+                $bakvalue = array_intersect_key($value, array_flip(['@url', '@class']));
                 $value = array_diff_key($value, $bakvalue);
                 $nstr = strtr($itemtpl, $value);
                 $value = array_merge($value, $bakvalue);
@@ -438,8 +439,6 @@ class Tree
                 $value = array(
                     '@childlist' => $childlist,
                     '@url'       => $childdata || !isset($value['@url']) ? "javascript:;" : $value['@url'],
-                    '@caret'     => ($childdata && (!isset($value['@badge']) || !$value['@badge']) ? '<i class="fa fa-angle-left"></i>' : ''),
-                    '@badge'     => isset($value['@badge']) ? $value['@badge'] : '',
                     '@class'     => ($selected ? ' active' : '') . ($disabled ? ' disabled' : '') . ($childdata ? ' treeview' : ''),
                 );
                 $str .= strtr($nstr, $value);

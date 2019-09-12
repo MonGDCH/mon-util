@@ -1,4 +1,5 @@
 <?php
+
 namespace mon\util;
 
 use mon\util\exception\ImgException;
@@ -178,7 +179,7 @@ class GIFEncoder
             $this->GIF .= "!\377\13NETSCAPE2.0\3\1" . GIFEncoder::GIFWord($this->LOP) . "\0";
         }
     }
-    
+
     /**
      * GIFAddFrames
      *
@@ -277,7 +278,7 @@ class GIFEncoder
         }
         $this->IMG  = 1;
     }
-    
+
     /**
      * GIFAddFooter
      *
@@ -287,7 +288,7 @@ class GIFEncoder
     {
         $this->GIF .= ";";
     }
-    
+
     /**
      * GIFBlockCompare
      *
@@ -317,7 +318,7 @@ class GIFEncoder
 
         return (1);
     }
-    
+
     /**
      * GIFWord
      *
@@ -329,7 +330,7 @@ class GIFEncoder
 
         return (chr($int & 0xFF) . chr(($int >> 8) & 0xFF));
     }
-    
+
     /**
      * GetAnimation
      *
@@ -400,7 +401,7 @@ class GIFDecoder
             }
         }
     }
-    
+
     /**
      * GIFReadExtension
      *
