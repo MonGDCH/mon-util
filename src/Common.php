@@ -121,7 +121,8 @@ class Common
     /**
      * 字符串加密方法
      *
-     * @param  string $str 加密的字符串
+     * @param  string $str  加密的字符串
+     * @param  string $salt 加密盐
      * @return [type]      [description]
      */
     public function encryption($str, $salt)
@@ -142,7 +143,8 @@ class Common
     /**
      * 字符串解密方法
      *
-     * @param  string $str 解密的字符串
+     * @param  string $str  解密的字符串
+     * @param  string $salt 解密的盐
      * @return [type]      [description]
      */
     public function decryption($str, $salt)
@@ -169,7 +171,7 @@ class Common
     /**
      * 判断是否为16进制，由于PHP没有相关的API，所以折中处理
      *
-     * @param  [type]  $src [description]
+     * @param  string  $src 验证的字符串
      * @return boolean      [description]
      */
     public function isXDigit($src)
@@ -187,7 +189,7 @@ class Common
     /**
      * 检查字符串是否是UTF8编码
      *
-     * @param string $string 字符串
+     * @param string $string 验证的字符串
      * @return Boolean
      */
     public function isUtf8($str)
@@ -258,7 +260,7 @@ class Common
     /**
      * XML转数组
      *
-     * @param  [type] $xml [description]
+     * @param  [type] $xml XML内容
      * @return [type]      [description]
      */
     public function xml2array($xml)
@@ -368,7 +370,7 @@ class Common
     /**
      * 是否为关联数组
      *
-     * @param  array   $array [description]
+     * @param  array   $array 验证码的数组
      * @return boolean        [description]
      */
     public function isAssoc(array $array)
@@ -456,11 +458,11 @@ class Common
     /**
      * 字符串截取，支持中文和其他编码
      *
-     * @param string $str 需要转换的字符串
-     * @param string $start 开始位置
-     * @param string $length 截取长度
-     * @param string $charset 编码格式
-     * @param string $suffix 截断显示字符
+     * @param string $str       需要转换的字符串
+     * @param string $start     开始位置
+     * @param string $length    截取长度
+     * @param string $charset   编码格式
+     * @param string $suffix    截断显示字符
      * @return string
      */
     public function msubstr($str, $start = 0, $length, $charset = "utf-8", $suffix = true)
@@ -485,10 +487,9 @@ class Common
      * 产生随机字串，可用来自动生成密码
      * 默认长度6位 字母和数字混合 支持中文
      *
-     * @param string $len 长度
-     * @param string $type 字串类型
-     * 0 字母 1 数字 其它 混合
-     * @param string $addChars 额外字符
+     * @param string $len       长度
+     * @param string $type      字串类型，0:字母;1:数字;2:大写字母;3:小写字母;4:中文;5:字母数字混合;othor:过滤掉混淆字符的字母数字组合
+     * @param string $addChars  额外字符
      * @return string
      */
     public function randString($len = 6, $type = '', $addChars = '')
@@ -538,9 +539,9 @@ class Common
     /**
      * 递归转换字符集
      *
-     * @param  string $data 要转换的数据
-     * @param  string $out_charset 输出编码
-     * @param  string $in_charset 输入编码
+     * @param  string $data         要转换的数据
+     * @param  string $out_charset  输出编码
+     * @param  string $in_charset   输入编码
      * @return mixed
      */
     public function iconv_recursion($data, $out_charset, $in_charset)

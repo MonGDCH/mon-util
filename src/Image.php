@@ -555,6 +555,28 @@ class Image
     }
 
     /**
+     * 切换到GIF的下一帧并保存当前帧
+     */
+    protected function gifNext()
+    {
+        ob_start();
+        ob_implicit_flush(0);
+        imagegif($this->img);
+        $img = ob_get_clean();
+        $this->gif->image($img);
+        $next = $this->gif->nextImage();
+        if ($next) {
+            imagedestroy($this->img);
+            $this->img = imagecreatefromstring($next);
+            return $next;
+        } else {
+            imagedestroy($this->img);
+            $this->img = imagecreatefromstring($this->gif->image());
+            return false;
+        }
+    }
+
+    /**
      * 析构方法，用于销毁图像资源
      */
     public function __destruct()

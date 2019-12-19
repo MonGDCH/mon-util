@@ -31,7 +31,7 @@ class UploadFile
     /**
      * 构造方法
      *
-     * @param array $config
+     * @param array $config 自定义配置信息
      */
     public function __construct(array $config = [])
     {
@@ -52,8 +52,8 @@ class UploadFile
     /**
      * 设置配置信息
      *
-     * @param [type] $name
-     * @param [type] $value
+     * @param [type] $name  配置名称
+     * @param [type] $value 配置值
      */
     public function __set($name, $value)
     {
@@ -85,7 +85,8 @@ class UploadFile
     /**
      * 文件上传
      *
-     * @param [type] $file
+     * @param string $files 文件内容
+     * @param string $name  内容索引
      * @return void
      */
     public function upload($files = '', $name = 'file')
@@ -121,6 +122,8 @@ class UploadFile
     /**
      * 保存上传的文件
      *
+     * @param string $fileName  保存文件名
+     * @param boolean $replace  是否替换旧文件
      * @return void
      */
     public function save($fileName = '', $replace = true)
@@ -158,7 +161,7 @@ class UploadFile
     /**
      * 检测文件
      *
-     * @param [type] $file
+     * @param [type] $file  文件路径
      * @return void
      */
     protected function checkFile($file)
@@ -193,7 +196,7 @@ class UploadFile
     /**
      * 检测图片
      *
-     * @param [type] $file
+     * @param [type] $file 文件路径
      * @return void
      */
     protected function checkImg($file)
@@ -212,7 +215,8 @@ class UploadFile
     /**
      * 检查文件大小是否合法
      *
-     * @param integer $size
+     * @param [type] $size  文件大小
+     * @return void
      */
     protected function checkSize($size)
     {
@@ -222,7 +226,8 @@ class UploadFile
     /**
      * 检查上传的文件MIME类型是否合法
      *
-     * @param string $mime
+     * @param [type] $mime  文件类型
+     * @return void
      */
     protected function checkMime($mime)
     {
@@ -232,7 +237,8 @@ class UploadFile
     /**
      * 检查上传的文件后缀是否合法
      *
-     * @param string $ext
+     * @param [type] $ext   文件后缀
+     * @return void
      */
     private function checkExt($ext)
     {

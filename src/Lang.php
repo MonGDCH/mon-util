@@ -46,9 +46,9 @@ class Lang
     /**
      * 动态语言定义
      *
-     * @param [type] $name  [description]
-     * @param string $value [description]
-     * @param string $range [description]
+     * @param string|array  $name  键名
+     * @param string        $value 值
+     * @param string        $range 语言作用域
      */
     public function set($name, $value = '', $range = '')
     {
@@ -98,11 +98,11 @@ class Lang
     /**
      * 判断语言是否已定义
      *
-     * @param  [type]  $name  [description]
-     * @param  string  $range [description]
+     * @param  string  $name  键名
+     * @param  string  $range 语言作用域
      * @return boolean        [description]
      */
-    public static function has($name, $range = '')
+    public function has($name, $range = '')
     {
         $range = $range ?: $this->range;
 
@@ -112,12 +112,12 @@ class Lang
     /**
      * 获取语言定义
      *
-     * @param  [type] $name  [description]
-     * @param  array  $vars  [description]
-     * @param  string $range [description]
+     * @param  string $name  键名
+     * @param  array  $vars  替换变量
+     * @param  string $range 语言类型
      * @return [type]        [description]
      */
-    public static function get($name, $vars = [], $range = '')
+    public function get($name, $vars = [], $range = '')
     {
         $range = $range ?: $this->range;
 

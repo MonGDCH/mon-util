@@ -109,14 +109,15 @@ class Tool
     /**
      * 创建基于cookies的Token
      *
-     * @param  String  $ticket 验证秘钥
-     * @param  integer $expire Cookie生存时间
+     * @param  string  $ticket  验证秘钥
+     * @param  string  $salt    加密盐
+     * @param  integer $expire  Cookie生存时间
      * @return cookie&array
      */
-    public function createTicket($ticket, $ticket_title = "Mon", $expire = 3600)
+    public function createTicket($ticket, $salt = "MonUtil", $expire = 3600)
     {
         $now = time();
-        $token = md5($ticket_title . $now . $ticket);
+        $token = md5($salt . $now . $ticket);
 
         $_COOKIE['_token_']     = $token;
         $_COOKIE['_tokenTime_'] = $now;
@@ -129,14 +130,15 @@ class Tool
     /**
      * 校验基于cookies的Token
      *
-     * @param  String  $ticket      验证秘钥
-     * @param  String  $token       Token值
-     * @param  String  $tokenTime   Token创建时间
+     * @param  string  $ticket      验证秘钥
+     * @param  string  $token       Token值
+     * @param  string  $tokenTime   Token创建时间
+     * @param  string  $salt        加密盐
      * @param  boolean $destroy     是否清除Cookie
      * @param  integer $expire      Cookie生存时间
      * @return bool
      */
-    public function checkTicket($ticket, $token = null, $tokenTime = null, $ticket_title = "Mon", $destroy = true, $expire = 3600)
+    public function checkTicket($ticket, $token = null, $tokenTime = null, $salt = "MonUtil", $destroy = true, $expire = 3600)
     {
         $token        = empty($token) ? $_COOKIE['_token_'] : $token;
         $tokenTime    = empty($tokenTime) ? $_COOKIE['_tokenTime_'] : $tokenTime;
@@ -148,7 +150,7 @@ class Tool
         }
 
         //校验
-        $check = md5($ticket_title . $tokenTime . $ticket);
+        $check = md5($salt . $tokenTime . $ticket);
         $timeGap = $now - $tokenTime;
         if ($check == $token && $timeGap <= $expire) {
             $result = true;
@@ -232,7 +234,7 @@ class Tool
     /**
      * 递归转换数组数据为XML，只作为exportXML的辅助方法使用
      *
-     * @param  array  $data [description]
+     * @param  array  $data 输出的数据
      * @return [type]       [description]
      */
     public function dataToXML(array $data)
@@ -268,7 +270,7 @@ class Tool
     /**
      * 隐藏手机号
      *
-     * @param  [type] $id [description]
+     * @param  string $id 手机号
      * @return [type]     [description]
      */
     public function hideMoble($id)
@@ -297,11 +299,11 @@ class Tool
      * 将一个字符串部分字符用$re替代隐藏
      *
      * @param string    $string   待处理的字符串
-     * @param int       $start    规定在字符串的何处开始，
+     * @param integer   $start    规定在字符串的何处开始，
      *                            正数 - 在字符串的指定位置开始
      *                            负数 - 在从字符串结尾的指定位置开始
      *                            0 - 在字符串中的第一个字符处开始
-     * @param int       $length   可选。规定要隐藏的字符串长度。默认是直到字符串的结尾。
+     * @param integer   $length   可选。规定要隐藏的字符串长度。默认是直到字符串的结尾。
      *                            正数 - 从 start 参数所在的位置隐藏
      *                            负数 - 从字符串末端隐藏
      * @param string    $re       替代符
@@ -341,10 +343,10 @@ class Tool
     /**
      * 发送TCP请求
      *
-     * @param  [type] $ip     [description]
-     * @param  [type] $port   [description]
-     * @param  [type] $cmd    [description]
-     * @param  [type] &$iRecv [description]
+     * @param  string   $ip     IP地址
+     * @param  integer  $port   端口
+     * @param  string   $cmd    发送的内容套接字
+     * @param  string   &$iRecv 引用返回的响应内容
      * @return [type]         [description]
      */
     public function sendCmdTCP($ip, $port, $cmd, &$iRecv)
@@ -361,9 +363,10 @@ class Tool
     /**
      * 发送UDP请求
      *
-     * @param  [type] $ip   [description]
-     * @param  [type] $port [description]
-     * @param  [type] $cmd  [description]
+     * @param  string   $ip      IP地址
+     * @param  integer  $port    端口
+     * @param  string   $cmd     发送的内容套接字
+     * @param  string   &$result 引用返回的响应内容
      * @return [type]       [description]
      */
     public static function sendCmdUDP($ip, $port, $cmd, &$result)

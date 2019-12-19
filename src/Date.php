@@ -132,7 +132,7 @@ class Date
     /**
      * 获取单例
      *
-     * @param array $options
+     * @param array $options 日期
      * @return static
      */
     public static function instance($options = null)

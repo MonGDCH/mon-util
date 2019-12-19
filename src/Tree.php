@@ -13,7 +13,7 @@ class Tree
     /**
      * 本类单例
      * 
-     * @var Tree
+     * @var [type]
      */
     protected static $instance;
 
@@ -30,7 +30,8 @@ class Tree
      * @var array
      */
     protected $config = array(
-        'nbsp'      => "&nbsp;",        // 空格替换
+        // 'nbsp'      => "&nbsp;",        // 空格替换
+        'nbsp'      => "　",        // 空格替换
         'id'        => 'id',            // 主键
         'pid'       => 'pid',           // 子ID键
         'root'      => 0,               // 顶级子ID
@@ -44,7 +45,7 @@ class Tree
     /**
      * 单例初始化
      *
-     * @return Tree
+     * @return Auth
      */
     public static function instance()
     {
@@ -398,50 +399,6 @@ class Tree
                 $childdata = $this->getTreeUl($id, $itemtpl, $selectedids, $disabledids, $wraptag, $wrapattr);
                 $childlist = $childdata ? "<{$wraptag} {$wrapattr}>" . $childdata . "</{$wraptag}>" : "";
                 $str .= strtr($nstr, array('@childlist' => $childlist));
-            }
-        }
-        return $str;
-    }
-
-    /**
-     * 菜单数据
-     *
-     * @param int $myid
-     * @param string $itemtpl
-     * @param mixed $selectedids
-     * @param mixed $disabledids
-     * @param string $wraptag
-     * @param string $wrapattr
-     * @param int $deeplevel
-     * @return string
-     */
-    public function getTreeMenu($myid, $itemtpl, $selectedids = '', $disabledids = '', $wraptag = 'ul', $wrapattr = '', $deeplevel = 0)
-    {
-        $str = '';
-        $childs = $this->getChild($myid);
-        if ($childs) {
-            foreach ($childs as $value) {
-                $id = $value['id'];
-                unset($value['child']);
-                $selected = in_array($id, (is_array($selectedids) ? $selectedids : explode(',', $selectedids))) ? 'selected' : '';
-                $disabled = in_array($id, (is_array($disabledids) ? $disabledids : explode(',', $disabledids))) ? 'disabled' : '';
-                $value = array_merge($value, array('selected' => $selected, 'disabled' => $disabled));
-                $value = array_combine(array_map(function ($k) {
-                    return '@' . $k;
-                }, array_keys($value)), $value);
-                $bakvalue = array_intersect_key($value, array_flip(['@url', '@class']));
-                $value = array_diff_key($value, $bakvalue);
-                $nstr = strtr($itemtpl, $value);
-                $value = array_merge($value, $bakvalue);
-                $childdata = $this->getTreeMenu($id, $itemtpl, $selectedids, $disabledids, $wraptag, $wrapattr, $deeplevel + 1);
-                $childlist = $childdata ? "<{$wraptag} {$wrapattr}>" . $childdata . "</{$wraptag}>" : "";
-                $childlist = strtr($childlist, array('@class' => $childdata ? 'last' : ''));
-                $value = array(
-                    '@childlist' => $childlist,
-                    '@url'       => $childdata || !isset($value['@url']) ? "javascript:;" : $value['@url'],
-                    '@class'     => ($selected ? ' active' : '') . ($disabled ? ' disabled' : '') . ($childdata ? ' treeview' : ''),
-                );
-                $str .= strtr($nstr, $value);
             }
         }
         return $str;

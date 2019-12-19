@@ -29,7 +29,7 @@ class UploadImg
     /**
      * 设置默认文件保存路径
      *
-     * @param  [type] $path [description]
+     * @param  string $path 保存的文件路径
      * @return [type]       [description]
      */
     public function setPath($path)
@@ -51,7 +51,7 @@ class UploadImg
     /**
      * 设置默认文件保存名称
      *
-     * @param [type] $name [description]
+     * @param string $name 保存的文件名称
      */
     public function setName($name)
     {
@@ -72,7 +72,7 @@ class UploadImg
     /**
      * 保存上传图片
      *
-     * @param  [type] $data 图片base64
+     * @param  string $data 图片base64
      * @param  string $path 保存路径
      * @param  string $name 保存名称
      * @return [type]       [description]
@@ -107,9 +107,11 @@ class UploadImg
     /**
      * 保存图片
      *
-     * @param  [type] $img    内容
-     * @param  [type] $suffix 文件名称后缀
-     * @return [type]         [description]
+     * @param string $img    内容
+     * @param string $suffix 文件名称后缀
+     * @param string $path   保存路径
+     * @param string $name   保存文件名
+     * @return void
      */
     protected function saveImg($img, $suffix, $path, $name)
     {
@@ -133,7 +135,8 @@ class UploadImg
     /**
      * 获取文章保存名称
      *
-     * @return [type] [description]
+     * @param string $name  文件名
+     * @return void
      */
     protected function buildName($name)
     {
