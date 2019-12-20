@@ -3,16 +3,18 @@
 PHP常用工具、辅助类集合，包含一些类库
 
 * Date类，时间操作
-* Instance类， trait单例
+* Instance类， trait单例实现
 * Tree类，树结构操作
-* UpdateImg类，图片上传
+* UpdateImg类，base64图片上传
+* UpdateFile类，文件上传
 * Validate类，验证器
 * Tool类，常用工具类库函数
 * Common类，公共工具函数库
 * Image类，图片处理工具
 * UploadFile类，文件上传
 * GIF类，辅助Image类进行GIF图片处理
-* Lang类，多语言操作类
+* Lang类，多语言操作
+* Dictionary类，数据字典
 
 ## 安装
 
@@ -21,6 +23,11 @@ composer require mongdch/mon-util
 ```
 
 ## 版本
+
+### 1.1.0
+
+* 优化代码
+* 增加Dictionary类，用于做数据字典
 
 ### 1.0.4
 
