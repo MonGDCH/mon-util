@@ -186,29 +186,31 @@ class Dictionary
     /**
      * 获取内容
      *
+     * @param boolean $menu 是否需要菜单
      * @return void
      */
-    public function getContent()
+    public function getContent($menu = true)
     {
         // 获取所有表信息
         $tables = $this->getTableInfo();
         // 构造HTMl
         $html = '';
-        // 循环生成右边导航栏
-        $html .= '<div class="left-side">' . "\n";
-        $html .= '<h2><a href="#TABLE">数据表</a></h2>' . "\n";
-
-        foreach ($tables as $key => $val) {
-            static $first = false;
-            if (!$first && !empty($this->viewMark)) {
-                if (strstr($val['TABLE_NAME'], $this->viewMark)) {
-                    $first = true;
-                    $html .= '<h2><a href="#TABLE">视图</a></h2>' . "\n";
+        if ($menu) {
+            // 循环生成右边导航栏
+            $html .= '<div class="left-side">' . "\n";
+            $html .= '<h2><a href="#TABLE">数据表</a></h2>' . "\n";
+            foreach ($tables as $key => $val) {
+                static $first = false;
+                if (!$first && !empty($this->viewMark)) {
+                    if (strstr($val['TABLE_NAME'], $this->viewMark)) {
+                        $first = true;
+                        $html .= '<h2><a href="#TABLE">视图</a></h2>' . "\n";
+                    }
                 }
+                $html .= '<a href="#' . $val['TABLE_NAME'] . '" class="tab-btn">' . $val['TABLE_NAME'] . '</a>' . "\n";
             }
-            $html .= '<a href="#' . $val['TABLE_NAME'] . '" class="tab-btn">' . $val['TABLE_NAME'] . '</a>' . "\n";
+            $html .= '</div>' . "\n";
         }
-        $html .= '</div>' . "\n";
 
         // 循环生成左边数据表内容
         $html .= '<div class="right-side">' . "\n";
@@ -331,13 +333,3 @@ class Dictionary
     }
 }
 
-
-$content = (new Dictionary())->setConfig([
-    'database'                      => 'test',
-    // 用户名
-    'username'                      => 'root',
-    // 密码
-    'password'                      => 'root',
-])->setViewMark('viw_')->getHTML();
-
-echo $content;

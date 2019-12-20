@@ -6,7 +6,7 @@ namespace mon\util;
  * 树结构数据操作类
  *
  * @author Mon <985558837@qq.com>
- * @version 1.0
+ * @version 1.1 优化代码
  */
 class Tree
 {

@@ -8,7 +8,7 @@ use mon\util\exception\UploadException;
  * base64图片上传类
  *
  * @author Mon <985558837@qq.com>
- * @version v1.0
+ * @version v1.1 增加图片大小限制
  */
 class UploadImg
 {
@@ -72,12 +72,13 @@ class UploadImg
     /**
      * 保存上传图片
      *
-     * @param  string $data 图片base64
-     * @param  string $path 保存路径
-     * @param  string $name 保存名称
-     * @return [type]       [description]
+     * @param string $data      图片base64
+     * @param string $path      保存路径
+     * @param string $name      保存名称
+     * @param string $maxSize   图片最大尺寸, 0或空则不验证
+     * @return void
      */
-    public function upload($data, $path = '', $name = '')
+    public function upload($data, $path = '', $name = '', $maxSize = '2048000')
     {
         $img_base64 = explode('base64,', $data);
         if (!$img_base64) {
@@ -99,6 +100,10 @@ class UploadImg
                 break;
             default:
                 throw new UploadException('图片类型错误', 2);
+        }
+
+        if (!empty($maxSize) && strlen($data) > $maxSize) {
+            throw new UploadException('文件大小超出', 5);
         }
 
         return $this->saveImg($img, $img_suffix, $path, $name);
