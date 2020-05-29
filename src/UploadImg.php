@@ -15,7 +15,7 @@ class UploadImg
     /**
      * 文件保存路径
      *
-     * @var [type]
+     * @var string
      */
     protected $path = '';
 
@@ -30,7 +30,7 @@ class UploadImg
      * 设置默认文件保存路径
      *
      * @param  string $path 保存的文件路径
-     * @return [type]       [description]
+     * @return UploadImg
      */
     public function setPath($path)
     {
@@ -41,7 +41,7 @@ class UploadImg
     /**
      * 获取默认文件保存路径
      *
-     * @return [type] [description]
+     * @return string
      */
     public function getPath()
     {
@@ -52,6 +52,7 @@ class UploadImg
      * 设置默认文件保存名称
      *
      * @param string $name 保存的文件名称
+     * @return UploadImg
      */
     public function setName($name)
     {
@@ -62,7 +63,7 @@ class UploadImg
     /**
      * 获取默认文件保存名称
      *
-     * @return [type] [description]
+     * @return string
      */
     public function getName()
     {
@@ -76,7 +77,8 @@ class UploadImg
      * @param string $path      保存路径
      * @param string $name      保存名称
      * @param string $maxSize   图片最大尺寸, 0或空则不验证
-     * @return void
+     * @throws UploadException
+     * @return string
      */
     public function upload($data, $path = '', $name = '', $maxSize = '2048000')
     {
@@ -116,7 +118,8 @@ class UploadImg
      * @param string $suffix 文件名称后缀
      * @param string $path   保存路径
      * @param string $name   保存文件名
-     * @return void
+     * @throws UploadException
+     * @return string
      */
     protected function saveImg($img, $suffix, $path, $name)
     {
@@ -141,7 +144,7 @@ class UploadImg
      * 获取文章保存名称
      *
      * @param string $name  文件名
-     * @return void
+     * @return string
      */
     protected function buildName($name)
     {

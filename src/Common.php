@@ -3,24 +3,24 @@
 namespace mon\util;
 
 /**
- * 公共工具类库(数据接收)
+ * 公共工具类库(数据处理)
  *
  * @author Mon <985558837@qq.com>
- * @version v1.0
+ * @version v1.0.0
  */
 class Common
 {
     /**
      * 本类单例
      * 
-     * @var [type]
+     * @var Common
      */
     protected static $instance;
 
     /**
      * 单例初始化
      *
-     * @return Auth
+     * @return Common
      */
     public static function instance()
     {
@@ -35,7 +35,7 @@ class Common
      * 字符串编码过滤（中文、英文、数字不过滤，只过滤特殊字符）
      *
      * @param  string $src 安全转码的字符串
-     * @return [type]      [description]
+     * @return string
      */
     public function encodeEX($src)
     {
@@ -98,7 +98,7 @@ class Common
      * 字符串解码（对应encodeEX）
      *
      * @param  string $src 安全解码的字符串
-     * @return [type]      [description]
+     * @return string
      */
     public function decodeEX($src)
     {
@@ -123,7 +123,7 @@ class Common
      *
      * @param  string $str  加密的字符串
      * @param  string $salt 加密盐
-     * @return [type]      [description]
+     * @return string
      */
     public function encryption($str, $salt)
     {
@@ -145,7 +145,7 @@ class Common
      *
      * @param  string $str  解密的字符串
      * @param  string $salt 解密的盐
-     * @return [type]      [description]
+     * @return string
      */
     public function decryption($str, $salt)
     {
@@ -172,7 +172,7 @@ class Common
      * 判断是否为16进制，由于PHP没有相关的API，所以折中处理
      *
      * @param  string  $src 验证的字符串
-     * @return boolean      [description]
+     * @return boolean
      */
     public function isXDigit($src)
     {
@@ -190,7 +190,7 @@ class Common
      * 检查字符串是否是UTF8编码
      *
      * @param string $string 验证的字符串
-     * @return Boolean
+     * @return boolean
      */
     public function isUtf8($str)
     {
@@ -236,9 +236,9 @@ class Common
     /**
      * 获取余数
      *
-     * @param  int $bn 被除数
-     * @param  int $sn 除数
-     * @return int 余
+     * @param  integer $bn 被除数
+     * @param  integer $sn 除数
+     * @return integer 余
      */
     public function Kmod($bn, $sn)
     {
@@ -250,7 +250,7 @@ class Common
      * 返回正数的ip2long值
      *
      * @param  string $ip ip
-     * @return [type]     [description]
+     * @return integer
      */
     public function ip2long_positive($ip)
     {
@@ -260,8 +260,8 @@ class Common
     /**
      * XML转数组
      *
-     * @param  [type] $xml XML内容
-     * @return [type]      [description]
+     * @param  string $xml XML内容
+     * @return array
      */
     public function xml2array($xml)
     {
@@ -283,8 +283,8 @@ class Common
     /**
      * 字符串转数组
      *
-     * @param  string   $str 入参，待转换的字符串
-     * @return 字符数组
+     * @param  string $str 入参，待转换的字符串
+     * @return array 字符数组
      */
     public function strToMap($str)
     {
@@ -305,7 +305,7 @@ class Common
      * 数组转字符串
      *
      * @param  array $map 入参，待转换的数组
-     * @return 字符串
+     * @return string
      */
     public function mapToStr($map)
     {
@@ -323,7 +323,7 @@ class Common
      * 二维数组去重(键&值不能完全相同)
      *
      * @param  array $arr    需要去重的数组
-     * @return array $result
+     * @return array
      */
     public function array_2D_unique($arr)
     {
@@ -349,7 +349,7 @@ class Common
      * 二维数组去重(值不能相同)
      *
      * @param  array $arr    需要去重的数组
-     * @return array $result
+     * @return array
      */
     public function array_2D_value_unique($arr)
     {
@@ -371,7 +371,7 @@ class Common
      * 是否为关联数组
      *
      * @param  array   $array 验证码的数组
-     * @return boolean        [description]
+     * @return boolean
      */
     public function isAssoc(array $array)
     {
@@ -383,7 +383,7 @@ class Common
      * php获取中文字符拼音首字母
      *
      * @param  string $str 中文字符串
-     * @return [type]      [description]
+     * @return string
      */
     public function get_first_char($str)
     {
@@ -430,7 +430,7 @@ class Common
     /**
      * 生成UUID 单机使用
      *
-     * @return [type] [description]
+     * @return string
      */
     public function uuid()
     {
@@ -448,7 +448,7 @@ class Common
     /**
      * 生成Guid主键
      *
-     * @return Boolean
+     * @return string
      */
     public function keyGen()
     {

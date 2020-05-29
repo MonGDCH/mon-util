@@ -4,6 +4,9 @@ namespace mon\util;
 
 /**
  * 多语言控制
+ * 
+ * @author Mon <985558837@qq.com>
+ * @version 1.0.0
  */
 class Lang
 {
@@ -100,7 +103,7 @@ class Lang
      *
      * @param  string  $name  键名
      * @param  string  $range 语言作用域
-     * @return boolean        [description]
+     * @return boolean
      */
     public function has($name, $range = '')
     {
@@ -115,7 +118,7 @@ class Lang
      * @param  string $name  键名
      * @param  array  $vars  替换变量
      * @param  string $range 语言类型
-     * @return [type]        [description]
+     * @return mixed
      */
     public function get($name, $vars = [], $range = '')
     {
@@ -156,7 +159,7 @@ class Lang
     /**
      * 检测设置获取当前语言
      *
-     * @return void
+     * @return mixed
      */
     public function detect()
     {

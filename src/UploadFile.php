@@ -6,6 +6,9 @@ use mon\util\exception\UploadException;
 
 /**
  * 文件上传类
+ * 
+ * @author Mon <985558837@qq.com>
+ * @version 1.0.0
  */
 class UploadFile
 {
@@ -15,10 +18,14 @@ class UploadFile
      * @var array
      */
     protected $config = [
-        'mimes'        => [],   // 允许上传的文件MiMe类型
-        'maxSize'      => 0,    // 上传的文件大小限制，0不做限制
-        'exts'         => [],   // 允许上传的文件后缀
-        'rootPath'     => '',   // 保存根路径
+        // 允许上传的文件MiMe类型
+        'mimes'        => [],
+        // 上传的文件大小限制，0不做限制
+        'maxSize'      => 0,
+        // 允许上传的文件后缀
+        'exts'         => [],
+        // 保存根路径
+        'rootPath'     => '',
     ];
 
     /**
@@ -42,7 +49,7 @@ class UploadFile
      * 获取配置信息
      *
      * @param  string $name 配置名称
-     * @return multitype    配置值
+     * @return mixed 配置值
      */
     public function __get($name)
     {
@@ -52,8 +59,9 @@ class UploadFile
     /**
      * 设置配置信息
      *
-     * @param [type] $name  配置名称
-     * @param [type] $value 配置值
+     * @param string $name  配置名称
+     * @param mixed $value 配置值
+     * @return void
      */
     public function __set($name, $value)
     {
@@ -65,7 +73,7 @@ class UploadFile
     /**
      * 获取所有配置信息
      *
-     * @return void
+     * @return array
      */
     public function getConfig()
     {
@@ -75,7 +83,7 @@ class UploadFile
     /**
      * 获取上传文件信息
      *
-     * @return void
+     * @return mixed
      */
     public function getFile()
     {
@@ -87,7 +95,8 @@ class UploadFile
      *
      * @param string $files 文件内容
      * @param string $name  内容索引
-     * @return void
+     * @throws UploadException
+     * @return UploadFile
      */
     public function upload($files = '', $name = 'file')
     {
@@ -124,7 +133,8 @@ class UploadFile
      *
      * @param string $fileName  保存文件名
      * @param boolean $replace  是否替换旧文件
-     * @return void
+     * @throws UploadException
+     * @return UploadFile
      */
     public function save($fileName = '', $replace = true)
     {
@@ -148,7 +158,8 @@ class UploadFile
     /**
      * 检测上传根目录
      *
-     * @return void
+     * @throws UploadException
+     * @return boolean
      */
     protected function checkRootPath()
     {
@@ -161,8 +172,9 @@ class UploadFile
     /**
      * 检测文件
      *
-     * @param [type] $file  文件路径
-     * @return void
+     * @param string $file  文件路径
+     * @throws UploadException
+     * @return boolean
      */
     protected function checkFile($file)
     {
@@ -196,7 +208,8 @@ class UploadFile
     /**
      * 检测图片
      *
-     * @param [type] $file 文件路径
+     * @param string $file 文件路径
+     * @throws UploadException
      * @return void
      */
     protected function checkImg($file)
@@ -215,10 +228,10 @@ class UploadFile
     /**
      * 检查文件大小是否合法
      *
-     * @param [type] $size  文件大小
-     * @return void
+     * @param integer $size  文件大小
+     * @return boolean
      */
-    protected function checkSize($size)
+    protected function checkSize(int $size)
     {
         return !($size > $this->config['maxSize']) || (0 == $this->config['maxSize']);
     }
@@ -226,8 +239,8 @@ class UploadFile
     /**
      * 检查上传的文件MIME类型是否合法
      *
-     * @param [type] $mime  文件类型
-     * @return void
+     * @param string $mime  文件类型
+     * @return boolean
      */
     protected function checkMime($mime)
     {
@@ -237,8 +250,8 @@ class UploadFile
     /**
      * 检查上传的文件后缀是否合法
      *
-     * @param [type] $ext   文件后缀
-     * @return void
+     * @param string $ext   文件后缀
+     * @return boolean
      */
     private function checkExt($ext)
     {
@@ -248,7 +261,8 @@ class UploadFile
     /**
      * 获取错误代码信息
      *
-     * @param string $errorNo  错误号
+     * @param integer $errorNo  错误号
+     * @return string
      */
     protected function uploadErrorMsg($errorNo)
     {

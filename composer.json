@@ -1,7 +1,7 @@
 {
     "name": "mongdch/mon-util",
     "description": "The php common utils.",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "license": "Apache-2.0",
     "keywords": [
         "php",
@@ -19,6 +19,9 @@
     "autoload": {
         "psr-4": {
             "mon\\util\\": "src/"
-        }
+        },
+        "files": [
+            "src/function.php"
+        ]
     }
 }

@@ -94,7 +94,7 @@ class Validate
 	/**
 	 * 当前校验的场景
 	 *
-	 * @var [type]
+	 * @var mixed
 	 */
 	public $checkScope = null;
 
@@ -120,7 +120,7 @@ class Validate
 	 * 执行数据验证
 	 *
 	 * @param array $data	验证的数据
-	 * @return void
+	 * @return true|mixed
 	 */
 	public function check(array $data = [])
 	{
@@ -194,7 +194,7 @@ class Validate
 	 * 设置本次数据的验证规则
 	 *
 	 * @param array $rule	验证规则
-	 * @return void
+	 * @return Validate
 	 */
 	public function rule(array $rule = [])
 	{
@@ -207,7 +207,7 @@ class Validate
 	 * 设置需要验证的数据
 	 *
 	 * @param array $data	验证的数据
-	 * @return void
+	 * @return Validate
 	 */
 	public function data(array $data = [])
 	{
@@ -220,7 +220,7 @@ class Validate
 	 * 设置错误提示信息
 	 *
 	 * @param array $message 错误信息
-	 * @return [type]          [description]
+	 * @return Validate
 	 */
 	public function message($message = [])
 	{
@@ -233,7 +233,7 @@ class Validate
 	 * 设置校验场景
 	 *
 	 * @param string $item 查询场景名称
-	 * @return [type]       [description]
+	 * @return Validate
 	 */
 	public function scope($item)
 	{
@@ -252,9 +252,9 @@ class Validate
 	/**
 	 * 解析规则
 	 *
-	 * @param [type] $value	验证的值
-	 * @param [type] $rule	对应的验证规则
-	 * @return void
+	 * @param mixed $value	验证的值
+	 * @param mixed $rule	对应的验证规则
+	 * @return mixed
 	 */
 	protected function analysis($value, $rule)
 	{
@@ -281,10 +281,10 @@ class Validate
 	/**
 	 * 验证数据
 	 *
-	 * @param [type] $value		验证值
-	 * @param [type] $rule		验证规则
-	 * @param [type] $rule_data	规则参数
-	 * @return void
+	 * @param mixed $value		验证值
+	 * @param mixed $rule		验证规则
+	 * @param mixed $rule_data	规则参数
+	 * @return mixed
 	 */
 	protected function checkItem($value, $rule, $rule_data = null)
 	{
@@ -300,8 +300,8 @@ class Validate
 	/**
 	 * 获取数组或字符串长度
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return integer
 	 */
 	protected function getLength($value)
 	{
@@ -319,8 +319,8 @@ class Validate
 	/**
 	 * 不能为空
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function required($value)
 	{
@@ -330,9 +330,9 @@ class Validate
 	/**
 	 * 最大值
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @param  [type] $max   验证的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @param  mixed $max   验证的数据
+	 * @return boolean
 	 */
 	public function max($value, $max)
 	{
@@ -342,9 +342,9 @@ class Validate
 	/**
 	 * 最小值
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @param  [type] $min   验证的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @param  mixed $min   验证的数据
+	 * @return boolean
 	 */
 	public function min($value, $min)
 	{
@@ -354,9 +354,9 @@ class Validate
 	/**
 	 * 指定长度(数组或字符串)
 	 *
-	 * @param  [type] $value  操作的数据
-	 * @param  [type] $length 验证的数据
-	 * @return [type]         [description]
+	 * @param  mixed $value  操作的数据
+	 * @param  mixed $length 验证的数据
+	 * @return boolean
 	 */
 	public function length($value, $length)
 	{
@@ -366,9 +366,9 @@ class Validate
 	/**
 	 * 最大长度(数组或字符串)
 	 *
-	 * @param  [type] $value		操作的数据
-	 * @param  [type] $maxLength	验证的数据
-	 * @return [type]        		[description]
+	 * @param  mixed $value		操作的数据
+	 * @param  mixed $maxLength	验证的数据
+	 * @return boolean
 	 */
 	public function maxLength($value, $maxLength)
 	{
@@ -378,9 +378,9 @@ class Validate
 	/**
 	 * 最小长度(数组或字符串)
 	 *
-	 * @param  [type] $value     操作的数据
-	 * @param  [type] $minLength 验证的数据
-	 * @return [type]            [description]
+	 * @param  mixed $value     操作的数据
+	 * @param  mixed $minLength 验证的数据
+	 * @return boolean
 	 */
 	public function minLength($value, $minLength)
 	{
@@ -390,8 +390,8 @@ class Validate
 	/**
 	 * 验证是否为一个有效的日期
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function date($value)
 	{
@@ -401,8 +401,8 @@ class Validate
 	/**
 	 * 验证是否为一个有效的时间戳
 	 *
-	 * @param [type] $value	操作的数据
-	 * @return void
+	 * @param mixed $value	操作的数据
+	 * @return boolean
 	 */
 	public function timestamp($value)
 	{
@@ -412,9 +412,9 @@ class Validate
 	/**
 	 * 最后日期
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @param  [type] $date  验证的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @param  mixed $date  验证的数据
+	 * @return boolean
 	 */
 	public function after($value, $date)
 	{
@@ -424,9 +424,9 @@ class Validate
 	/**
 	 * 最早日期
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @param  [type] $date  验证的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @param  mixed $date  验证的数据
+	 * @return boolean
 	 */
 	public function before($value, $date)
 	{
@@ -436,9 +436,9 @@ class Validate
 	/**
 	 * 正则验证
 	 *
-	 * @param  [type] $value  操作的数据
-	 * @param  [type] $regexp 验证的数据
-	 * @return [type]         [description]
+	 * @param  mixed $value  操作的数据
+	 * @param  mixed $regexp 验证的数据
+	 * @return boolean
 	 */
 	public function regexp($value, $regexp)
 	{
@@ -454,8 +454,8 @@ class Validate
 	/**
 	 * IP地址
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function ip($value)
 	{
@@ -465,8 +465,8 @@ class Validate
 	/**
 	 * 手机号码
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function moble($value)
 	{
@@ -476,8 +476,8 @@ class Validate
 	/**
 	 * 固定电话
 	 *
-	 * @param [type] $value 操作的数据
-	 * @return void
+	 * @param mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function tel($value)
 	{
@@ -487,8 +487,8 @@ class Validate
 	/**
 	 * 邮箱地址
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function email($value)
 	{
@@ -498,8 +498,8 @@ class Validate
 	/**
 	 * 中文，只支持UTF-8格式编码
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function china($value)
 	{
@@ -509,8 +509,8 @@ class Validate
 	/**
 	 * 字母和数字
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function language($value)
 	{
@@ -520,8 +520,8 @@ class Validate
 	/**
 	 * 字母
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function alpha($value)
 	{
@@ -531,8 +531,8 @@ class Validate
 	/**
 	 * 小写字母
 	 *
-	 * @param [type] $value 操作的数据
-	 * @return void
+	 * @param mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function lower($value)
 	{
@@ -542,8 +542,8 @@ class Validate
 	/**
 	 * 大写字母
 	 *
-	 * @param [type] $value 操作的数据
-	 * @return void
+	 * @param mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function upper($value)
 	{
@@ -553,8 +553,8 @@ class Validate
 	/**
 	 * 只允许字母、数字和下划线 破折号
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function account($value)
 	{
@@ -564,8 +564,8 @@ class Validate
 	/**
 	 * 大于0的正整数
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function id($value)
 	{
@@ -575,8 +575,8 @@ class Validate
 	/**
 	 * 有效URL
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function url($value)
 	{
@@ -586,8 +586,8 @@ class Validate
 	/**
 	 * 浮点数
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function float($value)
 	{
@@ -597,8 +597,8 @@ class Validate
 	/**
 	 * 整数
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function int($value)
 	{
@@ -608,8 +608,8 @@ class Validate
 	/**
 	 * 数字
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function num($value)
 	{
@@ -619,8 +619,8 @@ class Validate
 	/**
 	 * 字符串
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function str($value)
 	{
@@ -630,8 +630,8 @@ class Validate
 	/**
 	 * 数组
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function arr($value)
 	{
@@ -641,8 +641,8 @@ class Validate
 	/**
 	 * JSON
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function json($value)
 	{
@@ -652,8 +652,8 @@ class Validate
 	/**
 	 * XML
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @return boolean
 	 */
 	public function xml($value)
 	{
@@ -669,9 +669,9 @@ class Validate
 	/**
 	 * 只允许某些值
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @param  [type] $in    验证的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @param  mixed $in    验证的数据
+	 * @return boolean
 	 */
 	public function in($value, $in)
 	{
@@ -681,9 +681,9 @@ class Validate
 	/**
 	 * 不允许某些值
 	 *
-	 * @param  [type] $value 操作的数据
-	 * @param  [type] $notin 验证的数据
-	 * @return [type]        [description]
+	 * @param  mixed $value 操作的数据
+	 * @param  mixed $notin 验证的数据
+	 * @return boolean
 	 */
 	public function notIn($value, $notin)
 	{

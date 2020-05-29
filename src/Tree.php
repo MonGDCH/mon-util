@@ -13,7 +13,7 @@ class Tree
     /**
      * 本类单例
      * 
-     * @var [type]
+     * @var Tree
      */
     protected static $instance;
 
@@ -45,7 +45,7 @@ class Tree
     /**
      * 单例初始化
      *
-     * @return Auth
+     * @return Tree
      */
     public static function instance()
     {
@@ -68,7 +68,7 @@ class Tree
      * 树初始化配置，支持链式操作
      *
      * @param  array $config   配置信息
-     * @return [type]       [description]
+     * @return Tree
      */
     public function init($config = array())
     {
@@ -82,7 +82,7 @@ class Tree
      * 设置操作的data数组, 支持链式操作
      *
      * @param  array  $arr [description]
-     * @return [type]      [description]
+     * @return Tree
      */
     public function data($arr)
     {
@@ -93,8 +93,8 @@ class Tree
     /**
      * 获取对应子级数据
      *
-     * @param  int    $pid 子级对应父级的PID
-     * @return [type]      [description]
+     * @param  integer  $pid 子级对应父级的PID
+     * @return array
      */
     public function getChild($pid)
     {
@@ -115,9 +115,9 @@ class Tree
     /**
      * 递归获取对应所有子级后代的数据
      *
-     * @param  int     $pid  子级对应父级的PID
+     * @param  integer $pid  子级对应父级的PID
      * @param  boolean $self 是否包含自身
-     * @return [type]        [description]
+     * @return array
      */
     public function getChildren($pid, $self = false)
     {
@@ -143,9 +143,9 @@ class Tree
     /**
      * 获取对应所有后代ID
      *
-     * @param  int     $pid  子级对应父级的PID
+     * @param  integer $pid  子级对应父级的PID
      * @param  boolean $self 是否包含自身
-     * @return [type]        [description]
+     * @return array
      */
     public function getChildrenIds($pid, $self = false)
     {
@@ -161,8 +161,8 @@ class Tree
     /**
      * 获取当前节点对应父级数据
      *
-     * @param  int    $id 节点ID
-     * @return boolean     [description]
+     * @param  integer $id 节点ID
+     * @return array
      */
     public function getParent($id)
     {
@@ -201,9 +201,9 @@ class Tree
     /**
      * 递归获取当前节点所有父级数据
      *
-     * @param  int     $id   节点ID
+     * @param  integer $id   节点ID
      * @param  boolean $self 是否包含自身
-     * @return [type]        [description]
+     * @return array
      */
     public function getParents($id, $self = false)
     {
@@ -236,9 +236,9 @@ class Tree
     /**
      * 递归获取当前节点所有父级ID
      *
-     * @param  int     $id   节点ID
+     * @param  integer $id   节点ID
      * @param  boolean $self 是否包含自身
-     * @return [type]        [description]
+     * @return array
      */
     public function getParentsIds($id, $self)
     {
@@ -255,7 +255,7 @@ class Tree
      * 组成树结构
      *
      * @param  string $mark 子级标志位
-     * @return [type]       [description]
+     * @return array
      */
     public function getTree($mark = 'child')
     {
@@ -286,7 +286,7 @@ class Tree
      *
      * @param  array  $data [description]
      * @param  string $mark [description]
-     * @return [type]       [description]
+     * @return array
      */
     public function rollbackTree($data, $mark = 'child')
     {

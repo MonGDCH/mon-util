@@ -8,7 +8,7 @@ use Exception;
  * 单例trait
  *
  * @author Mon 985558837@qq.com
- * @version 1.0
+ * @version 1.0.0
  */
 trait Instance
 {
@@ -22,7 +22,7 @@ trait Instance
     /**
      * 获取单例
      *
-     * @param array $options
+     * @param array $options 初始化参数
      * @return static
      */
     public static function instance($options = [])
@@ -36,9 +36,9 @@ trait Instance
     /**
      * 静态调用支持
      *
-     * @param  string $method [description]
-     * @param  array  $params [description]
-     * @return [type]         [description]
+     * @param  string $method 方法名
+     * @param  array  $params 参数
+     * @return mixed
      */
     public static function __callStatic($method, $params)
     {

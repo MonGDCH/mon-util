@@ -1,5 +1,9 @@
 <?php
 
+namespace mon\util;
+
+use PDO;
+
 /**
  * mysql数据字典
  * 
@@ -11,7 +15,7 @@ class Dictionary
     /**
      * Mysql链接实例
      *
-     * @var [type]
+     * @var PDO
      */
     protected $db;
 
@@ -91,7 +95,7 @@ class Dictionary
     /**
      * 获取DB链接
      *
-     * @return PDO链接
+     * @return PDO
      */
     protected function getDB()
     {
@@ -130,7 +134,7 @@ class Dictionary
     /**
      * 获取所有表
      *
-     * @return void
+     * @return array
      */
     public function getTable()
     {
@@ -147,7 +151,7 @@ class Dictionary
     /**
      * 获取所有表信息
      *
-     * @return void
+     * @return array
      */
     public function getTableInfo()
     {
@@ -187,7 +191,7 @@ class Dictionary
      * 获取内容
      *
      * @param boolean $menu 是否需要菜单
-     * @return void
+     * @return string
      */
     public function getContent($menu = true)
     {
@@ -277,7 +281,7 @@ class Dictionary
     /**
      * 获取HTML内容
      *
-     * @return void
+     * @return string
      */
     public function getHTML()
     {
@@ -332,4 +336,3 @@ class Dictionary
         echo $this->getHTML();
     }
 }
-

@@ -13,9 +13,9 @@ class Date
     /**
      * 单例实体
      *
-     * @var null
+     * @var Date
      */
-    protected static $instance = null;
+    protected static $instance;
 
     /**
      * 日期的时间戳
@@ -133,7 +133,7 @@ class Date
      * 获取单例
      *
      * @param array $options 日期
-     * @return static
+     * @return Date
      */
     public static function instance($options = null)
     {
@@ -147,6 +147,7 @@ class Date
      * 构造方法
      *
      * @param string $date 日期
+     * @return void
      */
     public function __construct($date = '')
     {
@@ -157,8 +158,8 @@ class Date
     /**
      * 日期分析，获取时间戳
      *
-     * @param  [type] $date 日期
-     * @return string       时间戳
+     * @param  mixed $date 日期
+     * @return string 时间戳
      */
     public function parse($date)
     {
@@ -189,6 +190,7 @@ class Date
      * 日期相关参数设置
      *
      * @param integer $date 日期时间戳
+     * @return Date
      */
     public function setDate($date)
     {

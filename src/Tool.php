@@ -6,14 +6,14 @@ namespace mon\util;
  * 常用工具类(数据渲染)
  *
  * @author Mon <98558837@qq.com>
- * @version v1.0
+ * @version v1.0.0
  */
 class Tool
 {
     /**
      * 本类单例
      * 
-     * @var [type]
+     * @var Tool
      */
     protected static $instance;
 
@@ -67,7 +67,7 @@ class Tool
     /**
      * 判断是否为微信浏览器发起的请求
      *
-     * @return boolean [description]
+     * @return boolean
      */
     public function is_wx()
     {
@@ -81,7 +81,7 @@ class Tool
     /**
      * 判断是否为安卓发起的请求
      *
-     * @return boolean [description]
+     * @return boolean
      */
     public function is_android()
     {
@@ -95,7 +95,7 @@ class Tool
     /**
      * 判断是否为苹果发起的请求
      *
-     * @return boolean [description]
+     * @return boolean 
      */
     public function is_ios()
     {
@@ -112,7 +112,7 @@ class Tool
      * @param  string  $ticket  验证秘钥
      * @param  string  $salt    加密盐
      * @param  integer $expire  Cookie生存时间
-     * @return cookie&array
+     * @return array
      */
     public function createTicket($ticket, $salt = "MonUtil", $expire = 3600)
     {
@@ -136,7 +136,7 @@ class Tool
      * @param  string  $salt        加密盐
      * @param  boolean $destroy     是否清除Cookie
      * @param  integer $expire      Cookie生存时间
-     * @return bool
+     * @return boolean
      */
     public function checkTicket($ticket, $token = null, $tokenTime = null, $salt = "MonUtil", $destroy = true, $expire = 3600)
     {
@@ -172,9 +172,9 @@ class Tool
      * @param  array  $title     表格标题列表(生成："序号,姓名,性别,年龄\n")
      * @param  array  $titleKey  表格标题列表对应键名(注意：对应title排序)
      * @param  array  $data      导出数据
-     * @return file
+     * @return void
      */
-    public function exportCsv($filename, $title, $titleKey = array(), $data = array())
+    public function exportCsv($filename, $title, $titleKey = [], $data = [])
     {
         // 清空之前的输出
         ob_get_contents() && ob_end_clean();
@@ -216,7 +216,7 @@ class Tool
      * @param  array  $data     输出的数据
      * @param  string $root     根节点
      * @param  string $encoding 编码
-     * @return [type]           [description]
+     * @return string
      */
     public function exportXML(array $data, $root = "Mon", $encoding = 'UTF-8')
     {
@@ -235,7 +235,7 @@ class Tool
      * 递归转换数组数据为XML，只作为exportXML的辅助方法使用
      *
      * @param  array  $data 输出的数据
-     * @return [type]       [description]
+     * @return string
      */
     public function dataToXML(array $data)
     {
@@ -253,7 +253,7 @@ class Tool
      * 隐藏银行卡号
      *
      * @param  string $id 银行卡号
-     * @return [type]     [description]
+     * @return string
      */
     public function hideBankcard($id)
     {
@@ -271,7 +271,7 @@ class Tool
      * 隐藏手机号
      *
      * @param  string $id 手机号
-     * @return [type]     [description]
+     * @return string
      */
     public function hideMoble($id)
     {
@@ -314,7 +314,7 @@ class Tool
         if (empty($string)) {
             return false;
         }
-        $strarr = array();
+        $strarr = [];
         $mb_strlen = mb_strlen($string);
         while ($mb_strlen) {
             $strarr[] = mb_substr($string, 0, 1, 'utf8');
@@ -347,7 +347,7 @@ class Tool
      * @param  integer  $port   端口
      * @param  string   $cmd    发送的内容套接字
      * @param  string   &$iRecv 引用返回的响应内容
-     * @return [type]         [description]
+     * @return void
      */
     public function sendCmdTCP($ip, $port, $cmd, &$iRecv)
     {
@@ -367,7 +367,7 @@ class Tool
      * @param  integer  $port    端口
      * @param  string   $cmd     发送的内容套接字
      * @param  string   &$result 引用返回的响应内容
-     * @return [type]       [description]
+     * @return boolean
      */
     public static function sendCmdUDP($ip, $port, $cmd, &$result)
     {
