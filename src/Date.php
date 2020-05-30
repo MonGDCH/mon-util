@@ -2,6 +2,8 @@
 
 namespace mon\util;
 
+use mon\util\Instance;
+
 /**
  * 时间日期相关操作
  *
@@ -10,12 +12,7 @@ namespace mon\util;
  */
 class Date
 {
-    /**
-     * 单例实体
-     *
-     * @var Date
-     */
-    protected static $instance;
+    use Instance;
 
     /**
      * 日期的时间戳
@@ -128,20 +125,6 @@ class Date
      * @var array
      */
     protected $Week = array("日", "一", "二", "三", "四", "五", "六");
-
-    /**
-     * 获取单例
-     *
-     * @param array $options 日期
-     * @return Date
-     */
-    public static function instance($options = null)
-    {
-        if (is_null(self::$instance)) {
-            self::$instance = new self($options);
-        }
-        return self::$instance;
-    }
 
     /**
      * 构造方法

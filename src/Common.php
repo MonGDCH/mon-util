@@ -2,6 +2,8 @@
 
 namespace mon\util;
 
+use mon\util\Instance;
+
 /**
  * 公共工具类库(数据处理)
  *
@@ -10,26 +12,7 @@ namespace mon\util;
  */
 class Common
 {
-    /**
-     * 本类单例
-     * 
-     * @var Common
-     */
-    protected static $instance;
-
-    /**
-     * 单例初始化
-     *
-     * @return Common
-     */
-    public static function instance()
-    {
-        if (is_null(self::$instance)) {
-            self::$instance = new static();
-        }
-
-        return self::$instance;
-    }
+    use Instance;
 
     /**
      * 字符串编码过滤（中文、英文、数字不过滤，只过滤特殊字符）
@@ -281,7 +264,7 @@ class Common
     }
 
     /**
-     * 字符串转数组
+     * URI字符串转数组
      *
      * @param  string $str 入参，待转换的字符串
      * @return array 字符数组
@@ -307,7 +290,7 @@ class Common
      * @param  array $map 入参，待转换的数组
      * @return string
      */
-    public function mapToStr($map)
+    public function mapToStr(array $map)
     {
         $str = "";
         if (!empty($map)) {
@@ -325,7 +308,7 @@ class Common
      * @param  array $arr    需要去重的数组
      * @return array
      */
-    public function array_2D_unique($arr)
+    public function array_2D_unique(array $arr)
     {
         foreach ($arr as $v) {
             // 降维,将一维数组转换为用","连接的字符串.
@@ -351,7 +334,7 @@ class Common
      * @param  array $arr    需要去重的数组
      * @return array
      */
-    public function array_2D_value_unique($arr)
+    public function array_2D_value_unique(array $arr)
     {
         $tmp = array();
         foreach ($arr as $k => $v) {
@@ -465,7 +448,7 @@ class Common
      * @param string $suffix    截断显示字符
      * @return string
      */
-    public function msubstr($str, $start = 0, $length, $charset = "utf-8", $suffix = true)
+    public function msubstr($str, $length, $start = 0, $charset = "utf-8", $suffix = true)
     {
         if (function_exists("mb_substr")) {
             $slice = mb_substr($str, $start, $length, $charset);
@@ -539,7 +522,7 @@ class Common
     /**
      * 递归转换字符集
      *
-     * @param  string $data         要转换的数据
+     * @param  mixed  $data         要转换的数据
      * @param  string $out_charset  输出编码
      * @param  string $in_charset   输入编码
      * @return mixed

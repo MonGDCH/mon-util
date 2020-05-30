@@ -10,6 +10,7 @@
 
 use mon\util\Tool;
 use mon\util\Common;
+use mon\util\Validate;
 
 if (!function_exists('debug')) {
     /**
@@ -278,5 +279,186 @@ if (!function_exists('Kmod')) {
     function Kmod($bn, $sn)
     {
         return Common::instance()->Kmod($bn, $sn);
+    }
+}
+
+if (!function_exists('ip2long_positive')) {
+    /**
+     * 返回正数的ip2long值
+     *
+     * @param  string $ip ip
+     * @return integer
+     */
+    function ip2long_positive($ip)
+    {
+        return Common::instance()->ip2long_positive($ip);
+    }
+}
+
+if (!function_exists('strToMap')) {
+    /**
+     * URI字符串转数组
+     *
+     * @param  string $str 入参，待转换的字符串
+     * @return array 字符数组
+     */
+    function strToMap($str)
+    {
+        return Common::instance()->strToMap($str);
+    }
+}
+
+if (!function_exists('mapToStr')) {
+    /**
+     * 数组转字符串
+     *
+     * @param  array $map 入参，待转换的数组
+     * @return string
+     */
+    function mapToStr($map)
+    {
+        return Common::instance()->mapToStr($map);
+    }
+}
+
+if (!function_exists('array_2D_unique')) {
+    /**
+     * 二维数组去重(键&值不能完全相同)
+     *
+     * @param  array $arr    需要去重的数组
+     * @return array
+     */
+    function array_2D_unique($arr)
+    {
+        return Common::instance()->array_2D_unique($arr);
+    }
+}
+
+if (!function_exists('array_2D_value_unique')) {
+    /**
+     * 二维数组去重(值不能相同)
+     *
+     * @param  array $arr    需要去重的数组
+     * @return array
+     */
+    function array_2D_value_unique($arr)
+    {
+        return Common::instance()->array_2D_value_unique($arr);
+    }
+}
+
+if (!function_exists('isAssoc')) {
+    /**
+     * 是否为关联数组
+     *
+     * @param  array   $array 验证码的数组
+     * @return boolean
+     */
+    function isAssoc($arr)
+    {
+        return Common::instance()->isAssoc($arr);
+    }
+}
+
+if (!function_exists('get_first_char')) {
+    /**
+     * php获取中文字符拼音首字母
+     *
+     * @param  string $str 中文字符串
+     * @return string
+     */
+    function get_first_char($str)
+    {
+        return Common::instance()->get_first_char($str);
+    }
+}
+
+if (!function_exists('uuid')) {
+    /**
+     * 生成UUID 单机使用
+     *
+     * @return string
+     */
+    function uuid()
+    {
+        return Common::instance()->uuid();
+    }
+}
+
+if (!function_exists('keyGen')) {
+    /**
+     * 生成Guid主键
+     *
+     * @return string
+     */
+    function keyGen()
+    {
+        return Common::instance()->keyGen();
+    }
+}
+
+if (!function_exists('msubstr')) {
+    /**
+     * 字符串截取，支持中文和其他编码
+     *
+     * @param string $str       需要转换的字符串
+     * @param string $start     开始位置
+     * @param string $length    截取长度
+     * @param string $charset   编码格式
+     * @param string $suffix    截断显示字符
+     * @return string
+     */
+    function msubstr($str, $length, $start = 0, $charset = "utf-8", $suffix = true)
+    {
+        return Common::instance()->msubstr($str, $start, $length, $charset, $suffix);
+    }
+}
+
+if (!function_exists('randString')) {
+    /**
+     * 产生随机字串，可用来自动生成密码
+     * 默认长度6位 字母和数字混合 支持中文
+     *
+     * @param string $len       长度
+     * @param string $type      字串类型，0:字母;1:数字;2:大写字母;3:小写字母;4:中文;5:字母数字混合;othor:过滤掉混淆字符的字母数字组合
+     * @param string $addChars  额外字符
+     * @return string
+     */
+    function randString($len = 6, $type = '', $addChars = '')
+    {
+        return Common::instance()->randString($len, $type, $addChars);
+    }
+}
+
+if (!function_exists('iconv_recursion')) {
+    /**
+     * 递归转换字符集
+     *
+     * @param  mixed  $data         要转换的数据
+     * @param  string $out_charset  输出编码
+     * @param  string $in_charset   输入编码
+     * @return mixed
+     */
+    function iconv_recursion($data, $out_charset, $in_charset)
+    {
+        return Common::instance()->iconv_recursion($data, $out_charset, $in_charset);
+    }
+}
+
+if (!function_exists('check')) {
+    /**
+     * 验证格式
+     *
+     * @param string $type  格式类型，支持validate类的默认的所有方式
+     * @param array $args   可变参数
+     * @return boolean
+     */
+    function check($type, ...$args)
+    {
+        $validate = Validate::instance();
+        if (method_exists($validate, $type)) {
+            return call_user_func_array([$validate, $type], (array) $args);
+        }
+        throw \Exception('不支持的验证类型[' . $type . ']');
     }
 }

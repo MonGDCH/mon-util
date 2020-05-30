@@ -2,6 +2,8 @@
 
 namespace mon\util;
 
+use mon\util\Instance;
+
 /**
  * 常用工具类(数据渲染)
  *
@@ -10,26 +12,7 @@ namespace mon\util;
  */
 class Tool
 {
-    /**
-     * 本类单例
-     * 
-     * @var Tool
-     */
-    protected static $instance;
-
-    /**
-     * 单例初始化
-     *
-     * @return Tool
-     */
-    public static function instance()
-    {
-        if (is_null(self::$instance)) {
-            self::$instance = new static();
-        }
-
-        return self::$instance;
-    }
+    use Instance;
 
     /**
      * 调试方法(浏览器友好处理)

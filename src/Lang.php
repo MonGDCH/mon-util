@@ -2,6 +2,8 @@
 
 namespace mon\util;
 
+use mon\util\Instance;
+
 /**
  * 多语言控制
  * 
@@ -10,6 +12,8 @@ namespace mon\util;
  */
 class Lang
 {
+    use Instance;
+
     /**
      * 语言信息
      *

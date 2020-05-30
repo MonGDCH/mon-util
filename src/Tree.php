@@ -2,6 +2,8 @@
 
 namespace mon\util;
 
+use mon\util\Instance;
+
 /**
  * 树结构数据操作类
  *
@@ -10,12 +12,7 @@ namespace mon\util;
  */
 class Tree
 {
-    /**
-     * 本类单例
-     * 
-     * @var Tree
-     */
-    protected static $instance;
+    use Instance;
 
     /**
      * 生成树型结构所需要的2维数组
@@ -30,31 +27,22 @@ class Tree
      * @var array
      */
     protected $config = array(
-        // 'nbsp'      => "&nbsp;",        // 空格替换
-        'nbsp'      => "　",        // 空格替换
-        'id'        => 'id',            // 主键
-        'pid'       => 'pid',           // 子ID键
-        'root'      => 0,               // 顶级子ID
-        'icon'      => array('│', '├', '└'),    // 分级前缀
-        'tpl'       => array(                   // html生成模板
+        // 空格替换
+        'nbsp'      => "　",
+        // 主键 
+        'id'        => 'id',
+        // 子ID键       
+        'pid'       => 'pid',
+        // 顶级子ID
+        'root'      => 0,
+        // 分级前缀
+        'icon'      => array('│', '├', '└'),
+        // html生成模板
+        'tpl'       => array(
             'ul'    => '<li value="@id" @selected @disabled>@name @childlist</li>',
             'option' => '<option value="@id" @selected @disabled>@spacer@name</option>',
         ),
     );
-
-    /**
-     * 单例初始化
-     *
-     * @return Tree
-     */
-    public static function instance()
-    {
-        if (is_null(self::$instance)) {
-            self::$instance = new static();
-        }
-
-        return self::$instance;
-    }
 
     /**
      * 架构初始化
