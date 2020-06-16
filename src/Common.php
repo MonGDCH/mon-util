@@ -363,6 +363,24 @@ class Common
     }
 
     /**
+     * 二维数组排序
+     *
+     * @param array $array  排序的数组
+     * @param string $keys  排序的键名
+     * @param integer $sort 排序方式，默认值：SORT_DESC
+     * @return void
+     */
+    public function array2DSort($array, $keys, $sort = SORT_DESC)
+    {
+        $keysValue = [];
+        foreach ($array as $k => $v) {
+            $keysValue[$k] = $v[$keys];
+        }
+        array_multisort($keysValue, $sort, $array);
+        return $array;
+    }
+
+    /**
      * php获取中文字符拼音首字母
      *
      * @param  string $str 中文字符串

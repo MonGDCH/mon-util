@@ -360,6 +360,21 @@ if (!function_exists('isAssoc')) {
     }
 }
 
+if (!function_exists('array2DSort')) {
+    /**
+     * 二维数组排序
+     *
+     * @param array $array  排序的数组
+     * @param string $keys  排序的键名
+     * @param integer $sort 排序方式，默认值：SORT_DESC
+     * @return void
+     */
+    function array2DSort($array, $keys, $sort = SORT_DESC)
+    {
+        return Common::instance()->array2DSort($array, $keys, $sort);
+    }
+}
+
 if (!function_exists('get_first_char')) {
     /**
      * php获取中文字符拼音首字母

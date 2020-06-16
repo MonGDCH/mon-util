@@ -24,6 +24,10 @@ composer require mongdch/mon-util
 
 ## 版本
 
+### 1.2.1
+
+* 优化代码
+
 ### 1.2.0
 
 * 优化代码，增加注解

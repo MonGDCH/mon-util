@@ -231,7 +231,7 @@ class UploadFile
      * @param integer $size  文件大小
      * @return boolean
      */
-    protected function checkSize(int $size)
+    protected function checkSize($size)
     {
         return !($size > $this->config['maxSize']) || (0 == $this->config['maxSize']);
     }
