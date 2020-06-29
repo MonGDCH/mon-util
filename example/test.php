@@ -18,3 +18,10 @@ debug($c);
 debug(Date::instance('2020-05-31')->getDayOfWeek(1)->format());
 
 debug(randString(12));
+
+$ip = '192.168.1.123';
+debug(check('ip', $ip));
+
+debug(check('email', '988855@qq.com'));
+
+debug(safe_ip($ip, '127.0.0.1,192.168.*.*'));

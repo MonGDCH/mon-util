@@ -188,6 +188,20 @@ if (!function_exists('trimall')) {
     }
 }
 
+if (!function_exists('safe_ip')) {
+    /**
+     * 安全IP检测，支持IP段检测
+     *
+     * @param string $ip 要检测的IP，','分割
+     * @param string|array $ips  白名单IP或者黑名单IP
+     * @return boolean true 在白名单或者黑名单中，否则不在
+     */
+    function safe_ip($ip, $ips)
+    {
+        return Tool::instance()->safe_ip($ip, $ips);
+    }
+}
+
 if (!function_exists('encodeEX')) {
     /**
      * 字符串编码过滤（中文、英文、数字不过滤，只过滤特殊字符）

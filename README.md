@@ -24,6 +24,11 @@ composer require mongdch/mon-util
 
 ## 版本
 
+### 1.2.2
+
+* 优化代码，使用PHP自带的filter_var方法验证邮件及IP类型
+* 增加Tool类safe_ip方法，用于验证IP白名单或黑名单
+
 ### 1.2.1
 
 * 优化代码

@@ -108,10 +108,8 @@ class Validate
 	 * @var array
 	 */
 	protected $regex = [
-		'ip'		=> '/((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)/',
 		'moble'		=> '/^[1][3456789][0-9]{9}$/',
 		'tel'		=> '/^(0\d{2,3}-\d{7,8})(-\d{1,4})?$/',
-		'email'		=> '/^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/',
 		'china'		=> '/^[\x{4e00}-\x{9fa5}]+$/u',	// 中文
 		'language'	=> '/^\w*$/',					// 英文数字
 		'alpha'		=> '/^[A-Za-z]+$/',				// 只允许英文
@@ -463,7 +461,7 @@ class Validate
 	 */
 	public function ip($value)
 	{
-		return preg_match($this->regex['ip'], $value) === 1;
+		return false !== filter_var($value, FILTER_VALIDATE_IP);
 	}
 
 	/**
@@ -496,7 +494,7 @@ class Validate
 	 */
 	public function email($value)
 	{
-		return preg_match($this->regex['email'], $value) === 1;
+		return false !== filter_var($value, FILTER_VALIDATE_EMAIL);
 	}
 
 	/**
