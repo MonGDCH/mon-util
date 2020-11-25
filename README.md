@@ -24,6 +24,12 @@ composer require mongdch/mon-util
 
 ## 版本
 
+### 1.2.3
+
+* 优化验证器，验证器规则支持数组定义
+* 增加Qrcode二维码工具类、增加Tool类getDistance方法用于获取两个坐标距离
+* 增加Tool类exportZip、unZip、qrcode等方法，同步支持直接方法名调用
+
 ### 1.2.2
 
 * 优化代码，使用PHP自带的filter_var方法验证邮件及IP类型

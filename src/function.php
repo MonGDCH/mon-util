@@ -491,3 +491,66 @@ if (!function_exists('check')) {
         throw \Exception('不支持的验证类型[' . $type . ']');
     }
 }
+
+if (!function_exists('getDistance')) {
+    /**
+     * 获取两坐标距离
+     *
+     * @param float $lng1 经度1
+     * @param float $lat1 纬度1
+     * @param float $lng2 经度2
+     * @param float $lat2 纬度2
+     *
+     * @return float
+     */
+    function getDistance($lng1, $lat1, $lng2, $lat2)
+    {
+        return Tool::instance()->getDistance($lng1, $lat1, $lng2, $lat2);
+    }
+}
+
+if (!function_exists('exportZip')) {
+    /**
+     * 文件打包下载
+     *
+     * @param string $downloadZip 打包后下载的文件名
+     * @param array $list 打包文件组
+     * @return void
+     */
+    function exportZip($downloadZip, array $list)
+    {
+        return Tool::instance()->exportZip($downloadZip, $list);
+    }
+}
+
+if (!function_exists('unZip')) {
+    /**
+     * 解压压缩包
+     *
+     * @param string $zipName 要解压的压缩包
+     * @param string $dest 解压到指定目录
+     * @return boolean
+     */
+    function unZip($zipName, $dest)
+    {
+        return Tool::instance()->unZip($zipName, $dest);
+    }
+}
+
+if (!function_exists('qrcode')) {
+    /**
+     * 输入图片二维码
+     *
+     * @param string  $text 生成二维码的内容
+     * @param boolean|string $outfile 输入文件, false则不输入，字符串路径则表示保存路径
+     * @param integer $level 压缩错误级别
+     * @param integer $size 图片尺寸 0-3
+     * @param integer $margin 图片边距
+     * @param boolean $saveandprint 是否输入图片及保存文件
+     * @return void
+     */
+    function qrcode($text, $outfile = false, $level = 0, $size = 8, $margin = 1, $saveandprint = false)
+    {
+        return Tool::instance()->qrcode($text, $outfile, $level, $size, $margin, $saveandprint);
+    }
+}

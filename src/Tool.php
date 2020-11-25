@@ -400,4 +400,108 @@ class Tool
         }
         return true;
     }
+
+    /**
+     * 获取两坐标距离
+     *
+     * @param float $lng1 经度1
+     * @param float $lat1 纬度1
+     * @param float $lng2 经度2
+     * @param float $lat2 纬度2
+     *
+     * @return float
+     */
+    public function getDistance($lng1, $lat1, $lng2, $lat2)
+    {
+        $radLat1 = deg2rad($lat1);
+        $radLat2 = deg2rad($lat2);
+        $radLng1 = deg2rad($lng1);
+        $radLng2 = deg2rad($lng2);
+        $a = $radLat1 - $radLat2;
+        $b = $radLng1 - $radLng2;
+
+        return 2 * asin(sqrt(pow(sin($a / 2), 2) + cos($radLat1) * cos($radLat2) * pow(sin($b / 2), 2))) * 6378.137 * 1000;
+    }
+
+    /**
+     * 文件打包下载
+     *
+     * @param string $downloadZip 打包后下载的文件名
+     * @param array $list 打包文件组
+     * @return void
+     */
+    public function exportZip($downloadZip, array $list)
+    {
+        // 初始化Zip并打开
+        $zip = new \ZipArchive();
+        // 初始化
+        $bool = $zip->open($downloadZip, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        // 打开文件
+        if ($bool === TRUE) {
+            foreach ($list as $key => $val) {
+                // 把文件追加到Zip包并重命名  
+                // $zip->addFile($val[0]);
+                // $zip->renameName($val[0], $val[1]);
+
+                // 把文件追加到Zip包
+                $zip->addFile($val, basename($val));
+            }
+        } else {
+            throw \Exception('ZipArchive打开文件失败, Code：' . $bool);
+        }
+        // 关闭Zip对象
+        $zip->close();
+        // 下载Zip包
+        header('Cache-Control: max-age=0');
+        header('Content-Description: File Transfer');
+        header('Content-disposition: attachment; filename=' . basename($downloadZip));
+        header('Content-Type: application/zip');                     // zip格式的
+        header('Content-Transfer-Encoding: binary');                 // 二进制文件
+        header('Content-Length: ' . filesize($downloadZip));          // 文件大小
+        readfile($downloadZip);
+    }
+
+    /**
+     * 解压压缩包
+     *
+     * @param string $zipName 要解压的压缩包
+     * @param string $dest 解压到指定目录
+     * @return boolean
+     */
+    public function unZip($zipName, $dest)
+    {
+        // 检测要解压压缩包是否存在
+        if (!is_file($zipName)) {
+            return false;
+        }
+        // 检测目标路径是否存在
+        if (!is_dir($dest)) {
+            mkdir($dest, 0777, true);
+        }
+        // 初始化Zip并打开
+        $zip = new \ZipArchive();
+        // 打开并解压
+        if ($zip->open($zipName)) {
+            $zip->extractTo($dest);
+            $zip->close();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 输入图片二维码
+     *
+     * @param string  $text 生成二维码的内容
+     * @param boolean|string $outfile 输入文件, false则不输入，字符串路径则表示保存路径
+     * @param integer $level 压缩错误级别
+     * @param integer $size 图片尺寸 0-3
+     * @param integer $margin 图片边距
+     * @param boolean $saveandprint 是否输入图片及保存文件
+     * @return void
+     */
+    public function qrcode($text, $outfile = false, $level = 0, $size = 8, $margin = 1, $saveandprint = false)
+    {
+        return QRcode::png($text, $outfile, $level, $size, $margin, $saveandprint);
+    }
 }

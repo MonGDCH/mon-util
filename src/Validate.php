@@ -41,7 +41,7 @@ use mon\util\Instance;
  * @method xml 			验证XML
  *
  * @author Mon <985558837@qq.com>
- * @version v1.3
+ * @version v1.3.1
  */
 class Validate
 {
@@ -147,7 +147,7 @@ class Validate
 
 		foreach ($scopeRule as $dataItem => $rules) {
 			// 分割获取验证规则
-			$rule = explode("|", $rules);
+			$rule = is_array($rules) ? $rules : explode("|", $rules);
 			// 存在节点，验证节点
 			if (isset($this->data[$dataItem])) {
 				$value = $this->data[$dataItem];
@@ -263,7 +263,7 @@ class Validate
 		$resule = true;
 		foreach ($rule as $key => $type) {
 			// 分割获取规则参数，支持二维。例子：max:9
-			$item = explode(":", $type);
+			$item = explode(":", $type, 2);
 			if (count($item) > 1) {
 				$status = $this->checkItem($value, $item[0], $item[1]);
 			} else {
