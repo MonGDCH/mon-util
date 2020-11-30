@@ -148,7 +148,7 @@ class Common
         }
         $str = base64_decode(base64_decode(implode($temp)));
         $_arr = explode(".", $str);
-        return $_arr[1];
+        return isset($_arr[1]) ? $_arr[1] : null;
     }
 
     /**

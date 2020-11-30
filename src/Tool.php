@@ -447,7 +447,7 @@ class Tool
                 $zip->addFile($val, basename($val));
             }
         } else {
-            throw \Exception('ZipArchive打开文件失败, Code：' . $bool);
+            throw new \Exception('ZipArchive打开文件失败, Code：' . $bool);
         }
         // 关闭Zip对象
         $zip->close();
@@ -455,9 +455,9 @@ class Tool
         header('Cache-Control: max-age=0');
         header('Content-Description: File Transfer');
         header('Content-disposition: attachment; filename=' . basename($downloadZip));
-        header('Content-Type: application/zip');                     // zip格式的
-        header('Content-Transfer-Encoding: binary');                 // 二进制文件
-        header('Content-Length: ' . filesize($downloadZip));          // 文件大小
+        header('Content-Type: application/zip');                // zip格式的
+        header('Content-Transfer-Encoding: binary');            // 二进制文件
+        header('Content-Length: ' . filesize($downloadZip));    // 文件大小
         readfile($downloadZip);
     }
 
@@ -503,5 +503,51 @@ class Tool
     public function qrcode($text, $outfile = false, $level = 0, $size = 8, $margin = 1, $saveandprint = false)
     {
         return QRcode::png($text, $outfile, $level, $size, $margin, $saveandprint);
+    }
+
+    /**
+     * 下载保存文件
+     *
+     * @param string $url   下载的文件路径
+     * @param string $savePath  保存的文件路径
+     * @param string $filename  保存的文件名称
+     * @param boolean $createDir    是否自动创建二级目录进行保存
+     * @throws Exception
+     * @return string
+     */
+    public function download($url, $savePath, $filename = '', $createDir = true)
+    {
+        $path = $createDir ? ($savePath . '/' . date('Ym') . '/') : ($savePath . '/');
+        if (!is_dir($path)) {
+            $create = mkdir($path, 0777, true);
+            if (!$create) {
+                throw new \Exception('创建下载文件保存目录失败!');
+            }
+        } else if (!is_writable($path)) {
+            throw new \Exception('下载文件保存路径不可写入!');
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 300);
+
+        // 判断是否为https请求
+        $ssl = strtolower(substr($url, 0, 8)) == "https://" ? true : false;
+        if ($ssl) {
+            curl_setopt($ch, CURLOPT_SSLVERSION, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        }
+
+        $file = curl_exec($ch);
+        curl_close($ch);
+        $filename = empty($filename) ? pathinfo($url, PATHINFO_BASENAME) : $filename;
+        $resource = fopen($path . $filename, 'a');
+
+        fwrite($resource, $file);
+        fclose($resource);
+
+        return $path . $filename;
     }
 }

@@ -10,6 +10,7 @@
 
 use mon\util\Tool;
 use mon\util\Common;
+use mon\util\IdCode;
 use mon\util\Validate;
 
 if (!function_exists('debug')) {
@@ -488,7 +489,7 @@ if (!function_exists('check')) {
         if (method_exists($validate, $type)) {
             return call_user_func_array([$validate, $type], (array) $args);
         }
-        throw \Exception('不支持的验证类型[' . $type . ']');
+        throw new \Exception('不支持的验证类型[' . $type . ']');
     }
 }
 
@@ -552,5 +553,48 @@ if (!function_exists('qrcode')) {
     function qrcode($text, $outfile = false, $level = 0, $size = 8, $margin = 1, $saveandprint = false)
     {
         return Tool::instance()->qrcode($text, $outfile, $level, $size, $margin, $saveandprint);
+    }
+}
+
+if (!function_exists('download')) {
+    /**
+     * 下载保存文件
+     *
+     * @param string $url   下载的文件路径
+     * @param string $savePath  保存的文件路径
+     * @param string $filename  保存的文件名称
+     * @param boolean $createDir    是否自动创建二级目录进行保存
+     * @throws Exception
+     * @return string
+     */
+    function download($url, $savePath, $filename = '', $createDir = true)
+    {
+        return Tool::instance()->download($url, $savePath, $filename, $createDir);
+    }
+}
+
+if (!function_exists('id2code')) {
+    /**
+     * id转code字符串
+     * 
+     * @param integer $id   要加密的id值
+     * @return string
+     */
+    function id2code($id)
+    {
+        return IdCode::instance()->id2code($id);
+    }
+}
+
+if (!function_exists('code2id')) {
+    /**
+     * code转ID
+     *
+     * @param string $code  加密生成的code
+     * @return integer
+     */
+    function code2id($code)
+    {
+        return IdCode::instance()->code2id($code);
     }
 }

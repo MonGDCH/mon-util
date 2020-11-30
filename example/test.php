@@ -1,10 +1,23 @@
 <?php
 
 use mon\util\Date;
+use mon\util\IdCode;
 use mon\util\Tree;
 use mon\util\Validate;
 
 require __DIR__ . '/../vendor/autoload.php';
+
+
+// $save = download('https://gdmon.com/upload/202007/12181222475f092231ea608.jpeg', './test');
+// debug($save);
+
+
+$code = id2code(891255);
+debug($code);
+
+$id = code2id($code);
+debug($id);
+exit;
 
 // $a = '440612199456781122';
 $a = '440583199306032816';

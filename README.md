@@ -24,6 +24,12 @@ composer require mongdch/mon-util
 
 ## 版本
 
+### 1.2.4
+
+* 优化decryption字符串解密方法
+* 增加Tool类download方法，用于下载保存文件
+* 增加IdCode类，用于将int类型的ID值转为code值
+
 ### 1.2.3
 
 * 优化验证器，验证器规则支持数组定义
