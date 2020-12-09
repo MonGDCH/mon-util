@@ -168,7 +168,7 @@ if (!function_exists('trimall')) {
     }
 }
 
-if (!function_exists('trimall')) {
+if (!function_exists('hidestr')) {
     /**
      * 将一个字符串部分字符用$re替代隐藏
      *
@@ -186,6 +186,18 @@ if (!function_exists('trimall')) {
     function hidestr($string, $start = 0, $length = 0, $re = '*')
     {
         return Tool::instance()->hidestr($string, $start, $length, $re);
+    }
+}
+
+if (!function_exists('ip')) {
+    /**
+     * 获取客户端的IP地址
+     *
+     * @return string
+     */
+    function ip()
+    {
+        return Tool::instance()->ip();
     }
 }
 
@@ -510,6 +522,27 @@ if (!function_exists('getDistance')) {
     }
 }
 
+if (!function_exists('getSquarePoint')) {
+    /**
+     * 计算某个经纬度的周围某段距离的正方形的四个点
+     * $lng = '116.655540';
+     * $lat = '39.910980';
+     * $squares = GetSquarePoint($lng, $lat);
+     *
+     * print_r($squares);
+     * $info_sql = "select id,locateinfo,lat,lng from `lbs_info` where lat<>0 and lat>{$squares['right-bottom']['lat']} and lat<{$squares['left-top']['lat']} and lng>{$squares['left-top']['lng']} and lng<{$squares['right-bottom']['lng']} ";
+     * 
+     * @param float $lng 经度
+     * @param float $lat 纬度
+     * @param float $distance 该点所在圆的半径，该圆与此正方形内切，默认值为0.5千米
+     * @return array 正方形的四个点的经纬度坐标
+     */
+    function getSquarePoint($lng, $lat, $distance = 0.5)
+    {
+        return Tool::instance()->getSquarePoint($lng, $lat, $distance);
+    }
+}
+
 if (!function_exists('exportZip')) {
     /**
      * 文件打包下载
@@ -596,5 +629,75 @@ if (!function_exists('code2id')) {
     function code2id($code)
     {
         return IdCode::instance()->code2id($code);
+    }
+}
+
+if (!function_exists('specCartesian')) {
+    /**
+     * 笛卡尔积生成规格
+     *
+     * @example 
+     *  $data = [["title" => "颜色","value" => ["黑色", "白色", "蓝色"]],["title" => "尺码","value" => ["S", "M", "L", "XL", "XXL"]],["title" => "长度","value" => ["5分裤", "7分裤", "9分裤", "长裤"]]];
+     *  debug(specCartesian($data));
+     *
+     * @param array $arr   要进行笛卡尔积的二维数组
+     * @return array
+     */
+    function specCartesian($arr)
+    {
+        return Common::instance()->specCartesian($arr);
+    }
+}
+
+if (!function_exists('rgb2hex')) {
+    /**
+     * RGB颜色值转十六进制
+     * 
+     * @param string|array $reg reg颜色值
+     * @return string
+     */
+    function rgb2hex($rgb)
+    {
+        return Tool::instance()->rgb2hex($rgb);
+    }
+}
+
+if (!function_exists('hex2rgb')) {
+    /**
+     * 十六进制转RGB颜色
+     * 
+     * @param string $hex_color 十六进制颜色值
+     * @return string
+     */
+    function hex2rgb($hex_color)
+    {
+        return Tool::instance()->hex2rgb($hex_color);
+    }
+}
+
+if (!function_exists('str2ascii')) {
+    /**
+     * 字符串转Ascii码
+     *
+     * @param string $str 字符串  
+     * @return string
+     */
+    function str2ascii($str)
+    {
+        return Common::instance()->str2ascii($str);
+    }
+}
+
+
+if (!function_exists('ascii2str')) {
+    /**
+     * Ascii码转字符串
+     *
+     * @param string $ascii Ascii码
+     * @return string
+     */
+    function ascii2str($str)
+    {
+        return Common::instance()->ascii2str($str);
     }
 }

@@ -132,7 +132,7 @@ class Tool
             return $result;
         }
 
-        //校验
+        // 校验
         $check = md5($salt . $tokenTime . $ticket);
         $timeGap = $now - $tokenTime;
         if ($check == $token && $timeGap <= $expire) {
@@ -324,6 +324,22 @@ class Tool
     }
 
     /**
+     * 获取客户端的IP地址
+     *
+     * @return string
+     */
+    public function ip()
+    {
+        foreach (['X_FORWARDED_FOR', 'HTTP_X_FORWARDED_FOR', 'CLIENT_IP', 'HTTP_CLIENT_IP', 'REMOTE_ADDR'] as $key) {
+            if (isset($_SERVER[$key])) {
+                return $_SERVER[$key];
+            }
+        }
+
+        return '';
+    }
+
+    /**
      * 安全IP检测，支持IP段检测
      *
      * @param string $ip 要检测的IP，','分割
@@ -424,6 +440,41 @@ class Tool
     }
 
     /**
+     * 计算某个经纬度的周围某段距离的正方形的四个点
+     * $lng = '116.655540';
+     * $lat = '39.910980';
+     * $squares = GetSquarePoint($lng, $lat);
+     *
+     * print_r($squares);
+     * $info_sql = "select id,locateinfo,lat,lng from `lbs_info` where lat<>0 and lat>{$squares['right-bottom']['lat']} and lat<{$squares['left-top']['lat']} and lng>{$squares['left-top']['lng']} and lng<{$squares['right-bottom']['lng']} ";
+     * 
+     * @param float $lng 经度
+     * @param float $lat 纬度
+     * @param float $distance 该点所在圆的半径，该圆与此正方形内切，默认值为0.5千米
+     * @return array 正方形的四个点的经纬度坐标
+     */
+    public function getSquarePoint($lng, $lat, $distance = 0.5)
+    {
+        if (empty($lng) || empty($lat)) {
+            return '';
+        };
+
+        // 地球半径，平均半径为6371km
+        $radius = 6371;
+        $d_lng =  2 * asin(sin($distance / (2 * $radius)) / cos(deg2rad($lat)));
+        $d_lng = rad2deg($d_lng);
+        $d_lat = $distance / $radius;
+        $d_lat = rad2deg($d_lat);
+
+        return [
+            'left-top'      => ['lat' => $lat + $d_lat, 'lng' => $lng - $d_lng],
+            'right-top'     => ['lat' => $lat + $d_lat, 'lng' => $lng + $d_lng],
+            'left-bottom'   => ['lat' => $lat - $d_lat, 'lng' => $lng - $d_lng],
+            'right-bottom'  => ['lat' => $lat - $d_lat, 'lng' => $lng + $d_lng]
+        ];
+    }
+
+    /**
      * 文件打包下载
      *
      * @param string $downloadZip 打包后下载的文件名
@@ -439,15 +490,11 @@ class Tool
         // 打开文件
         if ($bool === TRUE) {
             foreach ($list as $key => $val) {
-                // 把文件追加到Zip包并重命名  
-                // $zip->addFile($val[0]);
-                // $zip->renameName($val[0], $val[1]);
-
                 // 把文件追加到Zip包
                 $zip->addFile($val, basename($val));
             }
         } else {
-            throw new \Exception('ZipArchive打开文件失败, Code：' . $bool);
+            throw new \Exception('PHP-ZipArchive扩展打开文件失败, Code：' . $bool);
         }
         // 关闭Zip对象
         $zip->close();
@@ -531,7 +578,6 @@ class Tool
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 300);
-
         // 判断是否为https请求
         $ssl = strtolower(substr($url, 0, 8)) == "https://" ? true : false;
         if ($ssl) {
@@ -547,7 +593,75 @@ class Tool
 
         fwrite($resource, $file);
         fclose($resource);
-
         return $path . $filename;
+    }
+
+    /**
+     * RGB颜色值转十六进制
+     * 
+     * @param string|array $reg reg颜色值
+     * @return string
+     */
+    public function rgb2hex($rgb)
+    {
+        if (is_array($rgb)) {
+            $match = $rgb;
+        } else if (strpos($rgb, 'rgb(') === 0) {
+            // 判断是否为rgb开头
+            $regexp = "/^rgb\(([0-9]{0,3})\,\s*([0-9]{0,3})\,\s*([0-9]{0,3})\)/";
+            preg_match($regexp, $rgb, $match);
+            $re = array_shift($match);
+        } else {
+            // 直接传入rgb的值
+            $match = explode(',', $rgb);
+        }
+
+        $hex_color = "#";
+        $hex = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F');
+        for ($i = 0; $i < 3; $i++) {
+            $r = null;
+            $c = $match[$i];
+            $hex_array = [];
+            while ($c > 16) {
+                $r = $c % 16;
+                $c = ($c / 16) >> 0;
+                array_push($hex_array, $hex[$r]);
+            }
+            array_push($hex_array, $hex[$c]);
+            $ret = array_reverse($hex_array);
+            $item = implode('', $ret);
+            $item = str_pad($item, 2, '0', STR_PAD_LEFT);
+            $hex_color .= $item;
+        }
+        return $hex_color;
+    }
+
+    /**
+     * 十六进制转RGB颜色
+     * 
+     * @param string $hex_color 十六进制颜色值
+     * @return string
+     */
+    public function hex2rgb($hex_color)
+    {
+        $color = str_replace('#', '', $hex_color);
+        if (strlen($color) > 3) {
+            $rgb = [
+                'r' => hexdec(substr($color, 0, 2)),
+                'g' => hexdec(substr($color, 2, 2)),
+                'b' => hexdec(substr($color, 4, 2))
+            ];
+        } else {
+            $color = $hex_color;
+            $r = substr($color, 0, 1) . substr($color, 0, 1);
+            $g = substr($color, 1, 1) . substr($color, 1, 1);
+            $b = substr($color, 2, 1) . substr($color, 2, 1);
+            $rgb = [
+                'r' => hexdec($r),
+                'g' => hexdec($g),
+                'b' => hexdec($b)
+            ];
+        }
+        return $rgb;
     }
 }

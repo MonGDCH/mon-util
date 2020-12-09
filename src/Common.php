@@ -579,4 +579,90 @@ class Common
                 return $data;
         }
     }
+
+    /**
+     * 笛卡尔积生成规格
+     *
+     * @param array $arr1   要进行笛卡尔积的二维数组
+     * @param array $arr2   最终实现的笛卡尔积组合,可不传
+     * @return array
+     */
+    public function specCartesian($arr1, $arr2 = [])
+    {
+        $result = [];
+        if (!empty($arr1)) {
+            // 去除第一个元素
+            $first = array_splice($arr1, 0, 1);
+            // 判断是否是第一次进行拼接
+            if (count($arr2) > 0) {
+                foreach ($arr2 as $v) {
+                    foreach ($first[0]['value'] as $vs) {
+                        $result[] = $v . ',' . $vs;
+                    }
+                }
+            } else {
+                foreach ($first[0]['value'] as $vs) {
+                    $result[] = $vs;
+                }
+            }
+            // 递归进行拼接
+            if (count($arr1) > 0) {
+                $result = $this->specCartesian($arr1, $result);
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * 字符串转Ascii码
+     *
+     * @param string $str 字符串  
+     * @return string
+     */
+    public function str2ascii($str)
+    {
+        $change_after = '';
+        if (!empty($str)) {
+            // 编码处理
+            $encode = mb_detect_encoding($str);
+            if ($encode != 'UTF-8') {
+                $str = mb_convert_encoding($str, 'UTF-8', $encode);
+            }
+            // 开始转换
+            for ($i = 0; $i < strlen($str); $i++) {
+                $temp_str = dechex(ord($str[$i]));
+                if (isset($temp_str[1])) {
+                    $change_after .= $temp_str[1];
+                }
+                if (isset($temp_str[0])) {
+                    $change_after .= $temp_str[0];
+                }
+            }
+        }
+        return strtoupper($change_after);
+    }
+
+    /**
+     * Ascii码转字符串
+     *
+     * @param string $ascii Ascii码
+     * @return string
+     */
+    public function ascii2str($ascii)
+    {
+        $str = '';
+        if (!empty($ascii)) {
+            // 开始转换
+            $asc_arr = str_split(strtolower($ascii), 2);
+            for ($i = 0; $i < count($asc_arr); $i++) {
+                $str .= chr(hexdec($asc_arr[$i][1] . $asc_arr[$i][0]));
+            }
+            // 编码处理
+            $encode = mb_detect_encoding($str);
+            if ($encode != 'UTF-8') {
+                $str = mb_convert_encoding($str, 'UTF-8', $encode);
+            }
+        }
+        return $str;
+    }
 }

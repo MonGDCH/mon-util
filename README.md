@@ -24,6 +24,11 @@ composer require mongdch/mon-util
 
 ## 版本
 
+### 1.2.5
+
+* 优化代码
+* 增加更多的工具方法
+
 ### 1.2.4
 
 * 优化decryption字符串解密方法
