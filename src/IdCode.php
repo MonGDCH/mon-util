@@ -17,14 +17,14 @@ class IdCode
      *
      * @var integer
      */
-    private $initNum = 213456789;
+    private $initNum = 4015732869;
 
     /**
      * 进制的基本字符串
      *
      * @var string
      */
-    private $baseChar = '1234567890ZYXWVTSRQPNMKJHGFEDCBA';
+    private $baseChar = '8745692031ZYXWVTSRQPNMKJHGFEDCBA';
 
     /**
      * 使用32进制运算
@@ -34,16 +34,32 @@ class IdCode
     private $type = 32;
 
     /**
+     * 补足第3位
+     *
+     * @var string
+     */
+    private $three = 'K';
+
+    /**
+     * 补足第4位
+     *
+     * @var string
+     */
+    private $four = 'X';
+
+    /**
      * 初始化
      *
      * @param integer $initNum  起始数
      * @param string $baseChar  进制的基本字符串
      * @return IdCode
      */
-    public function init($initNum = 213456789, $baseChar = '1234567890ZYXWVTSRQPNMKJHGFEDCBA')
+    public function init($initNum = 4015732869, $baseChar = '8745692031ZYXWVTSRQPNMKJHGFEDCBA', $three = 'K', $four = 'X')
     {
         $this->initNum = $initNum;
         $this->baseChar = $baseChar;
+        $this->three = $three;
+        $this->four = $four;
         return $this;
     }
 
@@ -72,7 +88,7 @@ class IdCode
         $str2 = strrev($str2);
 
         // 补足3、4位U、L
-        return str_pad($str1, 3, 'U', STR_PAD_RIGHT) . str_pad($str2, 4, 'L', STR_PAD_RIGHT);
+        return str_pad($str1, 3, $this->three, STR_PAD_RIGHT) . str_pad($str2, 4, $this->four, STR_PAD_RIGHT);
     }
 
     /**
@@ -103,8 +119,8 @@ class IdCode
     public function code2id($code)
     {
         // 清除3、4位补足位
-        $str1 = trim(substr($code, 0, 3), 'U');
-        $str2 = trim(substr($code, 3, 4), 'L');
+        $str1 = trim(substr($code, 0, 3), $this->three);
+        $str2 = trim(substr($code, 3, 4), $this->four);
         // 转换数值
         $num1 = $this->_string2Id($str1);
         $num2 = $this->_string2Id($str2);
@@ -112,6 +128,9 @@ class IdCode
         $str1 = str_pad($num1, 4, '0', STR_PAD_LEFT);
         $str2 = str_pad($num2, 6, '0', STR_PAD_LEFT);
         $id = ltrim($str1[0] . $str2[0] . $str1[1] . $str2[1] . $str2[2] . $str2[3] . $str1[2] . $str2[4] . $str2[5] . $str1[3], '0');
+        if ($id === '') {
+            return $id;
+        }
         // 减去初始数值
         $id -= $this->initNum;
         return $id;

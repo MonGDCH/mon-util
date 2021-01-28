@@ -24,6 +24,10 @@ composer require mongdch/mon-util
 
 ## 版本
 
+### 1.2.6
+
+* 优化id加密生成code类
+
 ### 1.2.5
 
 * 优化代码

@@ -1,7 +1,7 @@
 {
     "name": "mongdch/mon-util",
     "description": "常用的PHP工具类、方法包，包含了各种各式各样的工具，如：时间、验证器、多语言、图片、二维码、文件上传、加解密、数据字典、各种算法等等等等。。。",
-    "version": "1.2.5",
+    "version": "1.2.6",
     "license": "Apache-2.0",
     "keywords": [
         "php",
