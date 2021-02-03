@@ -102,7 +102,7 @@ class Tool
         $now = time();
         $token = md5($salt . $now . $ticket);
 
-        $_COOKIE['_token_']     = $token;
+        $_COOKIE['_token_'] = $token;
         $_COOKIE['_tokenTime_'] = $now;
         setcookie("_token_", $token, $now + $expire, "/");
         setcookie("_tokenTime_", $now, $now + $expire, "/");
@@ -123,10 +123,10 @@ class Tool
      */
     public function checkTicket($ticket, $token = null, $tokenTime = null, $salt = "MonUtil", $destroy = true, $expire = 3600)
     {
-        $token        = empty($token) ? $_COOKIE['_token_'] : $token;
-        $tokenTime    = empty($tokenTime) ? $_COOKIE['_tokenTime_'] : $tokenTime;
-        $now          = time();
-        $result       = false;
+        $token = empty($token) ? (isset($_COOKIE['_token_']) ? $_COOKIE['_token_'] : '') : $token;
+        $tokenTime = empty($tokenTime) ? (isset($_COOKIE['_tokenTime_']) ? $_COOKIE['_tokenTime_'] : 0) : $tokenTime;
+        $now = time();
+        $result = false;
 
         if (empty($token) || empty($tokenTime)) {
             return $result;
@@ -534,6 +534,61 @@ class Tool
             return true;
         }
         return false;
+    }
+
+    /**
+     * 输出下载文件
+     * 可以指定下载显示的文件名，并自动发送相应的Header信息
+     * 如果指定了content参数，则下载该参数的内容
+     * 
+     * @param string $filename 下载文件名
+     * @param string $showname 下载显示的文件名
+     * @param integer $expire  下载内容浏览器缓存时间
+     * @return void
+     */
+    public function exportFile($filename, $showname = '', $expire = 180)
+    {
+        if (is_file($filename)) {
+            $length = filesize($filename);
+        } else {
+            throw new \Exception($filename . '下载文件不存在!');
+        }
+        if (empty($showname)) {
+            $showname = $filename;
+        }
+        $showname = $this->get_basename($showname);;
+        if (!empty($filename)) {
+            $finfo = new \finfo(FILEINFO_MIME);
+            $type  = $finfo->file($filename);
+        } else {
+            $type = "application/octet-stream";
+        }
+        // 发送Http Header信息 开始下载
+        header("Pragma: public");
+        header("Cache-Control: max-age=" . $expire);
+        // header('Cache-Control: no-store, no-cache, must-revalidate');
+        header("Expires: " . gmdate("D, d M Y H:i:s", time() + $expire) . "GMT");
+        header("Last-Modified: " . gmdate("D, d M Y H:i:s", time()) . "GMT");
+        header("Content-Disposition: attachment; filename=" . $showname);
+        header("Content-Length: " . $length);
+        header("Content-type: " . $type);
+        header('Content-Encoding: none');
+        header("Content-Transfer-Encoding: binary");
+        // 清空文件的头部信息，解决文件下载无法打开问题
+        ob_clean(); // 清空缓冲区
+        flush();  // 刷新输出缓冲
+        readfile($filename);
+        exit();
+    }
+
+    /**
+     * 获取文件的名称，兼容中文名
+     *
+     * @return string
+     */
+    public function get_basename($filename)
+    {
+        return preg_replace('/^.+[\\\\\\/]/', '', $filename);
     }
 
     /**

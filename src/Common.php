@@ -237,7 +237,23 @@ class Common
      */
     public function ip2long_positive($ip)
     {
-        return sprintf("%u", ip2long($ip));
+        return sprintf("%u", $this->ip2long_mon($ip));
+    }
+
+    /**
+     * IP地址转为数字地址
+     * php 的 ip2long 这个函数有问题
+     * 133.205.0.0 ==>> 2244804608
+     *
+     * @param string $ip 要转换的 ip 地址
+     * @return integer 转换完成的数字
+     */
+    public function ip2long_mon($ip)
+    {
+        $ip_arr = explode('.', $ip);
+        $iplong = (16777216 * intval($ip_arr[0])) + (65536 * intval($ip_arr[1])) + (256 * intval($ip_arr[2])) + intval($ip_arr[3]);
+
+        return $iplong;
     }
 
     /**

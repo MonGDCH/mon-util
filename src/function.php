@@ -322,6 +322,21 @@ if (!function_exists('ip2long_positive')) {
     }
 }
 
+if (!function_exists('ip2long_mon')) {
+    /**
+     * IP地址转为数字地址
+     * php 的 ip2long 这个函数有问题
+     * 133.205.0.0 ==>> 2244804608
+     *
+     * @param string $ip 要转换的 ip 地址
+     * @return integer
+     */
+    function ip2long_mon($ip)
+    {
+        return Common::instance()->ip2long_mon($ip);
+    }
+}
+
 if (!function_exists('strToMap')) {
     /**
      * URI字符串转数组
@@ -606,11 +621,40 @@ if (!function_exists('download')) {
     }
 }
 
+if (!function_exists('exportFile')) {
+    /**
+     * 输出下载文件
+     * 可以指定下载显示的文件名，并自动发送相应的Header信息
+     * 如果指定了content参数，则下载该参数的内容
+     * 
+     * @param string $filename 下载文件名
+     * @param string $showname 下载显示的文件名
+     * @param integer $expire  下载内容浏览器缓存时间
+     * @return void
+     */
+    function exportFile($filename, $showname = '', $expire = 180)
+    {
+        return Tool::instance()->exportFile($filename, $showname, $expire);
+    }
+}
+
+if (function_exists('get_basename')) {
+    /**
+     * 获取文件的名称，兼容中文名
+     *
+     * @return string
+     */
+    function get_basename($filename)
+    {
+        return Tool::instance()->get_basename($filename);
+    }
+}
+
 if (!function_exists('id2code')) {
     /**
      * id转code字符串
      * 
-     * @param integer $id   要加密的id值
+     * @param integer $id 要加密的id值
      * @return string
      */
     function id2code($id)
@@ -623,7 +667,7 @@ if (!function_exists('code2id')) {
     /**
      * code转ID
      *
-     * @param string $code  加密生成的code
+     * @param string $code 加密生成的code
      * @return integer
      */
     function code2id($code)

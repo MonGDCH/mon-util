@@ -15,6 +15,9 @@ PHP常用工具、辅助类集合，包含一些类库
 * GIF类，辅助Image类进行GIF图片处理
 * Lang类，多语言操作
 * Dictionary类，数据字典
+* IdCode类，用于整形ID加密转短字符串，可结合应用用于生成短链接
+* IPLocation类，基于纯真IP库的ip地址定位，解析GBK数据输出UTF8编码地址
+* Qrcode类，用于生成图片二维码
 
 ## 安装
 
@@ -23,6 +26,11 @@ composer require mongdch/mon-util
 ```
 
 ## 版本
+
+### 1.2.7
+
+* 优化代码
+* 增加IPLocatoin类，用于处理基于纯真IP库的地址定位
 
 ### 1.2.6
 
