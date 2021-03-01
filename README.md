@@ -1,12 +1,14 @@
 # mon-util
 
-PHP常用工具、辅助类集合，包含一些类库
+PHP常用工具、辅助类集合，包含各种常用的类库
 
+* Container类，对象容器
 * Date类，时间操作
 * Instance类， trait单例实现
 * Tree类，树结构操作
 * UpdateImg类，base64图片上传
 * UpdateFile类，文件上传
+* File类，文件操作
 * Validate类，验证器
 * Tool类，常用工具类库函数
 * Common类，公共工具函数库
@@ -26,6 +28,12 @@ composer require mongdch/mon-util
 ```
 
 ## 版本
+
+### 1.2.8
+
+* 优化代码
+* 从[mongdch/mon-container]迁移container类库，优化类库。
+* 增加File文件操作类库。
 
 ### 1.2.7
 

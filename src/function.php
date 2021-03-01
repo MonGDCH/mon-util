@@ -164,7 +164,7 @@ if (!function_exists('trimall')) {
      */
     function trimall($str)
     {
-        return Tool::instance()->trimall($str);
+        return Common::instance()->trimall($str);
     }
 }
 
@@ -185,7 +185,7 @@ if (!function_exists('hidestr')) {
      */
     function hidestr($string, $start = 0, $length = 0, $re = '*')
     {
-        return Tool::instance()->hidestr($string, $start, $length, $re);
+        return Common::instance()->hidestr($string, $start, $length, $re);
     }
 }
 
@@ -295,7 +295,7 @@ if (!function_exists('isUtf8')) {
     }
 }
 
-if (!function_exists('Kmod')) {
+if (!function_exists('mod')) {
     /**
      * 获取余数
      *
@@ -303,9 +303,9 @@ if (!function_exists('Kmod')) {
      * @param  integer $sn 除数
      * @return integer 余
      */
-    function Kmod($bn, $sn)
+    function mod($bn, $sn)
     {
-        return Common::instance()->Kmod($bn, $sn);
+        return Common::instance()->mod($bn, $sn);
     }
 }
 

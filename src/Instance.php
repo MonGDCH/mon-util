@@ -34,8 +34,9 @@ trait Instance
     }
 
     /**
-     * 静态调用支持
-     *
+     * 静态调用支持，以"_"开头加方法名调用非静态方法
+     * 
+     * @see 例子： className::_methodName()
      * @param  string $method 方法名
      * @param  array  $params 参数
      * @return mixed

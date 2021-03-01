@@ -223,7 +223,7 @@ class Common
      * @param  integer $sn 除数
      * @return integer 余
      */
-    public function Kmod($bn, $sn)
+    public function mod($bn, $sn)
     {
         $mod = intval(fmod(floatval($bn), $sn));
         return abs($mod);
@@ -680,5 +680,64 @@ class Common
             }
         }
         return $str;
+    }
+
+    /**
+     * 删除字符串中的空格
+     *
+     * @param $str 要删除空格的字符串
+     * @return $str 返回删除空格后的字符串
+     */
+    public function trimall($str)
+    {
+        $str = str_replace(" ", '', $str);
+        $str = str_ireplace(array("\r", "\n", '\r', '\n'), '', $str);
+
+        return $str;
+    }
+
+    /**
+     * 将一个字符串部分字符用$re替代隐藏
+     *
+     * @param string    $string   待处理的字符串
+     * @param integer   $start    规定在字符串的何处开始，
+     *                            正数 - 在字符串的指定位置开始
+     *                            负数 - 在从字符串结尾的指定位置开始
+     *                            0 - 在字符串中的第一个字符处开始
+     * @param integer   $length   可选。规定要隐藏的字符串长度。默认是直到字符串的结尾。
+     *                            正数 - 从 start 参数所在的位置隐藏
+     *                            负数 - 从字符串末端隐藏
+     * @param string    $re       替代符
+     * @return string   处理后的字符串
+     */
+    public function hidestr($string, $start = 0, $length = 0, $re = '*')
+    {
+        if (empty($string)) {
+            return false;
+        }
+        $strarr = [];
+        $mb_strlen = mb_strlen($string);
+        while ($mb_strlen) {
+            $strarr[] = mb_substr($string, 0, 1, 'utf8');
+            $string = mb_substr($string, 1, $mb_strlen, 'utf8');
+            $mb_strlen = mb_strlen($string);
+        }
+        $strlen = count($strarr);
+        $begin  = $start >= 0 ? $start : ($strlen - abs($start));
+        $end    = $last   = $strlen - 1;
+        if ($length > 0) {
+            $end  = $begin + $length - 1;
+        } elseif ($length < 0) {
+            $end -= abs($length);
+        }
+
+        for ($i = $begin; $i <= $end; $i++) {
+            $strarr[$i] = $re;
+        }
+        if ($begin >= $end || $begin >= $last || $end > $last) {
+            return false;
+        }
+
+        return implode('', $strarr);
     }
 }

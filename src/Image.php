@@ -27,7 +27,7 @@ class Image
     /**
      * gif图片特殊处理实例
      *
-     * @var [type]
+     * @var GIF
      */
     protected $gif;
 
@@ -37,6 +37,7 @@ class Image
      * @param  string  $imgname   图像保存名称
      * @param  string  $type      图像类型
      * @param  boolean $interlace 是否对JPEG类型图像设置隔行扫描
+     * @return mixed|boolean
      */
     public function save($imgname, $type = null, $interlace = true)
     {
@@ -138,8 +139,8 @@ class Image
     /**
      * 打开一张图片
      *
-     * @param [type] $imgname
-     * @return void
+     * @param string $imgname 图片路径
+     * @return Image
      */
     public function open($imgname)
     {
@@ -185,6 +186,7 @@ class Image
      * @param  integer $y      裁剪区域y坐标
      * @param  integer $width  图像保存宽度
      * @param  integer $height 图像保存高度
+     * @return Image
      */
     public function crop($w, $h, $x = 0, $y = 0, $width = null, $height = null)
     {
@@ -222,6 +224,7 @@ class Image
      * @param  integer $width  缩略图最大宽度
      * @param  integer $height 缩略图最大高度
      * @param  integer $type   缩略图裁剪类型, 1:等比例缩放;2:居中裁剪;3:左上角裁剪;4:右下角裁剪;5:填充;6:固定
+     * @return Image
      */
     public function thumb($width, $height, $type = 1)
     {
@@ -291,7 +294,7 @@ class Image
                 $newh = $h * $scale;
                 $posx = ($width  - $w * $scale) / 2;
                 $posy = ($height - $h * $scale) / 2;
-
+                $x = $y = 0;
                 do {
                     // 创建新图像
                     $img = imagecreatetruecolor($width, $height);
@@ -307,7 +310,7 @@ class Image
 
                 $this->info['width']  = $width;
                 $this->info['height'] = $height;
-                return;
+                return $this;
                 // 固定
             case 6:
                 $x = $y = 0;
@@ -325,6 +328,7 @@ class Image
      *
      * @param  string  $source 水印图片路径
      * @param  integer $locate 水印位置, 1-9对应数字键盘位置
+     * @return Image
      */
     public function water($source, $locate = 3)
     {
@@ -440,6 +444,7 @@ class Image
      * @param  integer          $locate 文字写入位置, 1-9对应小键盘位置
      * @param  integer|array    $offset 文字相对当前位置的偏移量
      * @param  integer          $angle  文字倾斜角度
+     * @return Image
      */
     public function text($text, $font, $size, $color = '#00000000', $locate = 3, $offset = 0, $angle = 0)
     {
@@ -556,6 +561,8 @@ class Image
 
     /**
      * 切换到GIF的下一帧并保存当前帧
+     * 
+     * @return mixed
      */
     protected function gifNext()
     {
@@ -578,6 +585,8 @@ class Image
 
     /**
      * 析构方法，用于销毁图像资源
+     * 
+     * @return void
      */
     public function __destruct()
     {
