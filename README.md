@@ -20,6 +20,7 @@ PHP常用工具、辅助类集合，包含各种常用的类库
 * IdCode类，用于整形ID加密转短字符串，可结合应用用于生成短链接
 * IPLocation类，基于纯真IP库的ip地址定位，解析GBK数据输出UTF8编码地址
 * Qrcode类，用于生成图片二维码
+* DocParse类，解析PHP类对象注解，生成文档
 
 ## 安装
 
@@ -28,6 +29,10 @@ composer require mongdch/mon-util
 ```
 
 ## 版本
+
+### 1.2.9
+
+* 增加DocParse类，用于PHP文档解析
 
 ### 1.2.8
 
