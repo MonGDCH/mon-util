@@ -21,6 +21,8 @@ PHP常用工具、辅助类集合，包含各种常用的类库
 * IPLocation类，基于纯真IP库的ip地址定位，解析GBK数据输出UTF8编码地址
 * Qrcode类，用于生成图片二维码
 * DocParse类，解析PHP类对象注解，生成文档
+* Sql类，解析SQL文件，获取sql操作语句
+* IdCard类，处理身份证相关的业务工具类
 
 ## 安装
 
@@ -29,6 +31,11 @@ composer require mongdch/mon-util
 ```
 
 ## 版本
+
+### 1.2.10
+
+* 增加Sql类，用于解析SQL文件，获取sql操作语句
+* 增加IdCard类，用于处理身份证相关的业务
 
 ### 1.2.9
 

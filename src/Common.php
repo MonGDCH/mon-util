@@ -489,7 +489,7 @@ class Common
         } elseif (function_exists('iconv_substr')) {
             $slice = iconv_substr($str, $start, $length, $charset);
         } else {
-            $re['utf-8']   = '/[\x01-\x7f]|[\xc2-\xdf][\x80-\xbf]|[\xe0-\xef][\x80-\xbf]{2}|[\xf0-\xff][\x80-\xbf]{3}/';
+            $re['utf-8']  = '/[\x01-\x7f]|[\xc2-\xdf][\x80-\xbf]|[\xe0-\xef][\x80-\xbf]{2}|[\xf0-\xff][\x80-\xbf]{3}/';
             $re['gb2312'] = '/[\x01-\x7f]|[\xb0-\xf7][\xa0-\xfe]/';
             $re['gbk']    = '/[\x01-\x7f]|[\x81-\xfe][\x40-\xfe]/';
             $re['big5']   = '/[\x01-\x7f]|[\x81-\xfe]([\x40-\x7e]|\xa1-\xfe])/';
@@ -574,7 +574,7 @@ class Common
                 if (empty($data) || is_numeric($data)) {
                     return $data;
                 } elseif (function_exists('mb_convert_encoding')) {
-                    $data =  mb_convert_encoding($data, $out_charset, $in_charset);
+                    $data = mb_convert_encoding($data, $out_charset, $in_charset);
                 } elseif (function_exists('iconv')) {
                     $data = iconv($in_charset, $out_charset, $data);
                 }
@@ -583,12 +583,12 @@ class Common
             case 'object':
                 $vars = array_keys(get_object_vars($data));
                 foreach ($vars as $key) {
-                    $data->$key =  $this->iconv_recursion($data->$key, $out_charset, $in_charset);
+                    $data->$key = $this->iconv_recursion($data->$key, $out_charset, $in_charset);
                 }
                 return $data;
             case 'array':
                 foreach ($data as $k => $v) {
-                    $data[$this->iconv_recursion($k, $out_charset, $in_charset)] =  $this->iconv_recursion($v, $out_charset, $in_charset);
+                    $data[$this->iconv_recursion($k, $out_charset, $in_charset)] = $this->iconv_recursion($v, $out_charset, $in_charset);
                 }
                 return $data;
             default:

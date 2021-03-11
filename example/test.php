@@ -1,15 +1,10 @@
 <?php
 
 use mon\util\Date;
-use mon\util\File;
 use mon\util\Tree;
 
+
 require __DIR__ . '/../vendor/autoload.php';
-
-
-debug(str2ascii('12b3a43sf45'));
-debug(ascii2str('1323263316433337664353'));
-exit;
 
 
 // RGB转16进制
