@@ -2,8 +2,6 @@
 
 namespace mon\util;
 
-use mon\util\Instance;
-
 /**
  * 验证器
  *
@@ -39,14 +37,15 @@ use mon\util\Instance;
  * @method arr 			验证数组
  * @method json 		验证JSON
  * @method xml 			验证XML
+ * @method idCard		验证身份证号
+ * @method confirm		比较字段
+ * @method eq	 		
  *
  * @author Mon <985558837@qq.com>
- * @version v1.3.1
+ * @version v1.3.2	2021-03-17 优化代码，移除内置单例模式，增加confirm、eq方法
  */
 class Validate
 {
-	use Instance;
-
 	/**
 	 * 对应待验证数据使用的验证规则
 	 * [
@@ -152,7 +151,7 @@ class Validate
 			if (isset($this->data[$dataItem])) {
 				$value = $this->data[$dataItem];
 				// 解析规则
-				$status = $this->analysis($value, $rule);
+				$status = $this->analysis($value, $rule, $dataItem);
 				if ($status !== true) {
 					// 验证错误，返回[错误节点，错误规则]
 					$errorItme = [$dataItem, $status];
@@ -252,18 +251,19 @@ class Validate
 	 *
 	 * @param mixed $value	验证的值
 	 * @param mixed $rule	对应的验证规则
-	 * @return mixed
+	 * @param string $dataItem 验证的字段名
+	 * @return mixed 成功返回true,失败返回验证失败的规则名称
 	 */
-	protected function analysis($value, $rule)
+	protected function analysis($value, $rule, $dataItem)
 	{
 		$resule = true;
 		foreach ($rule as $key => $type) {
 			// 分割获取规则参数，支持二维。例子：max:9
 			$item = explode(":", $type, 2);
 			if (count($item) > 1) {
-				$status = $this->checkItem($value, $item[0], $item[1]);
+				$status = $this->checkItem($dataItem, $value, $item[0], $item[1]);
 			} else {
-				$status = $this->checkItem($value, $item[0]);
+				$status = $this->checkItem($dataItem, $value, $item[0]);
 			}
 
 			// 判断验证是否通过,失败返回当前校验失败的规则名称
@@ -279,17 +279,18 @@ class Validate
 	/**
 	 * 验证数据
 	 *
+	 * @param string $field		验证字段名称
 	 * @param mixed $value		验证值
-	 * @param mixed $rule		验证规则
+	 * @param string $rule		验证规则
 	 * @param mixed $rule_data	规则参数
-	 * @return mixed
+	 * @return boolean
 	 */
-	protected function checkItem($value, $rule, $rule_data = null)
+	protected function checkItem($field, $value, $rule, $rule_data = null)
 	{
-		if ($rule_data !== null) {
-			$resule = call_user_func_array([$this, $rule], [$value, $rule_data]);
+		if (!is_null($rule_data)) {
+			$resule = call_user_func_array([$this, $rule], [$value, $rule_data, $field]);
 		} else {
-			$resule = call_user_func_array([$this, $rule], [$value]);
+			$resule = call_user_func_array([$this, $rule], [$value, $field]);
 		}
 
 		return $resule;
@@ -697,5 +698,33 @@ class Validate
 	public function idCard($idcard)
 	{
 		return IdCard::instance()->check($idcard);
+	}
+
+	/**
+	 * 比较字段值是否一致
+	 *
+	 * @param mixed $value	比较的值
+	 * @param string $rule	比较的字段名
+	 * @param string $field	当前的字段名
+	 * @param array $data	用于比较的数据集，默认为$this->data
+	 * @return boolean
+	 */
+	public function confirm($value, $rule, $field = null, $data = [])
+	{
+		$data = empty($data) ? $this->data : $data;
+
+		return !(!isset($data[$rule]) || $value != $data[$rule]);
+	}
+
+	/**
+	 * 比较两值是否相等
+	 *
+	 * @param mixed $value	比较的值1
+	 * @param mixed $rule	比较的值2
+	 * @return boolean
+	 */
+	public function eq($value, $rule)
+	{
+		return $value == $rule;
 	}
 }

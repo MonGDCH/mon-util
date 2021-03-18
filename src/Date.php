@@ -2,18 +2,14 @@
 
 namespace mon\util;
 
-use mon\util\Instance;
-
 /**
  * 时间日期相关操作
  *
  * @author Mon 985558837@qq.com
- * @version v1.0
+ * @version v1.0.1 2021-03-18 移除内置单例
  */
 class Date
 {
-    use Instance;
-
     /**
      * 日期的时间戳
      *

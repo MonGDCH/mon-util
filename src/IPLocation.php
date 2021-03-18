@@ -150,7 +150,7 @@ class IPLocation
     public function init($db)
     {
         if (!file_exists($db)) {
-            throw new IPLocationException('IP database file not found!');
+            throw new IPLocationException('IP数据文件未找到', IPLocationException::ERROR_DATA_NOT_FOUND);
         }
 
         $this->fp = 0;
@@ -185,7 +185,7 @@ class IPLocation
     public function getLocation($ip)
     {
         if (!$this->init) {
-            throw new IPLocationException('Please initialize IPLocation!');
+            throw new IPLocationException('未初始化实例', IPLocationException::ERROR_NOT_INIT);
         }
         $result = [];
         $location = [];
@@ -197,12 +197,12 @@ class IPLocation
 
         if (!$this->isValidIpV4($ip)) {
             // 验证IP格式
-            throw new IPLocationException('ip v4 invalid');
+            throw new IPLocationException('无效的IPv4地址', IPLocationException::ERROR_IPV4_FAILD);
         } else {
             // 获取所在地区信息
             $location = $this->getLocationFromIP($ip);
             if (!$location) {
-                throw new IPLocationException('IP database file open faild');
+                throw new IPLocationException('读取IP数据文件失败', IPLocationException::ERROR_DATA_READ_FAILD);
             }
 
             // 原国家数据（例：北京市朝阳区）

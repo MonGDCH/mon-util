@@ -42,7 +42,7 @@ class Image
     public function save($imgname, $type = null, $interlace = true)
     {
         if (empty($this->img)) {
-            throw new ImgException('没有可以被保存的图像资源', 3);
+            throw new ImgException('没有可以被保存的图像资源', ImgException::ERROR_IMG_SAVE);
         }
         // 自动获取图像类型
         if (is_null($type)) {
@@ -74,7 +74,7 @@ class Image
     public function width()
     {
         if (empty($this->img)) {
-            throw new ImgException('没有指定图像资源', 4);
+            throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
         }
 
         return $this->info['width'];
@@ -88,7 +88,7 @@ class Image
     public function height()
     {
         if (empty($this->img)) {
-            throw new ImgException('没有指定图像资源', 4);
+            throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
         }
 
         return $this->info['height'];
@@ -102,7 +102,7 @@ class Image
     public function type()
     {
         if (empty($this->img)) {
-            throw new ImgException('没有指定图像资源', 4);
+            throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
         }
 
         return $this->info['type'];
@@ -116,7 +116,7 @@ class Image
     public function mime()
     {
         if (empty($this->img)) {
-            throw new ImgException('没有指定图像资源', 4);
+            throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
         }
 
         return $this->info['mime'];
@@ -130,7 +130,7 @@ class Image
     public function size()
     {
         if (empty($this->img)) {
-            throw new ImgException('没有指定图像资源', 4);
+            throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
         }
 
         return array($this->info['width'], $this->info['height']);
@@ -146,13 +146,13 @@ class Image
     {
         // 检测图像文件
         if (!is_file($imgname)) {
-            throw new ImgException('不存在的图像文件', 1);
+            throw new ImgException('不存在的图像文件', ImgException::ERROR_IMG_NOT_FOUND);
         }
         // 获取图像信息
         $info = getimagesize($imgname);
         // 检测图像合法性
         if (false === $info || (IMAGETYPE_GIF === $info[2] && empty($info['bits']))) {
-            throw new ImgException('非法图像文件', 2);
+            throw new ImgException('非法图像文件', ImgException::ERROR_IMG_FAILD);
         }
         // 设置图像信息
         $this->info = array(
@@ -191,7 +191,7 @@ class Image
     public function crop($w, $h, $x = 0, $y = 0, $width = null, $height = null)
     {
         if (empty($this->img)) {
-            throw new ImgException('没有指定图像资源', 4);
+            throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
         }
 
         //设置保存尺寸
@@ -229,7 +229,7 @@ class Image
     public function thumb($width, $height, $type = 1)
     {
         if (empty($this->img)) {
-            throw new ImgException('没有指定图像资源', 4);
+            throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
         }
 
         // 原图宽度和高度
@@ -316,7 +316,7 @@ class Image
                 $x = $y = 0;
                 break;
             default:
-                throw new ImgException('不支持的缩略图裁剪类型', 5);
+                throw new ImgException('不支持的缩略图裁剪类型', ImgException::ERROR_IMG_NOT_SUPPORT);
         }
 
         // 裁剪图像
@@ -333,16 +333,16 @@ class Image
     public function water($source, $locate = 3)
     {
         if (empty($this->img)) {
-            throw new ImgException('没有指定图像资源', 4);
+            throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
         }
         if (!is_file($source)) {
-            throw new ImgException('水印图像不存在', 6);
+            throw new ImgException('水印图像不存在', ImgException::ERROR_IMG_NOT_FOUND_WATER);
         }
 
         // 获取水印图像信息
         $info = getimagesize($source);
         if (false === $info || (IMAGETYPE_GIF === $info[2] && empty($info['bits']))) {
-            throw new ImgException('非法水印文件', 7);
+            throw new ImgException('非法水印文件', ImgException::ERROR_IMG_FAILD_WATER);
         }
         // 创建水印图像资源
         $fun   = 'imagecreatefrom' . image_type_to_extension($info[2], false);
@@ -410,7 +410,7 @@ class Image
                 if (is_array($locate)) {
                     list($x, $y) = $locate;
                 } else {
-                    throw new ImgException('不支持的水印位置类型', 8);
+                    throw new ImgException('不支持的水印位置类型', ImgException::ERROR_IMG_NOT_SUPPORT_WATER);
                 }
         }
 
@@ -450,10 +450,10 @@ class Image
     {
         // 资源检测
         if (empty($this->img)) {
-            throw new ImgException('没有指定图像资源', 4);
+            throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
         }
         if (!is_file($font)) {
-            throw new ImgException("不存在的字体文件：{$font}", 9);
+            throw new ImgException("不存在的字体文件：{$font}", ImgException::ERROR_IMG_NOT_FOUND_FONT);
         }
         // 获取文字信息
         $info = imagettfbbox($size, $angle, realpath($font), $text);
@@ -526,7 +526,7 @@ class Image
                     $x += $posx;
                     $y += $posy;
                 } else {
-                    throw new ImgException('不支持的文字位置类型', 10);
+                    throw new ImgException('不支持的文字位置类型', ImgException::ERROR_IMG_NOT_SUPPORT_FONT);
                 }
         }
 
@@ -547,7 +547,7 @@ class Image
                 $color[3] = 0;
             }
         } elseif (!is_array($color)) {
-            throw new ImgException('错误的颜色值', 11);
+            throw new ImgException('错误的颜色值', ImgException::ERROR_IMG_FAILD_COLOR);
         }
 
         do {

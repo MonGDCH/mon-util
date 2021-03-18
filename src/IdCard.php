@@ -8,11 +8,18 @@ use Exception;
  * 身份证号码工具类(支持15位和18位)
  * 
  * @author Mon <985558837@qq.com>
- * @version 1.0.0
+ * @version 1.0.1 增加获取省份城市信息
  */
 class IdCard
 {
     use Instance;
+
+    /**
+     * 省份城市地区扩展数据配置文件路径
+     *
+     * @var string
+     */
+    public $dataFile = __DIR__ . '/data/idcard.php';
 
     /**
      * 正则验证规则
@@ -22,7 +29,7 @@ class IdCard
     protected $regx = '/^([\d]{17}[xX\d]|[\d]{15})$/';
 
     /**
-     * 省号
+     * 省份信息
      *
      * @var array
      */
@@ -34,6 +41,13 @@ class IdCard
         51 => "四川", 52 => "贵州", 53 => "云南", 54 => "西藏", 61 => "陕西", 62 => "甘肃",
         63 => "青海", 64 => "宁夏", 65 => "新疆", 71 => "台湾", 81 => "香港", 82 => "澳门", 91 => "国外"
     ];
+
+    /**
+     * 详细的省份城市地区信息
+     *
+     * @var array
+     */
+    protected $location = null;
 
     /**
      * 校验身份证号码
@@ -56,7 +70,7 @@ class IdCard
         if (date('Y-m-d', strtotime($birthday)) != $birthday) {
             return false;
         }
-
+        // 验证校验码
         if (strlen($idcard) == 18) {
             $vSum = 0;
             for ($i = 17; $i >= 0; $i--) {
@@ -78,7 +92,45 @@ class IdCard
      */
     public function getProvinces($idcard)
     {
-        return isset($this->provinces[substr($idcard, 0, 2)]) ? $this->provinces[substr($idcard, 0, 2)] : '';
+        $code = substr($idcard, 0, 2);
+        return isset($this->provinces[$code]) ? $this->provinces[$code] : '';
+    }
+
+    /**
+     * 获取所属省份城市
+     *
+     * @param string $idcard 身份证号码
+     * @return string
+     */
+    public function getCity($idcard)
+    {
+        if (is_null($this->location)) {
+            $this->location = include($this->dataFile);
+            if (empty($this->location) || !is_array($this->location)) {
+                throw new Exception('Failed to get extended location information data!');
+            }
+        }
+
+        $code = substr($idcard, 0, 4) . '00';
+        return isset($this->location[$code]) ? $this->location[$code] : '';
+    }
+
+    /**
+     * 获取所属省份城市地区信息
+     *
+     * @param string $idcard 身份证号码
+     * @return string
+     */
+    public function getLocation($idcard)
+    {
+        if (is_null($this->location)) {
+            $this->location = include($this->dataFile);
+            if (empty($this->location) || !is_array($this->location)) {
+                throw new Exception('Failed to get extended location information data!');
+            }
+        }
+        $code = substr($idcard, 0, 6);
+        return isset($this->location[$code]) ? $this->location[$code] : '';
     }
 
     /**

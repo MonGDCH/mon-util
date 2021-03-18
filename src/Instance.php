@@ -8,7 +8,7 @@ use Exception;
  * 单例trait
  *
  * @author Mon 985558837@qq.com
- * @version 1.0.1   修正获取当前实例的方式为static而非self
+ * @version 1.0.1   修正获取当前实例的方式为static而非static
  */
 trait Instance
 {
@@ -27,10 +27,10 @@ trait Instance
      */
     public static function instance($options = [])
     {
-        if (is_null(self::$instance)) {
-            self::$instance = new static($options);
+        if (is_null(static::$instance)) {
+            static::$instance = new static($options);
         }
-        return self::$instance;
+        return static::$instance;
     }
 
     /**
@@ -43,12 +43,12 @@ trait Instance
      */
     public static function __callStatic($method, $params)
     {
-        if (is_null(self::$instance)) {
-            self::$instance = new static();
+        if (is_null(static::$instance)) {
+            static::$instance = new static();
         }
         $call = substr($method, 1);
-        if (0 === strpos($method, '_') && is_callable([self::$instance, $call])) {
-            return call_user_func_array([self::$instance, $call], (array) $params);
+        if (0 === strpos($method, '_') && is_callable([static::$instance, $call])) {
+            return call_user_func_array([static::$instance, $call], (array) $params);
         } else {
             throw new Exception("method not found => " . $method);
         }

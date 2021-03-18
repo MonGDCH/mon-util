@@ -23,6 +23,7 @@ PHP常用工具、辅助类集合，包含各种常用的类库
 * DocParse类，解析PHP类对象注解，生成文档
 * Sql类，解析SQL文件，获取sql操作语句
 * IdCard类，处理身份证相关的业务工具类
+* 增加Lottery类，概率抽奖工具类
 
 ## 安装
 
@@ -31,6 +32,15 @@ composer require mongdch/mon-util
 ```
 
 ## 版本
+
+### 1.3.1
+
+* 优化代码，优化错误处理机制
+* 移除Validate类内置单例模式，增加confirm、eq方法
+* 移除Date类内置单例模式，优化业务逻辑
+* 优化IdCard类，增加根据身份证号获取所属省市区地址
+* 增加Lottery类，概率抽奖工具类
+
 
 ### 1.2.10
 

@@ -512,7 +512,10 @@ if (!function_exists('check')) {
      */
     function check($type, ...$args)
     {
-        $validate = Validate::instance();
+        static $validate = null;
+        if (is_null($validate)) {
+            $validate = new Validate();
+        }
         if (method_exists($validate, $type)) {
             return call_user_func_array([$validate, $type], (array) $args);
         }

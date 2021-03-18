@@ -104,7 +104,7 @@ class UploadFile
             $files = $_FILES;
         }
         if (empty($files) || !isset($files[$name])) {
-            throw new UploadException('未上传文件', 1);
+            throw new UploadException('未上传文件', UploadException::ERROR_UPLOAD_FAILD);
         }
         // 检测上传保存路径
         if (!$this->checkRootPath()) {
@@ -139,15 +139,15 @@ class UploadFile
     public function save($fileName = '', $replace = true)
     {
         if (empty($this->file)) {
-            throw new UploadException('未获取上传的文件', 2);
+            throw new UploadException('未获取上传的文件', UploadException::ERROR_UPLOAD_NOT_FOUND);
         }
         $fileName = empty($fileName) ? uniqid(mt_rand()) . '.' . $this->file['ext'] : $fileName;
         $saveName = $this->config['rootPath'] . $fileName;
         if (!$replace && is_file($saveName)) {
-            throw new UploadException('文件已存在', 3);
+            throw new UploadException('文件已存在', UploadException::ERROR_UPLOAD_EXISTS);
         }
         if (!move_uploaded_file($this->file['tmp_name'], $saveName)) {
-            throw new UploadException('文件上传保存错误', 4);
+            throw new UploadException('文件上传保存错误', UploadException::ERROR_UPLOAD_SAVE_FAILD);
         }
         $this->file['savePath'] = $saveName;
         $this->file['saveName'] = $fileName;
@@ -164,7 +164,7 @@ class UploadFile
     protected function checkRootPath()
     {
         if (!(is_dir($this->config['rootPath']) && is_writable($this->config['rootPath']))) {
-            throw new UploadException('上传目录不存在或不可写入！请尝试手动创建:' . $this->config['rootPath'], 5);
+            throw new UploadException('上传目录不存在或不可写入！请尝试手动创建:' . $this->config['rootPath'], UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
         }
         return true;
     }
@@ -179,27 +179,27 @@ class UploadFile
     protected function checkFile($file)
     {
         if ($file['error']) {
-            throw new UploadException($this->uploadErrorMsg($file['error']), 6);
+            throw new UploadException($this->uploadErrorMsg($file['error']), UploadException::ERROR_UPLOAD_CHECK_FAILD);
         }
         // 无效上传
         if (empty($file['name'])) {
-            throw new UploadException('未知上传错误', 7);
+            throw new UploadException('未知上传错误', UploadException::ERROR_UPLOAD_NOT_MESSAGE);
         }
         // 检查是否合法上传
         if (!is_uploaded_file($file['tmp_name'])) {
-            throw new UploadException('非法上传文件', 8);
+            throw new UploadException('非法上传文件', UploadException::ERROR_UPLOAD_ILLEGAL);
         }
         // 检查文件大小
         if (!$this->checkSize($file['size'])) {
-            throw new UploadException('上传文件大小不符', 9);
+            throw new UploadException('上传文件大小不符', UploadException::ERROR_UPLOAD_SIZE_FAILD);
         }
         // 检查文件Mime类型
         if (!$this->checkMime($file['type'])) {
-            throw new UploadException('上传文件MIME类型不允许', 10);
+            throw new UploadException('上传文件MIME类型不允许', UploadException::ERROR_UPLOAD_MINI_FAILD);
         }
         // 检查文件后缀
         if (!$this->checkExt($file['ext'])) {
-            throw new UploadException('上传文件后缀不允许', 11);
+            throw new UploadException('上传文件后缀不允许', UploadException::ERROR_UPLOAD_EXT_FAILD);
         }
 
         return true;
@@ -218,7 +218,7 @@ class UploadFile
         if (in_array($ext, ['gif', 'jpg', 'jpeg', 'bmp', 'png', 'swf'])) {
             $imginfo = getimagesize($file['tmp_name']);
             if (empty($imginfo) || ('gif' == $ext && empty($imginfo['bits']))) {
-                throw new UploadException('非法图像文件', 12);
+                throw new UploadException('非法图像文件', UploadException::ERROR_UPLOAD_NOT_IMG);
             }
         }
 
