@@ -369,7 +369,6 @@ class IPLocation
                 }
             }
         }
-
         // 获取查找到的IP地理位置信息
         fseek($this->fp, $findip);
         // 用户IP所在范围的开始地址
@@ -415,15 +414,14 @@ class IPLocation
         }
         // GBK转UTF8
         $location['country'] = iconv("GBK", "UTF-8", $location['country']);
-        $location['area']    = iconv("GBK", "UTF-8", $location['area']);
+        $location['area'] = iconv("GBK", "UTF-8", $location['area']);
         // CZ88.NET表示没有有效信息
-        if ($location['country'] == "CZ88.NET" || $location['country'] == "纯真网络") {
+        if ((strpos($location['country'], 'CZ88.NET') !== false)) {
             $location['country'] = "未知";
         }
-        if ($location['area'] == "CZ88.NET") {
-            $location['area'] = "";
+        if (strpos($location['area'], 'CZ88.NET') !== false) {
+            $location['area'] = '';
         }
-
         return $location;
     }
 

@@ -409,7 +409,7 @@ if (!function_exists('array2DSort')) {
      * @param array $array  排序的数组
      * @param string $keys  排序的键名
      * @param integer $sort 排序方式，默认值：SORT_DESC
-     * @return void
+     * @return array
      */
     function array2DSort($array, $keys, $sort = SORT_DESC)
     {
