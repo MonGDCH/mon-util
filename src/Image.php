@@ -540,9 +540,9 @@ class Image
         }
 
         // 设置颜色
-        if (is_string($color) && 0 === strpos($color, '#')) {
-            $color = str_split(substr($color, 1), 2);
-            $color = array_map('hexdec', $color);
+        if (is_string($color) && 0 === mb_strpos($color, '#')) {
+            $color = str_split(mb_substr($color, 1), 2);
+            $color = array_map('hexdec', (array) $color);
             if (empty($color[3]) || $color[3] > 127) {
                 $color[3] = 0;
             }

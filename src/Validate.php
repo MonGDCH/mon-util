@@ -463,7 +463,7 @@ class Validate
 	public function regexp($value, $regexp)
 	{
 		// 判断是否存在'/'，不存在则补上
-		if (strpos($regexp, '/') !== 0) {
+		if (mb_strpos($regexp, '/') !== 0) {
 			// 不是正则表达式则两端补上/
 			$regexp = '/^' . $regexp . '$/';
 		}

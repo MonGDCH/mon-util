@@ -62,7 +62,7 @@ class IdCard
             return false;
         }
         // 校验省份码
-        if (!isset($this->provinces[substr($idcard, 0, 2)])) {
+        if (!isset($this->provinces[mb_substr($idcard, 0, 2)])) {
             return false;
         }
         // 校验生日
@@ -71,10 +71,10 @@ class IdCard
             return false;
         }
         // 验证校验码
-        if (strlen($idcard) == 18) {
+        if (mb_strlen($idcard) == 18) {
             $vSum = 0;
             for ($i = 17; $i >= 0; $i--) {
-                $vSubStr = substr($idcard, 17 - $i, 1);
+                $vSubStr = mb_substr($idcard, 17 - $i, 1);
                 $vSum += (pow(2, $i) % 11) * (($vSubStr == 'a') ? 10 : intval($vSubStr, 11));
             }
             if ($vSum % 11 != 1) {
@@ -92,7 +92,7 @@ class IdCard
      */
     public function getProvinces($idcard)
     {
-        $code = substr($idcard, 0, 2);
+        $code = mb_substr($idcard, 0, 2);
         return isset($this->provinces[$code]) ? $this->provinces[$code] : '';
     }
 
@@ -111,7 +111,7 @@ class IdCard
             }
         }
 
-        $code = substr($idcard, 0, 4) . '00';
+        $code = mb_substr($idcard, 0, 4) . '00';
         return isset($this->location[$code]) ? $this->location[$code] : '';
     }
 
@@ -129,7 +129,7 @@ class IdCard
                 throw new Exception('Failed to get extended location information data!');
             }
         }
-        $code = substr($idcard, 0, 6);
+        $code = mb_substr($idcard, 0, 6);
         return isset($this->location[$code]) ? $this->location[$code] : '';
     }
 
@@ -142,11 +142,11 @@ class IdCard
     public function getBirthday($idcard)
     {
         $idcard = preg_replace('/[xX]$/i', 'a', $idcard);
-        $vLength = strlen($idcard);
+        $vLength = mb_strlen($idcard);
         if ($vLength == 18) {
-            $birthday = substr($idcard, 6, 4) . '-' . substr($idcard, 10, 2) . '-' . substr($idcard, 12, 2);
+            $birthday = mb_substr($idcard, 6, 4) . '-' . mb_substr($idcard, 10, 2) . '-' . mb_substr($idcard, 12, 2);
         } else {
-            $birthday = '19' . substr($idcard, 6, 2) . '-' . substr($idcard, 8, 2) . '-' . substr($idcard, 10, 2);
+            $birthday = '19' . mb_substr($idcard, 6, 2) . '-' . mb_substr($idcard, 8, 2) . '-' . mb_substr($idcard, 10, 2);
         }
         return $birthday;
     }
@@ -161,7 +161,7 @@ class IdCard
     {
         // 转18位身份证号码
         $idcard = $this->fifteen2Eighteen($idcard);
-        return (int)substr($idcard, 16, 1) % 2 === 0 ? 2 : 1;
+        return (int)mb_substr($idcard, 16, 1) % 2 === 0 ? 2 : 1;
     }
 
     /**
@@ -177,7 +177,7 @@ class IdCard
         $curr_ts = time();
         //得到两个日期相差的大体年数
         $diff = floor(($curr_ts - $birthday_ts) / 86400 / 365);
-        $age = strtotime(substr($birthday, 0, 8) . ' +' . $diff . 'years') > $curr_ts ? ($diff + 1) : $diff;
+        $age = strtotime(mb_substr($birthday, 0, 8) . ' +' . $diff . 'years') > $curr_ts ? ($diff + 1) : $diff;
         return intval($age);
     }
 
@@ -189,12 +189,12 @@ class IdCard
      */
     public function fifteen2Eighteen($idcard)
     {
-        if (strlen($idcard) != 15) {
+        if (mb_strlen($idcard) != 15) {
             return $idcard;
         }
 
         $code = '19';
-        $idCardBase = substr($idcard, 0, 6) . $code . substr($idcard, 6, 9);
+        $idCardBase = mb_substr($idcard, 0, 6) . $code . mb_substr($idcard, 6, 9);
         return $idCardBase . $this->getCode($idCardBase);
     }
 
@@ -207,14 +207,14 @@ class IdCard
     protected function getCode($idCardBase)
     {
         $length = 17;
-        if (strlen($idCardBase) < $length) {
+        if (mb_strlen($idCardBase) < $length) {
             throw new Exception('idCardBase params faild');
         }
         $factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
         $verifyNumbers = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
         $sum = 0;
         for ($i = 0; $i < $length; $i++) {
-            $sum += substr($idCardBase, $i, 1) * $factor[$i];
+            $sum += mb_substr($idCardBase, $i, 1) * $factor[$i];
         }
         $index = $sum % 11;
         return $verifyNumbers[$index];

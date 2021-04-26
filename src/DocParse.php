@@ -95,14 +95,14 @@ class DocParse
     {
         $content = trim($line);
 
-        if (strpos($content, '@') === 0) {
-            if (strpos($content, ' ') > 0) {
+        if (mb_strpos($content, '@') === 0) {
+            if (mb_strpos($content, ' ') > 0) {
                 // 获取参数名称
-                $param = substr($content, 1, strpos($content, ' ') - 1);
+                $param = mb_substr($content, 1, mb_strpos($content, ' ') - 1);
                 // 获取值
-                $value = substr($content, strlen($param) + 2);
+                $value = mb_substr($content, mb_strlen($param) + 2);
             } else {
-                $param = substr($content, 1);
+                $param = mb_substr($content, 1);
                 $value = '';
             }
 
@@ -134,7 +134,7 @@ class DocParse
     protected function formatResult($string)
     {
         $string = trim($string);
-        if (strpos($string, ' ') !== false) {
+        if (mb_strpos($string, ' ') !== false) {
             $data = explode(' ', $string, 3);
             $type = $data[0];
             $desc = isset($data[1]) ? $data[1] : '';
@@ -158,7 +158,7 @@ class DocParse
     protected function formatParam($string)
     {
         $string = trim($string);
-        if (strpos($string, ' ') !== false) {
+        if (mb_strpos($string, ' ') !== false) {
             $data = explode(' ', $string, 3);
             $type = $data[0];
             if (count($data) > 1) {

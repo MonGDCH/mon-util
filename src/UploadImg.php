@@ -104,7 +104,7 @@ class UploadImg
                 throw new UploadException('图片类型错误', UploadException::ERROR_UPLOAD_NOT_IMG);
         }
 
-        if (!empty($maxSize) && strlen($data) > $maxSize) {
+        if (!empty($maxSize) && mb_strlen($data) > $maxSize) {
             throw new UploadException('文件大小超出', UploadException::ERROR_UPLOAD_SIZE_FAILD);
         }
 

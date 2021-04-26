@@ -119,8 +119,8 @@ class IdCode
     public function code2id($code)
     {
         // 清除3、4位补足位
-        $str1 = trim(substr($code, 0, 3), $this->three);
-        $str2 = trim(substr($code, 3, 4), $this->four);
+        $str1 = trim(mb_substr($code, 0, 3), $this->three);
+        $str2 = trim(mb_substr($code, 3, 4), $this->four);
         // 转换数值
         $num1 = $this->_string2Id($str1);
         $num2 = $this->_string2Id($str2);
@@ -147,12 +147,12 @@ class IdCode
         //转换为数组
         $charArr = array_flip((array)str_split($this->baseChar));
         $num = 0;
-        for ($i = 0; $i <= strlen($str) - 1; $i++) {
-            $linshi = substr($str, $i, 1);
+        for ($i = 0, $l = mb_strlen($str); $i <= $l - 1; $i++) {
+            $linshi = mb_substr($str, $i, 1);
             if (!isset($charArr[$linshi])) {
                 return '';
             }
-            $num += $charArr[$linshi] * pow($this->type, strlen($str) - $i - 1);
+            $num += $charArr[$linshi] * pow($this->type, mb_strlen($str) - $i - 1);
         }
 
         return $num;

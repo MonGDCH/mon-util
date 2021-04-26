@@ -33,6 +33,12 @@ composer require mongdch/mon-util
 
 ## 版本
 
+### 1.3.2
+
+* 优化代码，优化错误处理机制
+* Validate类check方法统一返回boolean值，通过getError方法获取错误信息
+* 移除部分内置函数
+
 ### 1.3.1
 
 * 优化代码，优化错误处理机制

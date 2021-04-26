@@ -54,7 +54,7 @@ class Tool
      */
     public function is_wx()
     {
-        if (strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false) {
+        if (mb_strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false) {
             return true;
         }
 
@@ -68,7 +68,7 @@ class Tool
      */
     public function is_android()
     {
-        if (strpos($_SERVER['HTTP_USER_AGENT'], 'Android') !== false) {
+        if (mb_strpos($_SERVER['HTTP_USER_AGENT'], 'Android') !== false) {
             return true;
         }
 
@@ -82,7 +82,7 @@ class Tool
      */
     public function is_ios()
     {
-        if (strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone') !== false || strpos($_SERVER['HTTP_USER_AGENT'], 'iPad') !== false) {
+        if (mb_strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone') !== false || mb_strpos($_SERVER['HTTP_USER_AGENT'], 'iPad') !== false) {
             return true;
         }
 
@@ -191,7 +191,7 @@ class Tool
         header('Cache-Control:must-revalidate,post-check=0,pre-check=0');
         header('Expires:0');
         header('Pragma:public');
-        header("Content-Length: " . strlen($str));
+        header("Content-Length: " . mb_strlen($str));
         header("Content-Transfer-Encoding: binary");
         // 输出文件
         echo $str;
@@ -248,9 +248,9 @@ class Tool
             return '';
         }
         //截取银行卡号前4位
-        $prefix = substr($id, 0, 4);
+        $prefix = mb_substr($id, 0, 4);
         //截取银行卡号后4位
-        $suffix = substr($id, -4, 4);
+        $suffix = mb_substr($id, -4, 4);
         return $prefix . " **** **** **** " . $suffix;
     }
 
@@ -334,7 +334,7 @@ class Tool
         if ($result < 0) {
             return false;
         }
-        @socket_send($socket, $wbuff, strlen($wbuff), 0);
+        @socket_send($socket, $wbuff, mb_strlen($wbuff), 0);
         @socket_recv($socket, $iRecv, $len, 0);
         @socket_close($socket);
     }
@@ -362,7 +362,7 @@ class Tool
         }
         @socket_set_option($socket, SOL_SOCKET, SO_BROADCAST, 1);
 
-        $iSent = @socket_write($socket, $cmd, strlen($cmd));
+        $iSent = @socket_write($socket, $cmd, mb_strlen($cmd));
         if ($iSent === false) {
             if (socket_last_error() != SOCKET_EWOULDBLOCK) {
                 return false;
@@ -588,7 +588,7 @@ class Tool
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 300);
         // 判断是否为https请求
-        $ssl = strtolower(substr($url, 0, 8)) == "https://" ? true : false;
+        $ssl = strtolower(mb_substr($url, 0, 8)) == "https://" ? true : false;
         if ($ssl) {
             curl_setopt($ch, CURLOPT_SSLVERSION, false);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -615,7 +615,7 @@ class Tool
     {
         if (is_array($rgb)) {
             $match = $rgb;
-        } else if (strpos($rgb, 'rgb(') === 0) {
+        } else if (mb_strpos($rgb, 'rgb(') === 0) {
             // 判断是否为rgb开头
             $regexp = "/^rgb\(([0-9]{0,3})\,\s*([0-9]{0,3})\,\s*([0-9]{0,3})\)/";
             preg_match($regexp, $rgb, $match);
@@ -654,17 +654,17 @@ class Tool
     public function hex2rgb($hex_color)
     {
         $color = str_replace('#', '', $hex_color);
-        if (strlen($color) > 3) {
+        if (mb_strlen($color) > 3) {
             $rgb = [
-                'r' => hexdec(substr($color, 0, 2)),
-                'g' => hexdec(substr($color, 2, 2)),
-                'b' => hexdec(substr($color, 4, 2))
+                'r' => hexdec(mb_substr($color, 0, 2)),
+                'g' => hexdec(mb_substr($color, 2, 2)),
+                'b' => hexdec(mb_substr($color, 4, 2))
             ];
         } else {
             $color = $hex_color;
-            $r = substr($color, 0, 1) . substr($color, 0, 1);
-            $g = substr($color, 1, 1) . substr($color, 1, 1);
-            $b = substr($color, 2, 1) . substr($color, 2, 1);
+            $r = mb_substr($color, 0, 1) . mb_substr($color, 0, 1);
+            $g = mb_substr($color, 1, 1) . mb_substr($color, 1, 1);
+            $b = mb_substr($color, 2, 1) . mb_substr($color, 2, 1);
             $rgb = [
                 'r' => hexdec($r),
                 'g' => hexdec($g),

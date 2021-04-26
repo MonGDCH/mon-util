@@ -23,10 +23,10 @@ class Common
     public function encodeEX($src)
     {
         $result = '';
-        $len = strlen($src);
+        $len = mb_strlen($src);
         $encode_buf = '';
         for ($i = 0; $i < $len; $i++) {
-            $sChar = substr($src, $i, 1);
+            $sChar = mb_substr($src, $i, 1);
             switch ($sChar) {
                 case "~":
                 case "`":
@@ -113,7 +113,7 @@ class Common
         $str = base64_encode($this->randString(4, 5) . "." . $str . "." . $this->randString(4, 5));
         $key = base64_encode($salt);
         $str = base64_encode($str);
-        $mix = strlen($key) >= strlen($str) ? ceil(strlen($key) / strlen($str)) : ceil(strlen($str) / strlen($key));
+        $mix = mb_strlen($key) >= mb_strlen($str) ? ceil(mb_strlen($key) / mb_strlen($str)) : ceil(mb_strlen($str) / mb_strlen($key));
         $temp = str_split($str);
         $ftmp = str_split($key);
         foreach ($ftmp as $k => $v) {
@@ -138,9 +138,9 @@ class Common
         };
         $key = base64_encode($salt);
         $str = str_replace(array("i00i", "k00k", "z00z"), array("=", "+", "/"), $str);
-        $mix = strlen($key) >= strlen($str) ? ceil(strlen($key) / strlen($str)) : ceil(strlen($str) / strlen($key));
+        $mix = mb_strlen($key) >= mb_strlen($str) ? ceil(mb_strlen($key) / mb_strlen($str)) : ceil(mb_strlen($str) / mb_strlen($key));
         $temp = str_split($str);
-        for ($k = 0; $k < strlen($key); $k++) {
+        for ($k = 0; $k < mb_strlen($key); $k++) {
             if (!isset($temp[$k * $mix + 1])) {
                 break;
             }
@@ -180,7 +180,7 @@ class Common
         $c = 0;
         $b = 0;
         $bits = 0;
-        $len = strlen($str);
+        $len = mb_strlen($str);
         for ($i = 0; $i < $len; $i++) {
             $c = ord($str[$i]);
             if ($c > 128) {
@@ -453,11 +453,11 @@ class Common
     {
         $charid = md5(uniqid(mt_rand(), true));
         $hyphen = chr(45); // "-"
-        $uuid = substr($charid, 0, 8) . $hyphen
-            . substr($charid, 8, 4) . $hyphen
-            . substr($charid, 12, 4) . $hyphen
-            . substr($charid, 16, 4) . $hyphen
-            . substr($charid, 20, 12);
+        $uuid = mb_substr($charid, 0, 8) . $hyphen
+            . mb_substr($charid, 8, 4) . $hyphen
+            . mb_substr($charid, 12, 4) . $hyphen
+            . mb_substr($charid, 16, 4) . $hyphen
+            . mb_substr($charid, 20, 12);
 
         return $uuid;
     }
@@ -469,7 +469,7 @@ class Common
      */
     public function keyGen()
     {
-        return str_replace('-', '', substr($this->uuid(), 1, -1));
+        return str_replace('-', '', mb_substr($this->uuid(), 1, -1));
     }
 
     /**
@@ -542,7 +542,7 @@ class Common
         }
         if ($type != 4) {
             $chars = str_shuffle($chars);
-            $str = substr($chars, 0, $len);
+            $str = mb_substr($chars, 0, $len);
         } else {
             // 中文随机字
             for ($i = 0; $i < $len; $i++) {
@@ -645,7 +645,7 @@ class Common
                 $str = mb_convert_encoding($str, 'UTF-8', $encode);
             }
             // 开始转换
-            for ($i = 0; $i < strlen($str); $i++) {
+            for ($i = 0, $l = mb_strlen($str); $i < $l; $i++) {
                 $temp_str = dechex(ord($str[$i]));
                 if (isset($temp_str[1])) {
                     $change_after .= $temp_str[1];

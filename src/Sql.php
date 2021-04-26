@@ -64,12 +64,12 @@ class Sql
                 continue;
             }
             // 多行注释开始
-            if (substr($line, 0, 2) == '/*') {
+            if (mb_substr($line, 0, 2) == '/*') {
                 $comment = true;
                 continue;
             }
             // 多行注释结束
-            if (substr($line, -2) == '*/') {
+            if (mb_substr($line, -2) == '*/') {
                 $comment = false;
                 continue;
             }

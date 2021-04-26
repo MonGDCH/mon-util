@@ -46,8 +46,8 @@ trait Instance
         if (is_null(static::$instance)) {
             static::$instance = new static();
         }
-        $call = substr($method, 1);
-        if (0 === strpos($method, '_') && is_callable([static::$instance, $call])) {
+        $call = mb_substr($method, 1);
+        if (0 === mb_strpos($method, '_') && is_callable([static::$instance, $call])) {
             return call_user_func_array([static::$instance, $call], (array) $params);
         } else {
             throw new Exception("method not found => " . $method);

@@ -182,7 +182,7 @@ class File
         if ($handle = opendir($dir)) {
             $i = 0;
             while (false !== ($filename = readdir($handle))) {
-                if (strpos($filename, '.') === 0) {
+                if (mb_strpos($filename, '.') === 0) {
                     continue;
                 }
                 $file = rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $filename;
@@ -363,7 +363,7 @@ class File
     public function subsectionFile($content, $path, $maxSize = 20480000, $rollNum = 3, $postfix = '.log')
     {
         $destination = $path . $postfix;
-        $contentLength = strlen($content);
+        $contentLength = mb_strlen($content);
         // 判断写入内容的大小
         if ($contentLength > $maxSize) {
             throw new RuntimeException("Save content size cannot exceed {$maxSize}, content size: {$contentLength}");

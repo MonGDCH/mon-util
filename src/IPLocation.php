@@ -221,19 +221,19 @@ class IPLocation
                 $location['province'] = $_tmp_province[0];
 
                 // 存在市
-                if (strpos($_tmp_province[1], $seperator_shi) !== false) {
+                if (mb_strpos($_tmp_province[1], $seperator_shi) !== false) {
                     $_tmp_city = explode($seperator_shi, $_tmp_province[1]);
                     $location['city'] = $_tmp_city[0] . $seperator_shi;
 
                     // 存在县
                     if (isset($_tmp_city[1])) {
-                        if (strpos($_tmp_city[1], $seperator_xian) !== false) {
+                        if (mb_strpos($_tmp_city[1], $seperator_xian) !== false) {
                             $_tmp_county = explode($seperator_xian, $_tmp_city[1]);
                             $location['county'] = $_tmp_county[0] . $seperator_xian;
                         }
 
                         // 存在区
-                        if (!$location['county'] && strpos($_tmp_city[1], $seperator_qu) !== false) {
+                        if (!$location['county'] && mb_strpos($_tmp_city[1], $seperator_qu) !== false) {
                             $_tmp_qu = explode($seperator_qu, $_tmp_city[1]);
                             $location['county'] = $_tmp_qu[0] . $seperator_qu;
                         }
@@ -242,7 +242,7 @@ class IPLocation
             } else {
                 // 处理如内蒙古等不带省份类型的和直辖市
                 foreach ($this->dict_province as $key => $value) {
-                    if (false !== strpos($location['country'], $value)) {
+                    if (false !== mb_strpos($location['country'], $value)) {
                         $is_china = true;
                         // 存在直辖市
                         if (in_array($value, $this->dict_city_directly)) {
@@ -253,7 +253,7 @@ class IPLocation
 
                                 // 市辖区
                                 if (isset($_tmp_province[1])) {
-                                    if (strpos($_tmp_province[1], $seperator_qu) !== false) {
+                                    if (mb_strpos($_tmp_province[1], $seperator_qu) !== false) {
                                         $_tmp_qu = explode($seperator_qu, $_tmp_province[1]);
                                         $location['city'] = $_tmp_qu[0] . $seperator_qu;
                                     }
@@ -275,20 +275,20 @@ class IPLocation
                             }
 
                             // 内蒙古类型的获取市县信息
-                            if (strpos($_tmp_city, $seperator_shi) !== false) {
+                            if (mb_strpos($_tmp_city, $seperator_shi) !== false) {
                                 // 市
                                 $_tmp_city = explode($seperator_shi, $_tmp_city);
                                 $location['city'] = $_tmp_city[0] . $seperator_shi;
 
                                 // 县
                                 if (isset($_tmp_city[1])) {
-                                    if (strpos($_tmp_city[1], $seperator_xian) !== false) {
+                                    if (mb_strpos($_tmp_city[1], $seperator_xian) !== false) {
                                         $_tmp_county = explode($seperator_xian, $_tmp_city[1]);
                                         $location['county'] = $_tmp_county[0] . $seperator_xian;
                                     }
 
                                     // 区
-                                    if (!$location['county'] && strpos($_tmp_city[1], $seperator_qu) !== false) {
+                                    if (!$location['county'] && mb_strpos($_tmp_city[1], $seperator_qu) !== false) {
                                         $_tmp_qu = explode($seperator_qu, $_tmp_city[1]);
                                         $location['county'] = $_tmp_qu[0] . $seperator_qu;
                                     }
@@ -416,10 +416,10 @@ class IPLocation
         $location['country'] = iconv("GBK", "UTF-8", $location['country']);
         $location['area'] = iconv("GBK", "UTF-8", $location['area']);
         // CZ88.NET表示没有有效信息
-        if ((strpos($location['country'], 'CZ88.NET') !== false)) {
+        if ((mb_strpos($location['country'], 'CZ88.NET') !== false)) {
             $location['country'] = "未知";
         }
-        if (strpos($location['area'], 'CZ88.NET') !== false) {
+        if (mb_strpos($location['area'], 'CZ88.NET') !== false) {
             $location['area'] = '';
         }
         return $location;
@@ -533,7 +533,7 @@ class IPLocation
     {
         $ret = '';
         foreach ($this->dict_isp as $k => $v) {
-            if (false !== strpos($str, $v)) {
+            if (false !== mb_strpos($str, $v)) {
                 $ret = $v;
                 break;
             }
