@@ -13,6 +13,28 @@ use mon\util\Common;
 use mon\util\IdCode;
 use mon\util\Validate;
 
+if (!function_exists('check')) {
+    /**
+     * 验证格式
+     *
+     * @param string $type  格式类型，支持validate类的默认的所有方式
+     * @param array $args   可变参数
+     * @return boolean
+     */
+    function check($type, ...$args)
+    {
+        static $validate = null;
+        if (is_null($validate)) {
+            $validate = new Validate();
+        }
+        if (method_exists($validate, $type)) {
+            return call_user_func_array([$validate, $type], (array) $args);
+        }
+        throw new \Exception('不支持的验证类型[' . $type . ']');
+    }
+}
+
+
 if (!function_exists('debug')) {
     /**
      * 调试方法(浏览器友好处理)
@@ -62,70 +84,6 @@ if (!function_exists('is_ios')) {
     function is_ios()
     {
         return Tool::instance()->is_ios();
-    }
-}
-
-if (!function_exists('createTicket')) {
-    /**
-     * 创建基于cookies的Token
-     *
-     * @param  string  $ticket  验证秘钥
-     * @param  string  $salt    加密盐
-     * @param  integer $expire  Cookie生存时间
-     * @return array
-     */
-    function createTicket($ticket, $salt = "MonUtil", $expire = 3600)
-    {
-        return Tool::instance()->createTicket($ticket, $salt, $expire);
-    }
-}
-
-if (!function_exists('checkTicket')) {
-    /**
-     * 校验基于cookies的Token
-     *
-     * @param  string  $ticket      验证秘钥
-     * @param  string  $token       Token值
-     * @param  string  $tokenTime   Token创建时间
-     * @param  string  $salt        加密盐
-     * @param  boolean $destroy     是否清除Cookie
-     * @param  integer $expire      Cookie生存时间
-     * @return boolean
-     */
-    function checkTicket($ticket, $token = null, $tokenTime = null, $salt = "MonUtil", $destroy = true, $expire = 3600)
-    {
-        return Tool::instance()->checkTicket($ticket, $token, $tokenTime, $salt, $destroy, $expire);
-    }
-}
-
-if (!function_exists('exportCsv')) {
-    /**
-     * 导出CSV格式文件
-     *
-     * @param  string $filename  导出文件名
-     * @param  array  $title     表格标题列表(生成："序号,姓名,性别,年龄\n")
-     * @param  array  $titleKey  表格标题列表对应键名(注意：对应title排序)
-     * @param  array  $data      导出数据
-     * @return void
-     */
-    function exportCsv($filename, $title, $titleKey = [], $data = [])
-    {
-        return Tool::instance()->exportCsv($filename, $title, $titleKey, $data);
-    }
-}
-
-if (!function_exists('exportCsv')) {
-    /**
-     * 导出XML
-     *
-     * @param  array  $data     输出的数据
-     * @param  string $root     根节点
-     * @param  string $encoding 编码
-     * @return string
-     */
-    function exportXML(array $data, $root = "Mon", $encoding = 'UTF-8')
-    {
-        return Tool::instance()->exportXML($data, $root, $encoding);
     }
 }
 
@@ -417,16 +375,16 @@ if (!function_exists('array2DSort')) {
     }
 }
 
-if (!function_exists('get_first_char')) {
+if (!function_exists('getFirstChar')) {
     /**
      * php获取中文字符拼音首字母
      *
      * @param  string $str 中文字符串
      * @return string
      */
-    function get_first_char($str)
+    function getFirstChar($str)
     {
-        return Common::instance()->get_first_char($str);
+        return Common::instance()->getFirstChar($str);
     }
 }
 
@@ -454,7 +412,7 @@ if (!function_exists('keyGen')) {
     }
 }
 
-if (!function_exists('msubstr')) {
+if (!function_exists('mSubstr')) {
     /**
      * 字符串截取，支持中文和其他编码
      *
@@ -465,9 +423,9 @@ if (!function_exists('msubstr')) {
      * @param string $suffix    截断显示字符
      * @return string
      */
-    function msubstr($str, $length, $start = 0, $charset = "utf-8", $suffix = true)
+    function mSubstr($str, $length, $start = 0, $charset = "utf-8", $suffix = true)
     {
-        return Common::instance()->msubstr($str, $start, $length, $charset, $suffix);
+        return Common::instance()->mSubstr($str, $start, $length, $charset, $suffix);
     }
 }
 
@@ -499,27 +457,6 @@ if (!function_exists('iconv_recursion')) {
     function iconv_recursion($data, $out_charset, $in_charset)
     {
         return Common::instance()->iconv_recursion($data, $out_charset, $in_charset);
-    }
-}
-
-if (!function_exists('check')) {
-    /**
-     * 验证格式
-     *
-     * @param string $type  格式类型，支持validate类的默认的所有方式
-     * @param array $args   可变参数
-     * @return boolean
-     */
-    function check($type, ...$args)
-    {
-        static $validate = null;
-        if (is_null($validate)) {
-            $validate = new Validate();
-        }
-        if (method_exists($validate, $type)) {
-            return call_user_func_array([$validate, $type], (array) $args);
-        }
-        throw new \Exception('不支持的验证类型[' . $type . ']');
     }
 }
 
@@ -561,95 +498,15 @@ if (!function_exists('getSquarePoint')) {
     }
 }
 
-if (!function_exists('exportZip')) {
-    /**
-     * 文件打包下载
-     *
-     * @param string $downloadZip 打包后下载的文件名
-     * @param array $list 打包文件组
-     * @return void
-     */
-    function exportZip($downloadZip, array $list)
-    {
-        return Tool::instance()->exportZip($downloadZip, $list);
-    }
-}
-
-if (!function_exists('unZip')) {
-    /**
-     * 解压压缩包
-     *
-     * @param string $zipName 要解压的压缩包
-     * @param string $dest 解压到指定目录
-     * @return boolean
-     */
-    function unZip($zipName, $dest)
-    {
-        return Tool::instance()->unZip($zipName, $dest);
-    }
-}
-
-if (!function_exists('qrcode')) {
-    /**
-     * 输入图片二维码
-     *
-     * @param string  $text 生成二维码的内容
-     * @param boolean|string $outfile 输入文件, false则不输入，字符串路径则表示保存路径
-     * @param integer $level 压缩错误级别
-     * @param integer $size 图片尺寸 0-3
-     * @param integer $margin 图片边距
-     * @param boolean $saveandprint 是否输入图片及保存文件
-     * @return void
-     */
-    function qrcode($text, $outfile = false, $level = 0, $size = 8, $margin = 1, $saveandprint = false)
-    {
-        return Tool::instance()->qrcode($text, $outfile, $level, $size, $margin, $saveandprint);
-    }
-}
-
-if (!function_exists('download')) {
-    /**
-     * 下载保存文件
-     *
-     * @param string $url   下载的文件路径
-     * @param string $savePath  保存的文件路径
-     * @param string $filename  保存的文件名称
-     * @param boolean $createDir    是否自动创建二级目录进行保存
-     * @throws Exception
-     * @return string
-     */
-    function download($url, $savePath, $filename = '', $createDir = true)
-    {
-        return Tool::instance()->download($url, $savePath, $filename, $createDir);
-    }
-}
-
-if (!function_exists('exportFile')) {
-    /**
-     * 输出下载文件
-     * 可以指定下载显示的文件名，并自动发送相应的Header信息
-     * 如果指定了content参数，则下载该参数的内容
-     * 
-     * @param string $filename 下载文件名
-     * @param string $showname 下载显示的文件名
-     * @param integer $expire  下载内容浏览器缓存时间
-     * @return void
-     */
-    function exportFile($filename, $showname = '', $expire = 180)
-    {
-        return Tool::instance()->exportFile($filename, $showname, $expire);
-    }
-}
-
-if (function_exists('get_basename')) {
+if (function_exists('getBaseName')) {
     /**
      * 获取文件的名称，兼容中文名
      *
      * @return string
      */
-    function get_basename($filename)
+    function getBaseName($filename)
     {
-        return Tool::instance()->get_basename($filename);
+        return Tool::instance()->getBaseName($filename);
     }
 }
 

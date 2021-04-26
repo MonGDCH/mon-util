@@ -92,39 +92,43 @@ class Tool
     /**
      * 创建基于cookies的Token
      *
-     * @param  string  $ticket  验证秘钥
-     * @param  string  $salt    加密盐
-     * @param  integer $expire  Cookie生存时间
+     * @param string  $ticket     验证秘钥
+     * @param string  $salt       加密盐
+     * @param integer $expire     Cookie生存时间
+     * @param string  $tokenName  Cookie创建token的名称
+     * @param string  $tokenTimeName  cookie创建token创建时间的名称
      * @return array
      */
-    public function createTicket($ticket, $salt = "MonUtil", $expire = 3600)
+    public function createTicket($ticket, $salt = "MonUtil", $expire = 3600, $tokenName = '_token_', $tokenTimeName = '_tokenTime_')
     {
         $now = time();
         $token = md5($salt . $now . $ticket);
 
-        $_COOKIE['_token_'] = $token;
-        $_COOKIE['_tokenTime_'] = $now;
-        setcookie("_token_", $token, $now + $expire, "/");
-        setcookie("_tokenTime_", $now, $now + $expire, "/");
+        $_COOKIE[$tokenName] = $token;
+        $_COOKIE[$tokenTimeName] = $now;
+        setcookie($tokenName, $token, $now + $expire, "/");
+        setcookie($tokenTimeName, $now, $now + $expire, "/");
 
-        return array('token' => $token, 'tokenTime' => $now);
+        return ['token' => $token, 'tokenTime' => $now];
     }
 
     /**
      * 校验基于cookies的Token
      *
-     * @param  string  $ticket      验证秘钥
-     * @param  string  $token       Token值
-     * @param  string  $tokenTime   Token创建时间
-     * @param  string  $salt        加密盐
-     * @param  boolean $destroy     是否清除Cookie
-     * @param  integer $expire      Cookie生存时间
+     * @param string  $ticket      验证秘钥
+     * @param string  $token       Token值
+     * @param string  $tokenTime   Token创建时间
+     * @param string  $salt        加密盐
+     * @param boolean $destroy     是否清除Cookie
+     * @param integer $expire      Cookie生存时间
+     * @param string  $tokenName   Cookie创建token的名称
+     * @param string  $tokenTimeName  Cookie创建token创建时间的名称
      * @return boolean
      */
-    public function checkTicket($ticket, $token = null, $tokenTime = null, $salt = "MonUtil", $destroy = true, $expire = 3600)
+    public function checkTicket($ticket, $token = null, $tokenTime = null, $salt = "MonUtil", $destroy = true, $expire = 3600, $tokenName = '_token_', $tokenTimeName = '_tokenTime_')
     {
-        $token = empty($token) ? (isset($_COOKIE['_token_']) ? $_COOKIE['_token_'] : '') : $token;
-        $tokenTime = empty($tokenTime) ? (isset($_COOKIE['_tokenTime_']) ? $_COOKIE['_tokenTime_'] : 0) : $tokenTime;
+        $token = empty($token) ? (isset($_COOKIE[$tokenName]) ? $_COOKIE[$tokenName] : '') : $token;
+        $tokenTime = empty($tokenTime) ? (isset($_COOKIE[$tokenTimeName]) ? $_COOKIE[$tokenTimeName] : 0) : $tokenTime;
         $now = time();
         $result = false;
 
@@ -141,8 +145,8 @@ class Tool
 
         // 判断是否需要清空Cookie
         if ($destroy) {
-            setcookie("_token_", "", $now - $expire, "/");
-            setcookie("_tokenTime_", "", $now - $expire, "/");
+            setcookie($tokenName, "", $now - $expire, "/");
+            setcookie($tokenTimeName, "", $now - $expire, "/");
         }
 
         return $result;
@@ -297,7 +301,7 @@ class Tool
             return true;
         }
         // IP段验证
-        $ipregexp = implode('|', str_replace(array('*', '.'), array('\d+', '\.'), $ips));
+        $ipregexp = implode('|', str_replace(['*', '.'], ['\d+', '\.'], $ips));
         $rs = preg_match("/^(" . $ipregexp . ")$/", $ip);
         if ($rs) {
             return true;
@@ -313,17 +317,26 @@ class Tool
      * @param  integer  $port   端口
      * @param  string   $cmd    发送的内容套接字
      * @param  string   &$iRecv 引用返回的响应内容
-     * @return void
+     * @param  integer  $len    内容长度
+     * @return boolean
      */
-    public function sendCmdTCP($ip, $port, $cmd, &$iRecv)
+    public function sendCmdTCP($ip, $port, $cmd, &$iRecv, $len = 16384)
     {
         $iRecv = "";
         $wbuff = $cmd;
-        $socket = socket_create(AF_INET, SOCK_STREAM, 0);
-        @socket_connect($socket, $ip, $port);
+        $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        if ($socket === false) {
+            $errorcode = @socket_last_error();
+            $iRecv = @socket_strerror($errorcode);
+            return false;
+        }
+        $result = @socket_connect($socket, $ip, $port);
+        if ($result < 0) {
+            return false;
+        }
         @socket_send($socket, $wbuff, strlen($wbuff), 0);
-        socket_recv($socket, $iRecv, 16384, 0);
-        socket_close($socket);
+        @socket_recv($socket, $iRecv, $len, 0);
+        @socket_close($socket);
     }
 
     /**
@@ -340,7 +353,7 @@ class Tool
         $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
         if ($socket === false) {
             $errorcode = socket_last_error();
-            $errormsg = socket_strerror($errorcode);
+            $result = socket_strerror($errorcode);
             return false;
         }
         $result = @socket_connect($socket, $ip, $port);
@@ -497,7 +510,7 @@ class Tool
         if (empty($showname)) {
             $showname = $filename;
         }
-        $showname = $this->get_basename($showname);;
+        $showname = $this->getBaseName($showname);;
         if (!empty($filename)) {
             $finfo = new \finfo(FILEINFO_MIME);
             $type  = $finfo->file($filename);
@@ -516,8 +529,8 @@ class Tool
         header('Content-Encoding: none');
         header("Content-Transfer-Encoding: binary");
         // 清空文件的头部信息，解决文件下载无法打开问题
-        ob_clean(); // 清空缓冲区
-        flush();  // 刷新输出缓冲
+        ob_clean();
+        flush();
         readfile($filename);
         exit();
     }
@@ -527,7 +540,7 @@ class Tool
      *
      * @return string
      */
-    public function get_basename($filename)
+    public function getBaseName($filename)
     {
         return preg_replace('/^.+[\\\\\\/]/', '', $filename);
     }
@@ -613,7 +626,7 @@ class Tool
         }
 
         $hex_color = "#";
-        $hex = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F');
+        $hex = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];
         for ($i = 0; $i < 3; $i++) {
             $r = null;
             $c = $match[$i];

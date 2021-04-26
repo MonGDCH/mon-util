@@ -42,7 +42,7 @@ namespace mon\util;
  * @method eq	 		
  *
  * @author Mon <985558837@qq.com>
- * @version v1.3.2	2021-03-17 优化代码，移除内置单例模式，增加confirm、eq方法
+ * @version v1.3.3	2021-04-26 优化代码，增加getError获取错误信息，check方法返回固定boolean值
  */
 class Validate
 {
@@ -102,6 +102,13 @@ class Validate
 	public $checkScope = null;
 
 	/**
+	 * 错误信息
+	 *
+	 * @var mixed
+	 */
+	public $error = null;
+
+	/**
 	 * 正则匹配规则
 	 *
 	 * @var array
@@ -121,7 +128,7 @@ class Validate
 	 * 执行数据验证
 	 *
 	 * @param array $data	验证的数据
-	 * @return true|mixed
+	 * @return boolean
 	 */
 	public function check(array $data = [])
 	{
@@ -170,17 +177,21 @@ class Validate
 			if (isset($this->message[$errorItme[0]])) {
 				if (is_string($this->message[$errorItme[0]])) {
 					// 字符串，直接返回提示
-					return $this->message[$errorItme[0]];
+					$this->error = $this->message[$errorItme[0]];
+					return false;
 				} elseif (isset($this->message[$errorItme[0]][$errorItme[1]])) {
 					// 数组，返回对应节点提示
-					return $this->message[$errorItme[0]][$errorItme[1]];
+					$this->error = $this->message[$errorItme[0]][$errorItme[1]];
+					return false;
 				} else {
 					// 返回默认提示
-					return $errorItme[0] . ' check error';
+					$this->error = $errorItme[0] . ' check error';
+					return false;
 				}
 			} else {
 				// 返回默认提示
-				return $errorItme[0] . ' check faild';
+				$this->error = $errorItme[0] . ' check faild';
+				return false;
 			}
 		} else {
 			return true;
@@ -242,6 +253,16 @@ class Validate
 		}
 
 		return $this;
+	}
+
+	/**
+	 * 获取错误信息
+	 *
+	 * @return mixed
+	 */
+	public function getError()
+	{
+		return $this->error;
 	}
 
 	###############################  辅助方法  ###################################
@@ -394,7 +415,7 @@ class Validate
 	 */
 	public function date($value)
 	{
-		return false !== strtotime($value);
+		return strtotime($value) !== false;
 	}
 
 	/**
@@ -415,7 +436,7 @@ class Validate
 	 * @param  mixed $date  验证的数据
 	 * @return boolean
 	 */
-	public function after($value, $date)
+	public function afterDate($value, $date)
 	{
 		return ($this->date($value) && strtotime($value) >= strtotime($date));
 	}
@@ -427,7 +448,7 @@ class Validate
 	 * @param  mixed $date  验证的数据
 	 * @return boolean
 	 */
-	public function before($value, $date)
+	public function beforeDate($value, $date)
 	{
 		return ($this->date($value) && strtotime($value) <= strtotime($date));
 	}
@@ -458,7 +479,7 @@ class Validate
 	 */
 	public function ip($value)
 	{
-		return false !== filter_var($value, FILTER_VALIDATE_IP);
+		return filter_var($value, FILTER_VALIDATE_IP) !== false;
 	}
 
 	/**
@@ -491,7 +512,7 @@ class Validate
 	 */
 	public function email($value)
 	{
-		return false !== filter_var($value, FILTER_VALIDATE_EMAIL);
+		return filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
 	}
 
 	/**
@@ -579,7 +600,7 @@ class Validate
 	 */
 	public function url($value)
 	{
-		return false !== filter_var($value, FILTER_VALIDATE_URL);
+		return filter_var($value, FILTER_VALIDATE_URL) !== false;
 	}
 
 	/**
@@ -590,7 +611,7 @@ class Validate
 	 */
 	public function float($value)
 	{
-		return false !== filter_var($value, FILTER_VALIDATE_FLOAT);
+		return filter_var($value, FILTER_VALIDATE_FLOAT) !== false;
 	}
 
 	/**
@@ -669,24 +690,26 @@ class Validate
 	 * 只允许某些值
 	 *
 	 * @param  mixed $value 操作的数据
-	 * @param  mixed $in    验证的数据
+	 * @param  string|array $in    验证的数据
 	 * @return boolean
 	 */
 	public function in($value, $in)
 	{
-		return in_array($value, explode(',', $in));
+		$in = is_string($in) ? explode(',', $in) : $in;
+		return in_array($value, $in);
 	}
 
 	/**
 	 * 不允许某些值
 	 *
 	 * @param  mixed $value 操作的数据
-	 * @param  mixed $notin 验证的数据
+	 * @param  string|array $notin 验证的数据
 	 * @return boolean
 	 */
 	public function notIn($value, $notin)
 	{
-		return !in_array($value, explode(',', $notin));
+		$notin = is_string($notin) ? explode(',', $notin) : $notin;
+		return !in_array($value, $notin);
 	}
 
 	/**

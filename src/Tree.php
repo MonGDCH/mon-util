@@ -19,14 +19,14 @@ class Tree
      *
      * @var array
      */
-    public $data = array();
+    public $data = [];
 
     /**
      * 配置信息
      * 
      * @var array
      */
-    protected $config = array(
+    protected $config = [
         // 空格替换
         'nbsp'      => "　",
         // 主键 
@@ -36,18 +36,20 @@ class Tree
         // 顶级子ID
         'root'      => 0,
         // 分级前缀
-        'icon'      => array('│', '├', '└'),
+        'icon'      => ['│', '├', '└'],
         // html生成模板
-        'tpl'       => array(
+        'tpl'       => [
             'ul'    => '<li value="@id" @selected @disabled>@name @childlist</li>',
             'option' => '<option value="@id" @selected @disabled>@spacer@name</option>',
-        ),
-    );
+        ],
+    ];
 
     /**
-     * 架构初始化
+     * 构造方法
+     *
+     * @param array $config 配置信息
      */
-    public function __construct($config = array())
+    public function __construct($config = [])
     {
         $this->config = array_merge($this->config, $config);
     }
@@ -55,10 +57,10 @@ class Tree
     /**
      * 树初始化配置，支持链式操作
      *
-     * @param  array $config   配置信息
+     * @param  array $config 配置信息
      * @return Tree
      */
-    public function init($config = array())
+    public function init($config = [])
     {
         if ($config) {
             $this->config = array_merge($this->config, $config);
@@ -69,7 +71,7 @@ class Tree
     /**
      * 设置操作的data数组, 支持链式操作
      *
-     * @param  array  $arr [description]
+     * @param  array $arr 操作的数据
      * @return Tree
      */
     public function data($arr)
@@ -81,12 +83,12 @@ class Tree
     /**
      * 获取对应子级数据
      *
-     * @param  integer  $pid 子级对应父级的PID
+     * @param  integer  $pid  子级对应父级的PID
      * @return array
      */
     public function getChild($pid)
     {
-        $result = array();
+        $result = [];
         foreach ($this->data as $value) {
             if (!isset($value[$this->config['pid']])) {
                 // 不存在对应子键，跳过
@@ -109,7 +111,7 @@ class Tree
      */
     public function getChildren($pid, $self = false)
     {
-        $result = array();
+        $result = [];
         foreach ($this->data as $value) {
             if (!isset($value[$this->config['pid']])) {
                 // 不存在对应子键，跳过
@@ -137,7 +139,7 @@ class Tree
      */
     public function getChildrenIds($pid, $self = false)
     {
-        $result = array();
+        $result = [];
         $list = $this->getChildren($pid, $self);
         foreach ($list as $item) {
             $result[] = $item[$this->config['id']];
@@ -154,9 +156,8 @@ class Tree
      */
     public function getParent($id)
     {
-        $result = array();
+        $result = [];
         $pid = 0;
-
         foreach ($this->data as $value) {
             if (!isset($value[$this->config['id']]) || !isset($value[$this->config['pid']])) {
                 // 不存在对应节点，跳过
@@ -170,14 +171,14 @@ class Tree
         }
         // 存在父级节点
         if ($pid) {
-            foreach ($this->data as $v) {
-                if (!isset($value[$this->config['id']])) {
+            foreach ($this->data as $item) {
+                if (!isset($item[$this->config['id']])) {
                     // 不存在对应节点，跳过
                     continue;
                 }
-                if ($value[$this->config['id']] == $pid) {
+                if ($item[$this->config['id']] == $pid) {
                     // 获取当前节点父节点ID
-                    $result = $value;
+                    $result = $item;
                     break;
                 }
             }
@@ -195,7 +196,7 @@ class Tree
      */
     public function getParents($id, $self = false)
     {
-        $result = array();
+        $result = [];
         $pid = 0;
         foreach ($this->data as $value) {
             if (!isset($value[$this->config['id']]) || !isset($value[$this->config['pid']])) {
@@ -230,7 +231,7 @@ class Tree
      */
     public function getParentsIds($id, $self)
     {
-        $result = array();
+        $result = [];
         $list = $this->getParents($id, $self);
         foreach ($list as $item) {
             $result[] = $item[$this->config['id']];
@@ -248,9 +249,9 @@ class Tree
     public function getTree($mark = 'child')
     {
         // 创建Tree
-        $tree = array();
+        $tree = [];
         // 创建基于主键的数组引用
-        $refer = array();
+        $refer = [];
         foreach ($this->data as $key => $data) {
             $refer[$data[$this->config['id']]] = &$this->data[$key];
         }
@@ -272,16 +273,16 @@ class Tree
     /**
      * 回滚由getTree方法生成的树结果为二维数组
      *
-     * @param  array  $data [description]
-     * @param  string $mark [description]
+     * @param  array  $data 树结构数据
+     * @param  string $mark 子级标志位
      * @return array
      */
     public function rollbackTree($data, $mark = 'child')
     {
-        $result = array();
+        $result = [];
         foreach ($data as $k => $v) {
             // 判断是否存在子集
-            $child = isset($v[$mark]) ? $v[$mark] : array();
+            $child = isset($v[$mark]) ? $v[$mark] : [];
             unset($v[$mark]);
             $result[] = $v;
             if ($child) {
@@ -296,12 +297,12 @@ class Tree
     /**
      * 生成Option树型结构
      *
-     * @param int    $pid 表示获得这个ID下的所有子级
-     * @param string $itemtpl 条目模板 如："<option value=@id @selected @disabled>@spacer@name</option>"
-     * @param mixed  $selectedids 被选中的ID，比如在做树型下拉框的时候需要用到
-     * @param mixed  $disabledids 被禁用的ID，比如在做树型下拉框的时候需要用到
-     * @param string $itemprefix 每一项前缀
-     * @param string $toptpl 顶级栏目的模板
+     * @param integer $pid          表示获得这个ID下的所有子级
+     * @param string  $itemtpl      条目模板 如："<option value=@id @selected @disabled>@spacer@name</option>"
+     * @param mixed   $selectedids  被选中的ID，比如在做树型下拉框的时候需要用到
+     * @param mixed   $disabledids  被禁用的ID，比如在做树型下拉框的时候需要用到
+     * @param string  $itemprefix   每一项前缀
+     * @param string  $toptpl       顶级栏目的模板
      * @return string
      */
     public function getTreeOption($pid, $itemtpl = null, $selectedids = '', $disabledids = '', $itemprefix = '', $toptpl = '')
@@ -351,11 +352,11 @@ class Tree
     /**
      * 树型结构UL
      *
-     * @param int    $pid 表示获得这个ID下的所有子级
-     * @param string $itemtpl 条目模板 如："<li value=@id @selected @disabled>@name @childlist</li>"
-     * @param string $selectedids 选中的ID
-     * @param string $disabledids 禁用的ID
-     * @param string $wraptag 子列表包裹标签
+     * @param integer $pid            表示获得这个ID下的所有子级
+     * @param string  $itemtpl        条目模板 如："<li value=@id @selected @disabled>@name @childlist</li>"
+     * @param string  $selectedids    选中的ID
+     * @param string  $disabledids    禁用的ID
+     * @param string  $wraptag        子列表包裹标签
      * @return string
      */
     public function getTreeUl($pid, $itemtpl = null, $selectedids = '', $disabledids = '', $wraptag = 'ul', $wrapattr = '')
@@ -395,9 +396,9 @@ class Tree
     /**
      * 获取树状数组
      *
-     * @param string $myid 要查询的ID
-     * @param string $nametpl 名称条目模板
-     * @param string $itemprefix 前缀
+     * @param string $myid        要查询的ID
+     * @param string $nametpl     名称条目模板
+     * @param string $itemprefix  前缀
      * @return string
      */
     public function getTreeArray($myid, $itemprefix = '')
@@ -431,7 +432,8 @@ class Tree
     /**
      * 将getTreeArray的结果返回为二维数组
      *
-     * @param array $data
+     * @param array $data  树结构数据
+     * @param string $field 字段名称
      * @return array
      */
     public function getTreeList($data = [], $field = 'name')

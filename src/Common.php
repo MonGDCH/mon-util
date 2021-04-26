@@ -402,7 +402,7 @@ class Common
      * @param  string $str 中文字符串
      * @return string
      */
-    public function get_first_char($str)
+    public function getFirstChar($str)
     {
         if (empty($str)) {
             return '';
@@ -482,7 +482,7 @@ class Common
      * @param string $suffix    截断显示字符
      * @return string
      */
-    public function msubstr($str, $length, $start = 0, $charset = "utf-8", $suffix = true)
+    public function mSubstr($str, $length, $start = 0, $charset = "utf-8", $suffix = true)
     {
         if (function_exists("mb_substr")) {
             $slice = mb_substr($str, $start, $length, $charset);
