@@ -70,12 +70,14 @@ class File
      * 获取上传文件信息
      *
      * @param  string $field $_FILES 字段索引
+     * @param array $files 文件信息源，默认$_FILES
      * @return array
      */
-    public function uploadFileInfo($field)
+    public function uploadFileInfo($field, $files = [])
     {
+        $files = empty($files) ? $_FILES : $files;
         // 取得上传文件基本信息
-        $fileInfo = $_FILES[$field];
+        $fileInfo = $files[$field];
         $info = [];
         // 取得文件类型
         $info['type'] = strtolower(trim(stripslashes(preg_replace("/^(.+?);.*$/", "\\1", $fileInfo['type'])), '"'));

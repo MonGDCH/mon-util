@@ -2,7 +2,7 @@
 
 namespace mon\util;
 
-use \Exception;
+use Exception;
 use mon\util\exception\ImgException;
 
 /**

@@ -33,6 +33,10 @@ composer require mongdch/mon-util
 
 ## 版本
 
+### 1.3.3
+
+* 优化代码，增强验证器
+
 ### 1.3.2
 
 * 优化代码，优化错误处理机制

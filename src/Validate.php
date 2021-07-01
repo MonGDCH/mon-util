@@ -2,6 +2,8 @@
 
 namespace mon\util;
 
+use mon\util\exception\ValidateException;
+
 /**
  * 验证器
  *
@@ -196,6 +198,23 @@ class Validate
 		} else {
 			return true;
 		}
+	}
+
+	/**
+	 * check方法的异常处理封装，当验证不通过是抛出异常
+	 *
+	 * @param array $data
+	 * @throws ValidateException
+	 * @return true
+	 */
+	public function checked(array $data = [])
+	{
+		$check = $this->check($data);
+		if (!$check !== true) {
+			throw new ValidateException($this->getError(), 500);
+		}
+
+		return true;
 	}
 
 	/**

@@ -13,7 +13,7 @@ class Image
     /**
      * 图像资源对象
      *
-     * @var resource
+     * @var \GdImage
      */
     private $img;
 

@@ -98,9 +98,9 @@ class UploadFile
      * @throws UploadException
      * @return UploadFile
      */
-    public function upload($files = '', $name = 'file')
+    public function upload($files = null, $name = 'file')
     {
-        if ($files === '') {
+        if (is_null($files)) {
             $files = $_FILES;
         }
         if (empty($files) || !isset($files[$name])) {
