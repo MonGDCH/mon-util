@@ -41,7 +41,7 @@ use mon\util\exception\ValidateException;
  * @method xml 			验证XML
  * @method idCard		验证身份证号
  * @method confirm		比较字段
- * @method eq	 		
+ * @method eq	 		比较值
  *
  * @author Mon <985558837@qq.com>
  * @version v1.3.3	2021-04-26 优化代码，增加getError获取错误信息，check方法返回固定boolean值

@@ -5,6 +5,8 @@ namespace mon\util;
 use RuntimeException;
 use DirectoryIterator;
 use InvalidArgumentException;
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
 
 /**
  * 文章操作类
@@ -103,6 +105,30 @@ class File
     public function createDir($dirPath)
     {
         return !is_dir($dirPath) && mkdir($dirPath, 0755, true);
+    }
+
+    /**
+     * 复制文件夹
+     *
+     * @param string $source 源文件夹
+     * @param string $dest   目标文件夹
+     * @return void
+     */
+    public function copydir($source, $dest)
+    {
+        $this->createDir($dest);
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::SELF_FIRST
+        );
+        foreach ($iterator as $item) {
+            if ($item->isDir()) {
+                $sontDir = $dest . '/' . $iterator->getSubPathName();
+                $this->createDir($sontDir);
+            } else {
+                copy($item, $dest . '/' . $iterator->getSubPathName());
+            }
+        }
     }
 
     /**

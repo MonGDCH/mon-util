@@ -36,6 +36,7 @@ composer require mongdch/mon-util
 ### 1.3.3
 
 * 优化代码，增强验证器
+* File类增加 `copyDir` 文件夹复制方法 
 
 ### 1.3.2
 
