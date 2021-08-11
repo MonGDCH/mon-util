@@ -311,67 +311,6 @@ class Tool
     }
 
     /**
-     * 发送TCP请求
-     *
-     * @param  string   $ip     IP地址
-     * @param  integer  $port   端口
-     * @param  string   $cmd    发送的内容套接字
-     * @param  string   &$iRecv 引用返回的响应内容
-     * @param  integer  $len    内容长度
-     * @return boolean
-     */
-    public function sendCmdTCP($ip, $port, $cmd, &$iRecv, $len = 16384)
-    {
-        $iRecv = "";
-        $wbuff = $cmd;
-        $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        if ($socket === false) {
-            $errorcode = @socket_last_error();
-            $iRecv = @socket_strerror($errorcode);
-            return false;
-        }
-        $result = @socket_connect($socket, $ip, $port);
-        if ($result < 0) {
-            return false;
-        }
-        @socket_send($socket, $wbuff, mb_strlen($wbuff), 0);
-        @socket_recv($socket, $iRecv, $len, 0);
-        @socket_close($socket);
-    }
-
-    /**
-     * 发送UDP请求
-     *
-     * @param  string   $ip      IP地址
-     * @param  integer  $port    端口
-     * @param  string   $cmd     发送的内容套接字
-     * @param  string   &$result 引用返回的响应内容
-     * @return boolean
-     */
-    public static function sendCmdUDP($ip, $port, $cmd, &$result)
-    {
-        $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-        if ($socket === false) {
-            $errorcode = socket_last_error();
-            $result = socket_strerror($errorcode);
-            return false;
-        }
-        $result = @socket_connect($socket, $ip, $port);
-        if ($result < 0) {
-            return false;
-        }
-        @socket_set_option($socket, SOL_SOCKET, SO_BROADCAST, 1);
-
-        $iSent = @socket_write($socket, $cmd, mb_strlen($cmd));
-        if ($iSent === false) {
-            if (socket_last_error() != SOCKET_EWOULDBLOCK) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * 获取两坐标距离
      *
      * @param float $lng1 经度1

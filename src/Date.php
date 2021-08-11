@@ -568,7 +568,7 @@ class Date
     /**
      * 魔术方法，支持字符串输出对象
      *
-     * @return string [description]
+     * @return string
      */
     public function __toString()
     {

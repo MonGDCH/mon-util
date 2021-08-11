@@ -33,6 +33,11 @@ composer require mongdch/mon-util
 
 ## 版本
 
+### 1.3.4
+
+* 优化代码，移除`Tool`类中的TCP、UDP方法
+* 增加`Client`类，支持HTTP、TCP、UDP请求
+
 ### 1.3.3
 
 * 优化代码，增强验证器
