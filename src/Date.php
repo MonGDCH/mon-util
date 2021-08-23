@@ -6,7 +6,8 @@ namespace mon\util;
  * 时间日期相关操作
  *
  * @author Mon 985558837@qq.com
- * @version v1.0.1 2021-03-18 移除内置单例
+ * @version 1.0.1 2021-03-18 移除内置单例
+ * @version 1.0.2 增加获取年月日周开始、结束时间
  */
 class Date
 {
@@ -204,6 +205,74 @@ class Date
     public function format($format = "Y-m-d H:i:s")
     {
         return date($format, $this->date);
+    }
+
+    /**
+     * 获取日期开始和结束的时间戳
+     *
+     * @param integer $timeStamp 时间戳，默认当天
+     * @return array
+     */
+    public function getDayTime($timeStamp = '')
+    {
+        $date = $timeStamp ? $timeStamp : $this->date;
+        list($y, $m, $d) = explode('-', date('Y-m-d', $date));
+        return [
+            mktime(0, 0, 0, $m, $d, $y),
+            mktime(23, 59, 59, $m, $d, $y)
+        ];
+    }
+
+    /**
+     * 获取周开始和结束的时间戳
+     *
+     * @param integer $timeStamp 默认当周
+     * @return array
+     */
+    public function getWeekTime($timeStamp = '')
+    {
+        $date = $timeStamp ? $timeStamp : $this->date;
+        list($y, $m, $d, $w) = explode('-', date('Y-m-d-w', $date));
+        // 修正周日的问题
+        if ($w == 0) {
+            $w = 7;
+        }
+        return [
+            mktime(0, 0, 0, $m, $d - $w + 1, $y),
+            mktime(23, 59, 59, $m, $d - $w + 7, $y)
+        ];
+    }
+
+    /**
+     * 获取月开始和结束的时间戳
+     *
+     * @param integer $timeStamp 默认当月
+     * @return array
+     */
+    public function getMonthTime($timeStamp = '')
+    {
+        $date = $timeStamp ? $timeStamp : $this->date;
+        list($y, $m, $t) = explode('-', date('Y-m-t', $date));
+        return [
+            mktime(0, 0, 0, $m, 1, $y),
+            mktime(23, 59, 59, $m, $t, $y)
+        ];
+    }
+
+    /**
+     * 获取年开始和结束的时间戳
+     *
+     * @param integer $timeStamp 默认当年
+     * @return array
+     */
+    public function getYearTime($timeStamp = '')
+    {
+        $date = $timeStamp ? $timeStamp : $this->date;
+        $y = date('Y', $date);
+        return [
+            mktime(0, 0, 0, 1, 1, $y),
+            mktime(23, 59, 59, 12, 31, $y)
+        ];
     }
 
     /**

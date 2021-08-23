@@ -2,16 +2,16 @@
 
 namespace mon\util;
 
-use mon\util\exception\ClientException;
+use mon\util\exception\NetWorkException;
 
 /**
- * 客户端工具
- * 支持HTTP、批量发送HTTP、TCP、UDP等请求
+ * 网络客户端工具
+ * 支持HTTP、批量发送HTTP、文件上传、TCP、UDP等请求
  * 
  * @author Mon <985558837@qq.com>
- * @version 1.0.0
+ * @version 1.1.0 优化错误处理，增加模拟表单上传
  */
-class Client
+class Network
 {
     use Instance;
 
@@ -65,6 +65,9 @@ class Client
         $ch = $this->getRequest($url, $queryData, $method, $timeOut, $header, $agent);
         // 发起请求
         $html = curl_exec($ch);
+        if ($html === false) {
+            throw new NetWorkException('发起HTTP请求失败!', 0, null, $ch);
+        }
         // 关闭请求句柄
         curl_close($ch);
         $result = ($toJson) ? json_decode($html, true) : $html;
@@ -154,6 +157,37 @@ class Client
     }
 
     /**
+     * 文件上传
+     *
+     * @param string $url 上传路径
+     * @param string $path 文件路径
+     * @param array $data 额外的post参数
+     * @param string $filename 模拟post表单input的name值
+     * @param string $name 文件名
+     * @param array $header 额外的请求头
+     * @param string $agent 请求user-agent
+     * @param integer $timeout 上传超时时间
+     * @return mixed
+     */
+    public function sendFile($url, $path, $data = [], $filename = '', $name = 'file', $toJson = false, $header = [], $agent = '', $timeout = 300)
+    {
+        // 处理文件上传数据集
+        $filename = empty($filename) ? basename($path) : $filename;
+        $sendData = array_merge($data, [$name => new \CURLFile(realpath($path), mime_content_type($path), $filename)]);
+        $header = array_merge(['Content-Type: multipart/form-data'], $header);
+        $ch = $this->getRequest($url, $sendData, 'post', $timeout, $header, $agent);
+        // 发起请求
+        $html = curl_exec($ch);
+        if ($html === false) {
+            throw new NetWorkException('发起文件上传请求失败!', 0, null, $ch);
+        }
+        // 关闭请求句柄
+        curl_close($ch);
+        $result = ($toJson) ? json_decode($html, true) : $html;
+        return $result;
+    }
+
+    /**
      * 发送TCP请求
      *
      * @param string  $ip       IP
@@ -168,18 +202,18 @@ class Client
     {
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (!$socket) {
-            throw new ClientException('创建TCP-Socket失败');
+            throw new NetWorkException('创建TCP-Socket失败');
         }
         $timeouter = ['sec' => $timeOut, 'usec' => 0];
         socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, $timeouter);
         socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, $timeouter);
         if (socket_connect($socket, $ip, $port) == false) {
-            throw new ClientException('链接TCP-Socket失败');
+            throw new NetWorkException('链接TCP-Socket失败');
         }
         $send_len = strlen($cmd);
         $sent = socket_write($socket, $cmd, $send_len);
         if ($sent != $send_len) {
-            throw new ClientException('发送TCP套接字数据失败');
+            throw new NetWorkException('发送TCP套接字数据失败');
         }
         // 读取返回数据
         $data = socket_read($socket, 1024);
@@ -204,23 +238,23 @@ class Client
      * @param boolean $close    是否关闭链接
      * @return mixed 结果集
      */
-    protected function send($ip, $port, $cmd, $timeOut = 2, $toJson = false, $close = true)
+    protected function sendUDP($ip, $port, $cmd, $timeOut = 2, $toJson = false, $close = true)
     {
         $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
         if (!$socket) {
-            throw new ClientException('创建UDP-Socket失败');
+            throw new NetWorkException('创建UDP-Socket失败');
         }
         $timeouter = ['sec' => $timeOut, 'usec' => 0];
         socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, $timeouter);
         socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, $timeouter);
         if (socket_connect($socket, $ip, $port) == false) {
             // 执行链接Socket失败钩子
-            throw new ClientException('链接UDP-Socket失败');
+            throw new NetWorkException('链接UDP-Socket失败');
         }
         $send_len = strlen($cmd);
         $sent = socket_write($socket, $cmd, $send_len);
         if ($sent != $send_len) {
-            throw new ClientException('发送UDP套接字数据失败');
+            throw new NetWorkException('发送UDP套接字数据失败');
         }
         // 读取返回数据
         $data = socket_read($socket, 1024);
@@ -269,7 +303,7 @@ class Client
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $type);
                 break;
             default:
-                throw new ClientException("不支持的HTTP请求类型({$type})");
+                throw new NetWorkException("不支持的HTTP请求类型({$type})");
         }
         // 判断是否需要传递数据
         if (!empty($data)) {
@@ -290,6 +324,7 @@ class Client
         $userAgent = $agent ? $agent : $this->userAgent;
         curl_setopt($ch, CURLOPT_USERAGENT, $userAgent);
         // 设置请求头
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         if (!empty($header)) {
             curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         }
@@ -316,7 +351,7 @@ class Client
     {
         // 请求URL
         if (!isset($item['url']) || empty($item['url'])) {
-            throw new ClientException('HTTP请求列表必须存在url参数');
+            throw new NetWorkException('HTTP请求列表必须存在url参数');
         }
         $url = $item['url'];
         // 请求方式，默认使用get请求
