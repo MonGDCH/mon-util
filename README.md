@@ -34,6 +34,10 @@ composer require mongdch/mon-util
 
 ## 版本
 
+### 1.3.6
+
+* 优化代码
+
 ### 1.3.5
 
 * 优化代码，`Client`类更改为`Network`类，优化错误处理，增加模拟表单文件上传功能

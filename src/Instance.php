@@ -8,7 +8,7 @@ use Exception;
  * 单例trait
  *
  * @author Mon 985558837@qq.com
- * @version 1.0.1   修正获取当前实例的方式为static而非static
+ * @version 1.0.1   修正获取当前实例的方式为static而非self
  */
 trait Instance
 {

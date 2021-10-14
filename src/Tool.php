@@ -485,14 +485,14 @@ class Tool
     }
 
     /**
-     * 输入图片二维码
+     * 二维码图片
      *
      * @param string  $text 生成二维码的内容
-     * @param boolean|string $outfile 输入文件, false则不输入，字符串路径则表示保存路径
+     * @param boolean|string $outfile 保存文件, false则不保存，字符串路径则表示保存路径
      * @param integer $level 压缩错误级别
      * @param integer $size 图片尺寸 0-3
      * @param integer $margin 图片边距
-     * @param boolean $saveandprint 是否输入图片及保存文件
+     * @param boolean $saveandprint 是否输出图片及保存文件
      * @return void
      */
     public function qrcode($text, $outfile = false, $level = 0, $size = 8, $margin = 1, $saveandprint = false)

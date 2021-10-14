@@ -56,7 +56,7 @@ class Network
         $method = strtoupper($type);
         $queryData = $data;
         // get请求
-        if (count($data) > 0 && $method == 'GET') {
+        if ($method == 'GET' && is_array($data) && count($data) > 0) {
             $uri = $this->arrToUri($data);
             $url = $url . (strpos($url, '?') === false ? '?' : '') . $uri;
             $queryData = [];
