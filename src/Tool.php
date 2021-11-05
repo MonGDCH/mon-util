@@ -209,13 +209,13 @@ class Tool
     {
         // 清空之前的输出
         ob_get_contents() && ob_end_clean();
-        header("Content-type:text/xml");
         $xml  = "<?xml version=\"1.0\" encoding=\"{$encoding}\"?>";
         $xml .= "<{$root}>";
         $xml .= $this->dataToXML($data);
         $xml .= "</{$root}>";
 
-        return $xml;
+        header("Content-type:text/xml");
+        echo $xml;
     }
 
     /**
@@ -234,6 +234,19 @@ class Tool
         }
 
         return $xml;
+    }
+
+    /**
+     * XML转数组
+     *
+     * @param string $xml
+     * @return array
+     */
+    public function xmlToData($xml)
+    {
+        $obj = simplexml_load_string($xml);
+        $json = json_encode($obj);
+        return json_decode($json, true);
     }
 
     /**
@@ -471,7 +484,6 @@ class Tool
         ob_clean();
         flush();
         readfile($filename);
-        exit();
     }
 
     /**

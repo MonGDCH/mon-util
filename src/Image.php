@@ -7,6 +7,9 @@ use mon\util\exception\ImgException;
 
 /**
  * 图像操作类
+ * 
+ * @author Name <985558837@qq.com>
+ * @version 1.1.0
  */
 class Image
 {
@@ -30,6 +33,65 @@ class Image
      * @var GIF
      */
     protected $gif;
+
+    /**
+     * 构造方法
+     *
+     * @param string $img 图片地址
+     */
+    public function __construct($img = null)
+    {
+        if (!extension_loaded('gd')) {
+            throw new ImgException('未启用GD扩展');
+        }
+        if (is_string($img)) {
+            $this->open($img);
+        }
+    }
+
+    /**
+     * 打开一张图片
+     *
+     * @param string $imgname 图片路径
+     * @return Image
+     */
+    public function open($imgname)
+    {
+        // 检测图像文件
+        if (!is_file($imgname)) {
+            throw new ImgException('不存在的图像文件', ImgException::ERROR_IMG_NOT_FOUND);
+        }
+        // 获取图像信息
+        $info = getimagesize($imgname);
+        // 检测图像合法性
+        if (false === $info || (IMAGETYPE_GIF === $info[2] && empty($info['bits']))) {
+            throw new ImgException('非法图像文件', ImgException::ERROR_IMG_FAILD);
+        }
+        // 设置图像信息
+        $this->info = [
+            'width'  => $info[0],
+            'height' => $info[1],
+            'type'   => image_type_to_extension($info[2], false),
+            'mime'   => $info['mime'],
+        ];
+
+        // 销毁已存在的图像
+        empty($this->img) || imagedestroy($this->img);
+
+        //打开图像
+        if ('gif' == $this->info['type']) {
+            $this->gif = new GIF($imgname);
+            $this->img = imagecreatefromstring($this->gif->image());
+        } else {
+            $fun = "imagecreatefrom{$this->info['type']}";
+            if (!function_exists($fun)) {
+                throw new ImgException('不支持的图片类型', ImgException::ERROR_IMG_TYPE_NOT_SUPPORT);
+            }
+            $this->img = call_user_func($fun, $imgname);
+        }
+
+        return $this;
+    }
 
     /**
      * 保存图像
@@ -60,10 +122,52 @@ class Image
             $save = $this->gif->save($imgname);
         } else {
             $fun = "image{$type}";
-            $save = $fun($this->img, $imgname);
+            if (!function_exists($fun)) {
+                throw new ImgException('不支持的图片类型', ImgException::ERROR_IMG_TYPE_NOT_SUPPORT);
+            }
+            $save = call_user_func($fun, $this->img, $imgname);
         }
 
         return $save;
+    }
+
+    /**
+     * 输出图片
+     *
+     * @param boolean $echo 是否直接输出
+     * @return mixed
+     */
+    public function output($type = null, $interlace = true, $echo = true)
+    {
+        if (empty($this->img)) {
+            throw new ImgException('没有可以被保存的图像资源', ImgException::ERROR_IMG_SAVE);
+        }
+        // 自动获取图像类型
+        if (is_null($type)) {
+            $type = $this->info['type'];
+        } else {
+            $type = strtolower($type);
+        }
+        // JPEG图像设置隔行扫描
+        if ('jpeg' == $type || 'jpg' == $type) {
+            $type = 'jpeg';
+            imageinterlace($this->img, $interlace);
+        }
+        $fun = "image{$type}";
+        if (!function_exists($fun)) {
+            throw new ImgException('不支持的图片类型', ImgException::ERROR_IMG_TYPE_NOT_SUPPORT);
+        }
+        // 获取输出图像
+        ob_start();
+        call_user_func($fun, $this->img);
+        $content = ob_get_clean();
+        // 输出图像
+        if ($echo) {
+            header("Content-type: image/" . $type);
+            echo $content;
+        }
+
+        return $content;
     }
 
     /**
@@ -133,48 +237,10 @@ class Image
             throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
         }
 
-        return array($this->info['width'], $this->info['height']);
-    }
-
-    /**
-     * 打开一张图片
-     *
-     * @param string $imgname 图片路径
-     * @return Image
-     */
-    public function open($imgname)
-    {
-        // 检测图像文件
-        if (!is_file($imgname)) {
-            throw new ImgException('不存在的图像文件', ImgException::ERROR_IMG_NOT_FOUND);
-        }
-        // 获取图像信息
-        $info = getimagesize($imgname);
-        // 检测图像合法性
-        if (false === $info || (IMAGETYPE_GIF === $info[2] && empty($info['bits']))) {
-            throw new ImgException('非法图像文件', ImgException::ERROR_IMG_FAILD);
-        }
-        // 设置图像信息
-        $this->info = array(
-            'width'  => $info[0],
-            'height' => $info[1],
-            'type'   => image_type_to_extension($info[2], false),
-            'mime'   => $info['mime'],
-        );
-
-        // 销毁已存在的图像
-        empty($this->img) || imagedestroy($this->img);
-
-        //打开图像
-        if ('gif' == $this->info['type']) {
-            $this->gif = new GIF($imgname);
-            $this->img = imagecreatefromstring($this->gif->image());
-        } else {
-            $fun = "imagecreatefrom{$this->info['type']}";
-            $this->img = $fun($imgname);
-        }
-
-        return $this;
+        return [
+            'width' => $this->info['width'],
+            'height' => $this->info['height']
+        ];
     }
 
     /**
@@ -238,9 +304,8 @@ class Image
 
         // 计算缩略图生成的必要参数
         switch ($type) {
-                // 等比例缩放
             case 1:
-                // 原图尺寸小于缩略图尺寸则不进行缩略
+                // 等比例缩放 原图尺寸小于缩略图尺寸则不进行缩略
                 if ($w < $width && $h < $height) {
                     return;
                 };
@@ -252,9 +317,8 @@ class Image
                 $height = $h * $scale;
                 break;
 
-                // 居中裁剪
             case 2:
-                // 计算缩放比例
+                // 居中裁剪
                 $scale = max($width / $w, $height / $h);
                 // 设置缩略图的坐标及宽度和高度
                 $w = $width / $scale;
@@ -262,18 +326,16 @@ class Image
                 $x = ($this->info['width'] - $w) / 2;
                 $y = ($this->info['height'] - $h) / 2;
                 break;
-                // 左上角裁剪
             case 3:
-                // 计算缩放比例
+                // 左上角裁剪
                 $scale = max($width / $w, $height / $h);
                 // 设置缩略图的坐标及宽度和高度
                 $x = $y = 0;
                 $w = $width / $scale;
                 $h = $height / $scale;
                 break;
-                // 右下角裁剪
             case 4:
-                // 计算缩放比例
+                // 右下角裁剪
                 $scale = max($width / $w, $height / $h);
                 // 设置缩略图的坐标及宽度和高度
                 $w = $width / $scale;
@@ -281,9 +343,8 @@ class Image
                 $x = $this->info['width'] - $w;
                 $y = $this->info['height'] - $h;
                 break;
-                // 填充
             case 5:
-                // 计算缩放比例
+                // 填充
                 if ($w < $width && $h < $height) {
                     $scale = 1;
                 } else {
@@ -311,8 +372,8 @@ class Image
                 $this->info['width']  = $width;
                 $this->info['height'] = $height;
                 return $this;
-                // 固定
             case 6:
+                // 固定
                 $x = $y = 0;
                 break;
             default:
@@ -352,55 +413,55 @@ class Image
 
         // 设定水印位置
         switch ($locate) {
-                // 右下角水印
             case 3:
+                // 右下角水印
                 $x = $this->info['width'] - $info[0];
                 $y = $this->info['height'] - $info[1];
                 break;
 
-                // 左下角水印
             case 1:
+                // 左下角水印
                 $x = 0;
                 $y = $this->info['height'] - $info[1];
                 break;
 
-                // 左上角水印
             case 7:
+                // 左上角水印
                 $x = $y = 0;
                 break;
 
-                // 右上角水印
             case 9:
+                // 右上角水印
                 $x = $this->info['width'] - $info[0];
                 $y = 0;
                 break;
 
-                // 居中水印
             case 5:
+                // 居中水印
                 $x = ($this->info['width'] - $info[0]) / 2;
                 $y = ($this->info['height'] - $info[1]) / 2;
                 break;
 
-                // 下居中水印
             case 2:
+                // 下居中水印
                 $x = ($this->info['width'] - $info[0]) / 2;
                 $y = $this->info['height'] - $info[1];
                 break;
 
-                // 右居中水印
             case 6:
+                // 右居中水印
                 $x = $this->info['width'] - $info[0];
                 $y = ($this->info['height'] - $info[1]) / 2;
                 break;
 
-                // 上居中水印
             case 8:
+                // 上居中水印
                 $x = ($this->info['width'] - $info[0]) / 2;
                 $y = 0;
                 break;
 
-                // 左居中水印
             case 4:
+                // 左居中水印
                 $x = 0;
                 $y = ($this->info['height'] - $info[1]) / 2;
                 break;
@@ -470,52 +531,51 @@ class Image
 
         // 设定文字位置
         switch ($locate) {
-                // 右下角文字
             case 3:
+                // 右下角文字
                 $x += $this->info['width']  - $w;
                 $y += $this->info['height'] - $h;
                 break;
 
-                // 左下角文字
             case 1:
+                // 左下角文字
                 $y += $this->info['height'] - $h;
                 break;
 
-                // 左上角文字
             case 7:
-                // 起始坐标即为左上角坐标，无需调整
+                // 左上角文字，起始坐标即为左上角坐标，无需调整
                 break;
 
-                // 右上角文字
             case 9:
+                // 右上角文字
                 $x += $this->info['width'] - $w;
                 break;
 
-                // 居中文字
             case 5:
+                // 居中文字
                 $x += ($this->info['width']  - $w) / 2;
                 $y += ($this->info['height'] - $h) / 2;
                 break;
 
-                // 下居中文字
             case 2:
+                // 下居中文字
                 $x += ($this->info['width'] - $w) / 2;
                 $y += $this->info['height'] - $h;
                 break;
 
-                // 右居中文字
             case 6:
+                // 右居中文字
                 $x += $this->info['width'] - $w;
                 $y += ($this->info['height'] - $h) / 2;
                 break;
 
-                // 上居中文字
             case 8:
+                // 上居中文字
                 $x += ($this->info['width'] - $w) / 2;
                 break;
 
-                // 左居中文字
             case 4:
+                // 左居中文字
                 $y += ($this->info['height'] - $h) / 2;
                 break;
 

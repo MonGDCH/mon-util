@@ -68,4 +68,9 @@ class ImgException extends Exception
      * 错误的颜色值
      */
     const ERROR_IMG_FAILD_COLOR = 11;
+
+    /**
+     * 图片类型不支持
+     */
+    const ERROR_IMG_TYPE_NOT_SUPPORT = 12;
 }

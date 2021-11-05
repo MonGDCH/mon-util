@@ -34,6 +34,10 @@ composer require mongdch/mon-util
 
 ## 版本
 
+### 1.3.7
+
+* 优化增强Image类
+
 ### 1.3.6
 
 * 优化代码
