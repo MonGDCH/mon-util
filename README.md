@@ -34,7 +34,7 @@ composer require mongdch/mon-util
 
 ## 版本
 
-### 1.3.7
+### 1.3.8
 
 - 优化增加文件导出压缩包 Tool::exportZip 方法
 - 增加 Tool::exportZipForDir 方法，压缩导出整个目录
