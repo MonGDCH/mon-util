@@ -29,6 +29,7 @@ class GIF
      *
      * @param string $src GIF图片数据
      * @param string $mod 图片数据类型
+     * @throws ImgException
      */
     public function __construct($src = null, $mod = 'url')
     {

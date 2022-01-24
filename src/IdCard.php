@@ -100,6 +100,7 @@ class IdCard
      * 获取所属省份城市
      *
      * @param string $idcard 身份证号码
+     * @throws Exception
      * @return string
      */
     public function getCity($idcard)
@@ -119,6 +120,7 @@ class IdCard
      * 获取所属省份城市地区信息
      *
      * @param string $idcard 身份证号码
+     * @throws Exception
      * @return string
      */
     public function getLocation($idcard)
@@ -202,6 +204,7 @@ class IdCard
      * 获取校验码
      *
      * @param string $idCardBase 17位以上的身份号码
+     * @throws Exception
      * @return string
      */
     protected function getCode($idCardBase)

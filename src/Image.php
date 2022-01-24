@@ -37,6 +37,7 @@ class Image
     /**
      * 构造方法
      *
+     * @throws ImgException
      * @param string $img 图片地址
      */
     public function __construct($img = null)
@@ -53,6 +54,7 @@ class Image
      * 打开一张图片
      *
      * @param string $imgname 图片路径
+     * @throws ImgException
      * @return Image
      */
     public function open($imgname)
@@ -99,6 +101,7 @@ class Image
      * @param  string  $imgname   图像保存名称
      * @param  string  $type      图像类型
      * @param  boolean $interlace 是否对JPEG类型图像设置隔行扫描
+     * @throws ImgException
      * @return mixed|boolean
      */
     public function save($imgname, $type = null, $interlace = true)
@@ -135,6 +138,7 @@ class Image
      * 输出图片
      *
      * @param boolean $echo 是否直接输出
+     * @throws ImgException
      * @return mixed
      */
     public function output($type = null, $interlace = true, $echo = true)
@@ -173,6 +177,7 @@ class Image
     /**
      * 返回图像宽度
      * 
+     * @throws ImgException
      * @return integer 图像宽度
      */
     public function width()
@@ -187,6 +192,7 @@ class Image
     /**
      * 返回图像高度
      * 
+     * @throws ImgException
      * @return integer 图像高度
      */
     public function height()
@@ -201,6 +207,7 @@ class Image
     /**
      * 返回图像类型
      *
+     * @throws ImgException
      * @return string 图像类型
      */
     public function type()
@@ -215,6 +222,7 @@ class Image
     /**
      * 返回图像MIME类型
      *
+     * @throws ImgException
      * @return string 图像MIME类型
      */
     public function mime()
@@ -229,6 +237,7 @@ class Image
     /**
      * 返回图像尺寸数组 0 - 图像宽度，1 - 图像高度
      *
+     * @throws ImgException
      * @return array 图像尺寸
      */
     public function size()
@@ -252,6 +261,7 @@ class Image
      * @param  integer $y      裁剪区域y坐标
      * @param  integer $width  图像保存宽度
      * @param  integer $height 图像保存高度
+     * @throws ImgException
      * @return Image
      */
     public function crop($w, $h, $x = 0, $y = 0, $width = null, $height = null)
@@ -290,6 +300,7 @@ class Image
      * @param  integer $width  缩略图最大宽度
      * @param  integer $height 缩略图最大高度
      * @param  integer $type   缩略图裁剪类型, 1:等比例缩放;2:居中裁剪;3:左上角裁剪;4:右下角裁剪;5:填充;6:固定
+     * @throws ImgException
      * @return Image
      */
     public function thumb($width, $height, $type = 1)
@@ -389,6 +400,7 @@ class Image
      *
      * @param  string  $source 水印图片路径
      * @param  integer $locate 水印位置, 1-9对应数字键盘位置
+     * @throws ImgException
      * @return Image
      */
     public function water($source, $locate = 3)
@@ -505,6 +517,7 @@ class Image
      * @param  integer          $locate 文字写入位置, 1-9对应小键盘位置
      * @param  integer|array    $offset 文字相对当前位置的偏移量
      * @param  integer          $angle  文字倾斜角度
+     * @throws ImgException
      * @return Image
      */
     public function text($text, $font, $size, $color = '#00000000', $locate = 3, $offset = 0, $angle = 0)

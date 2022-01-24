@@ -2,6 +2,7 @@
 
 namespace mon\util;
 
+use Exception;
 use mon\util\Instance;
 
 /**
@@ -383,35 +384,110 @@ class Tool
     /**
      * 文件打包下载
      *
-     * @param string $downloadZip 打包后下载的文件名
-     * @param array $list 打包文件组
+     * @param string $downloadZip 打包后保存的文件名
+     * @param array $list 打包文件列表
+     * @param string $fileName 下载文件名，默认为打包后的文件名
+     * @throws Exception
      * @return void
      */
-    public function exportZip($downloadZip, array $list)
+    public function exportZip($downloadZip, array $list, $fileName = null)
     {
         // 初始化Zip并打开
         $zip = new \ZipArchive();
         // 初始化
         $bool = $zip->open($downloadZip, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
         // 打开文件
-        if ($bool === TRUE) {
+        if ($bool === true) {
             foreach ($list as $key => $val) {
                 // 把文件追加到Zip包
                 $zip->addFile($val, basename($val));
             }
         } else {
-            throw new \Exception('PHP-ZipArchive扩展打开文件失败, Code：' . $bool);
+            throw new Exception('PHP-ZipArchive扩展打开文件失败, Code：' . $bool);
         }
         // 关闭Zip对象
         $zip->close();
+
         // 下载Zip包
+        $fileName = $fileName ? $fileName : basename($downloadZip);
         header('Cache-Control: max-age=0');
         header('Content-Description: File Transfer');
-        header('Content-disposition: attachment; filename=' . basename($downloadZip));
+        header('Content-disposition: attachment; filename=' . $fileName);
         header('Content-Type: application/zip');                // zip格式的
         header('Content-Transfer-Encoding: binary');            // 二进制文件
         header('Content-Length: ' . filesize($downloadZip));    // 文件大小
+        // 清空文件的头部信息，解决文件下载无法打开问题
+        ob_clean();
+        flush();
         readfile($downloadZip);
+    }
+
+    /**
+     * 目录打包下载
+     *
+     * @param string $downloadZip 打包后保存的文件名
+     * @param string $dirPath 打包的目录
+     * @param string $fileName 下载文件名，默认为打包后的文件名
+     * @throws Exception
+     * @return void
+     */
+    public function exportZipForDir($downloadZip, $dirPath, $fileName = null)
+    {
+        if (!is_dir($dirPath)) {
+            throw new Exception('打包目录不存在!');
+        }
+        // 初始化Zip并打开
+        $zip = new \ZipArchive();
+        // 初始化
+        $bool = $zip->open($downloadZip, \ZIPARCHIVE::CREATE | \ZipArchive::OVERWRITE);
+        if ($bool !== true) {
+            throw new Exception('PHP-ZipArchive扩展打开文件失败, Code：' . $bool);
+        }
+        // 打开目录，压缩文件
+        $this->compressZip($zip, opendir($dirPath), $dirPath);
+        // 关闭Zip对象
+        $zip->close();
+
+        // 下载Zip包
+        $fileName = $fileName ? $fileName : basename($downloadZip);
+        header('Cache-Control: max-age=0');
+        header('Content-Description: File Transfer');
+        header('Content-disposition: attachment; filename=' . $fileName);
+        header('Content-Type: application/zip');
+        header('Content-Transfer-Encoding: binary');
+        header('Content-Length: ' . filesize($downloadZip));
+        // 清空文件的头部信息，解决文件下载无法打开问题
+        ob_clean();
+        flush();
+        readfile($downloadZip);
+    }
+
+    /**
+     * 压缩添加目录文件到zip压缩包中
+     *
+     * @param \ZipArchive $zip zip句柄
+     * @param mixed $fileResource 文件列表句柄
+     * @param string $sourcePath 资源路径
+     * @param string $compressPath 添加zip句柄中的文件路径
+     * @return void
+     */
+    protected function compressZip($zip, $fileResource, $sourcePath, $compressPath = '')
+    {
+        while (($file = readdir($fileResource)) != false) {
+            if ($file == "." || $file == "..") {
+                continue;
+            }
+
+            $sourceTemp = $sourcePath . '/' . $file;
+            $newTemp = $compressPath == '' ? $file : $compressPath . '/' . $file;
+            if (is_dir($sourceTemp)) {
+                $zip->addEmptyDir($newTemp);
+                $this->compressZip($zip, opendir($sourceTemp), $sourceTemp, $newTemp);
+            }
+            if (is_file($sourceTemp)) {
+                $zip->addFile($sourceTemp, $newTemp);
+            }
+        }
     }
 
     /**
@@ -450,6 +526,7 @@ class Tool
      * @param string $filename 下载文件名
      * @param string $showname 下载显示的文件名
      * @param integer $expire  下载内容浏览器缓存时间
+     * @throws Exception
      * @return void
      */
     public function exportFile($filename, $showname = '', $expire = 180)
@@ -457,7 +534,7 @@ class Tool
         if (is_file($filename)) {
             $length = filesize($filename);
         } else {
-            throw new \Exception($filename . '下载文件不存在!');
+            throw new Exception($filename . '下载文件不存在!');
         }
         if (empty($showname)) {
             $showname = $filename;
@@ -528,10 +605,10 @@ class Tool
         if (!is_dir($path)) {
             $create = mkdir($path, 0777, true);
             if (!$create) {
-                throw new \Exception('创建下载文件保存目录失败!');
+                throw new Exception('创建下载文件保存目录失败!');
             }
         } else if (!is_writable($path)) {
-            throw new \Exception('下载文件保存路径不可写入!');
+            throw new Exception('下载文件保存路径不可写入!');
         }
 
         $ch = curl_init();
