@@ -25,6 +25,7 @@ PHP常用工具、辅助类集合，包含各种常用的类库
 * IdCard类，处理身份证相关的业务工具类
 * Lottery类，概率抽奖工具类
 * Nework类，网络客户端工具类
+* UploadSilce类，处理大文件分片上传
 
 ## 安装
 
@@ -33,6 +34,12 @@ composer require mongdch/mon-util
 ```
 
 ## 版本
+
+### 1.4.0
+
+- 优化代码结构
+- 优化Upload类文件上传参数配置
+- 增加UploadSilce类，用户处理大文件分片上传
 
 ### 1.3.8
 

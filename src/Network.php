@@ -198,7 +198,7 @@ class Network
      * @param boolean $close    是否关闭链接
      * @return mixed 结果集
      */
-    protected function sendTCP($ip, $port, $cmd, $timeOut = 2, $toJson = false, $close = true)
+    public function sendTCP($ip, $port, $cmd, $timeOut = 2, $toJson = false, $close = true)
     {
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (!$socket) {
@@ -238,7 +238,7 @@ class Network
      * @param boolean $close    是否关闭链接
      * @return mixed 结果集
      */
-    protected function sendUDP($ip, $port, $cmd, $timeOut = 2, $toJson = false, $close = true)
+    public function sendUDP($ip, $port, $cmd, $timeOut = 2, $toJson = false, $close = true)
     {
         $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
         if (!$socket) {

@@ -104,7 +104,10 @@ class File
      */
     public function createDir($dirPath)
     {
-        return !is_dir($dirPath) && mkdir($dirPath, 0755, true);
+        if (is_dir($dirPath)) {
+            return true;
+        }
+        return mkdir($dirPath, 0755, true);
     }
 
     /**

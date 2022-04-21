@@ -68,4 +68,9 @@ class UploadException extends Exception
      * 非法图像文件
      */
     const ERROR_UPLOAD_NOT_IMG = 12;
+
+    /**
+     * 分片文件不完整
+     */
+    const ERROR_CHUNK_FAILD = 13;
 }

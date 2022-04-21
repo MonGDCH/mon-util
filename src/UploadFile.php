@@ -19,13 +19,13 @@ class UploadFile
      */
     protected $config = [
         // 允许上传的文件MiMe类型
-        'mimes'        => [],
+        'mimes'     => [],
         // 上传的文件大小限制，0不做限制
-        'maxSize'      => 0,
+        'maxSize'   => 0,
         // 允许上传的文件后缀
-        'exts'         => [],
+        'exts'      => [],
         // 保存根路径
-        'rootPath'     => '',
+        'rootPath'  => '',
     ];
 
     /**
@@ -93,12 +93,12 @@ class UploadFile
     /**
      * 文件上传
      *
-     * @param string $files 文件内容
-     * @param string $name  内容索引
+     * @param string $name  文件流索引
+     * @param string $files 文件流，默认 $_FILES
      * @throws UploadException
      * @return UploadFile
      */
-    public function upload($files = null, $name = 'file')
+    public function upload($name = 'file', $files = null)
     {
         if (is_null($files)) {
             $files = $_FILES;
@@ -132,17 +132,25 @@ class UploadFile
      * 保存上传的文件
      *
      * @param string $fileName  保存文件名
+     * @param string $saveDir   基于 rootPath 路径下的多级目录存储路径
      * @param boolean $replace  是否替换旧文件
      * @throws UploadException
      * @return UploadFile
      */
-    public function save($fileName = '', $replace = true)
+    public function save($fileName = '', $saveDir = '', $replace = true)
     {
         if (empty($this->file)) {
             throw new UploadException('未获取上传的文件', UploadException::ERROR_UPLOAD_NOT_FOUND);
         }
+        // 多级目录存储
+        $savePath = $this->config['rootPath'] . DIRECTORY_SEPARATOR . $saveDir;
+        if (!empty($saveDir) && !is_dir($savePath)) {
+            if (!File::instance()->createDir($savePath)) {
+                throw new UploadException('创建文件存储目录失败', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
+            }
+        }
         $fileName = empty($fileName) ? uniqid(mt_rand()) . '.' . $this->file['ext'] : $fileName;
-        $saveName = $this->config['rootPath'] . $fileName;
+        $saveName = $savePath . $fileName;
         if (!$replace && is_file($saveName)) {
             throw new UploadException('文件已存在', UploadException::ERROR_UPLOAD_EXISTS);
         }

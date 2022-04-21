@@ -1,11 +1,10 @@
 <?php
 
-use mon\util\Tool;
+use mon\util\Network;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$data = [];
-$result = Tool::instance()->sendCmdTCP('127.0.0.1', '8818', 'test', $data);
+$result = Network::instance()->sendTCP('127.0.0.1', '8818', 'test');
 
-debug($data);
+debug($result);
 // debug($result);
