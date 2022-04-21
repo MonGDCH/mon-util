@@ -35,7 +35,7 @@ composer require mongdch/mon-util
 
 ## 版本
 
-### 1.4.0
+### 1.3.9
 
 - 优化代码结构
 - 优化Upload类文件上传参数配置
