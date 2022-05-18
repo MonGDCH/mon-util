@@ -26,6 +26,8 @@ PHP常用工具、辅助类集合，包含各种常用的类库
 * Lottery类，概率抽奖工具类
 * Nework类，网络客户端工具类
 * UploadSilce类，处理大文件分片上传
+* Pinyin类，中文转拼音
+
 
 ## 安装
 
@@ -34,6 +36,10 @@ composer require mongdch/mon-util
 ```
 
 ## 版本
+
+### 1.3.10
+
+- 增加中文转拼音类库
 
 ### 1.3.9
 
