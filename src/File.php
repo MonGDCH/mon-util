@@ -255,7 +255,7 @@ class File
     public function createFile($content, $path, $append = true)
     {
         $dirPath = dirname($path);
-        is_dir($dirPath) or $this->createDir($dirPath);
+        is_dir($dirPath) || $this->createDir($dirPath);
         if ($append) {
             // 添加写入
             return file_put_contents($path, $content, FILE_APPEND);
@@ -321,10 +321,14 @@ class File
      * 读取文件内容
      *
      * @param  string $file 文件路径
+     * @throws InvalidArgumentException
      * @return string
      */
     public function read($file)
     {
+        if (!file_exists($file)) {
+            throw new InvalidArgumentException('file not found[' . $file . ']');
+        }
         return file_get_contents($file);
     }
 

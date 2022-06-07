@@ -393,7 +393,6 @@ class Date
     public function getDayOfWeek($n)
     {
         $week = array(0 => 'sunday', 1 => 'monday', 2 => 'tuesday', 3 => 'wednesday', 4 => 'thursday', 5 => 'friday', 6 => 'saturday');
-        // return (new Date($week[$n]));
         return (new self($week[$n]));
     }
 
@@ -414,7 +413,7 @@ class Date
      */
     public function firstDayOfMonth()
     {
-        return (new Date(mktime(0, 0, 0, $this->month, 1, $this->year)));
+        return (new self(mktime(0, 0, 0, $this->month, 1, $this->year)));
     }
 
     /**
@@ -596,9 +595,9 @@ class Date
     public function magicInfo($type)
     {
         $result = '';
-        $m      =   $this->month;
-        $y      =   $this->year;
-        $d      =   $this->day;
+        $m = $this->month;
+        $y = $this->year;
+        $d = $this->day;
 
         switch ($type) {
             case 'XZ': //星座

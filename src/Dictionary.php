@@ -72,7 +72,7 @@ class Dictionary
      * 设置DB配置
      *
      * @param array $config DB配置信息
-     * @return void
+     * @return Dictionary
      */
     public function setConfig(array $config)
     {
@@ -84,7 +84,7 @@ class Dictionary
      * 设置视图前缀标志
      *
      * @param string $mark  视图前缀标志
-     * @return void
+     * @return Dictionary
      */
     public function setViewMark($mark)
     {
@@ -123,6 +123,7 @@ class Dictionary
      * 执行查询语句
      *
      * @param string $sql  SQL语句
+     * @return array
      */
     protected function query($sql)
     {
@@ -163,19 +164,13 @@ class Dictionary
                 $tables[$k]['INDEX'][] = $item;
             }
 
-            $sql  = 'SELECT * FROM ';
-            $sql .= 'INFORMATION_SCHEMA.TABLES ';
-            $sql .= 'WHERE ';
-            $sql .= "table_name = '{$v['TABLE_NAME']}' AND table_schema = '" . $this->config['database'] . "'";
+            $sql = "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE table_name = '{$v['TABLE_NAME']}' AND table_schema = '{$this->config['database']}'";
             $table_result = $this->query($sql);
             foreach ($table_result as $item2) {
                 $tables[$k]['TABLE_COMMENT'][] = $item2['TABLE_COMMENT'];
             }
 
-            $sql  = 'SELECT * FROM ';
-            $sql .= 'INFORMATION_SCHEMA.COLUMNS ';
-            $sql .= 'WHERE ';
-            $sql .= "table_name = '{$v['TABLE_NAME']}' AND table_schema = '" . $this->config['database'] . "'";
+            $sql = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '{$v['TABLE_NAME']}' AND table_schema = '{$this->config['database']}'";
             $fields = [];
             $filed_result = $this->query($sql);
             foreach ($filed_result as $t) {

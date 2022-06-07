@@ -2,8 +2,9 @@
 
 namespace mon\util;
 
-use Exception;
+use RuntimeException;
 use mon\util\Instance;
+use InvalidArgumentException;
 
 /**
  * 常用工具类(数据渲染)
@@ -212,42 +213,11 @@ class Tool
         ob_get_contents() && ob_end_clean();
         $xml  = "<?xml version=\"1.0\" encoding=\"{$encoding}\"?>";
         $xml .= "<{$root}>";
-        $xml .= $this->dataToXML($data);
+        $xml .= Common::instance()->arrToXML($data);
         $xml .= "</{$root}>";
 
         header("Content-type:text/xml");
         echo $xml;
-    }
-
-    /**
-     * 递归转换数组数据为XML，只作为exportXML的辅助方法使用
-     *
-     * @param  array  $data 输出的数据
-     * @return string
-     */
-    public function dataToXML(array $data)
-    {
-        $xml = '';
-        foreach ($data as $key => $val) {
-            $xml .= "<{$key}>";
-            $xml .= (is_array($val) || is_object($val)) ? $this->dataToXML($val) : $val;
-            $xml .= "</{$key}>";
-        }
-
-        return $xml;
-    }
-
-    /**
-     * XML转数组
-     *
-     * @param string $xml
-     * @return array
-     */
-    public function xmlToData($xml)
-    {
-        $obj = simplexml_load_string($xml);
-        $json = json_encode($obj);
-        return json_decode($json, true);
     }
 
     /**
@@ -301,13 +271,12 @@ class Tool
     /**
      * 安全IP检测，支持IP段检测
      *
-     * @param string $ip 要检测的IP，','分割
+     * @param string $ip 要检测的IP，','分割，例如白名单IP：192.168.1.13,123.23.23.44,193.134.*.*
      * @param string|array $ips  白名单IP或者黑名单IP
      * @return boolean true 在白名单或者黑名单中，否则不在
      */
     public function safe_ip($ip, $ips)
     {
-        // IP用"," 例如白名单IP：192.168.1.13,123.23.23.44,193.134.*.*
         if (is_string($ips)) {
             $ips = explode(",", $ips);
         }
@@ -387,7 +356,7 @@ class Tool
      * @param string $downloadZip 打包后保存的文件名
      * @param array $list 打包文件列表
      * @param string $fileName 下载文件名，默认为打包后的文件名
-     * @throws Exception
+     * @throws RuntimeException
      * @return void
      */
     public function exportZip($downloadZip, array $list, $fileName = null)
@@ -397,13 +366,12 @@ class Tool
         // 初始化
         $bool = $zip->open($downloadZip, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
         // 打开文件
-        if ($bool === true) {
-            foreach ($list as $key => $val) {
-                // 把文件追加到Zip包
-                $zip->addFile($val, basename($val));
-            }
-        } else {
-            throw new Exception('PHP-ZipArchive扩展打开文件失败, Code：' . $bool);
+        if ($bool !== true) {
+            throw new RuntimeException('PHP-ZipArchive扩展打开文件失败, Code：' . $bool);
+        }
+        foreach ($list as $key => $val) {
+            // 把文件追加到Zip包
+            $zip->addFile($val, basename($val));
         }
         // 关闭Zip对象
         $zip->close();
@@ -428,20 +396,20 @@ class Tool
      * @param string $downloadZip 打包后保存的文件名
      * @param string $dirPath 打包的目录
      * @param string $fileName 下载文件名，默认为打包后的文件名
-     * @throws Exception
+     * @throws InvalidArgumentException
      * @return void
      */
     public function exportZipForDir($downloadZip, $dirPath, $fileName = null)
     {
         if (!is_dir($dirPath)) {
-            throw new Exception('打包目录不存在!');
+            throw new InvalidArgumentException('打包目录不存在!');
         }
         // 初始化Zip并打开
         $zip = new \ZipArchive();
         // 初始化
         $bool = $zip->open($downloadZip, \ZIPARCHIVE::CREATE | \ZipArchive::OVERWRITE);
         if ($bool !== true) {
-            throw new Exception('PHP-ZipArchive扩展打开文件失败, Code：' . $bool);
+            throw new RuntimeException('PHP-ZipArchive扩展打开文件失败, Code：' . $bool);
         }
         // 打开目录，压缩文件
         $this->compressZip($zip, opendir($dirPath), $dirPath);
@@ -526,16 +494,16 @@ class Tool
      * @param string $filename 下载文件名
      * @param string $showname 下载显示的文件名
      * @param integer $expire  下载内容浏览器缓存时间
-     * @throws Exception
+     * @throws InvalidArgumentException
      * @return void
      */
     public function exportFile($filename, $showname = '', $expire = 180)
     {
-        if (is_file($filename)) {
-            $length = filesize($filename);
-        } else {
-            throw new Exception($filename . '下载文件不存在!');
+        if (!is_file($filename)) {
+            throw new InvalidArgumentException($filename . '下载文件不存在!');
         }
+
+        $length = filesize($filename);
         if (empty($showname)) {
             $showname = $filename;
         }
@@ -596,7 +564,7 @@ class Tool
      * @param string $savePath  保存的文件路径
      * @param string $filename  保存的文件名称
      * @param boolean $createDir    是否自动创建二级目录进行保存
-     * @throws Exception
+     * @throws RuntimeException|InvalidArgumentException
      * @return string
      */
     public function download($url, $savePath, $filename = '', $createDir = true)
@@ -605,10 +573,10 @@ class Tool
         if (!is_dir($path)) {
             $create = mkdir($path, 0777, true);
             if (!$create) {
-                throw new Exception('创建下载文件保存目录失败!');
+                throw new RuntimeException('创建下载文件保存目录失败!');
             }
         } else if (!is_writable($path)) {
-            throw new Exception('下载文件保存路径不可写入!');
+            throw new InvalidArgumentException('下载文件保存路径不可写入!');
         }
 
         $ch = curl_init();

@@ -37,15 +37,12 @@ composer require mongdch/mon-util
 
 ## 版本
 
-### 1.3.10
-
-- 增加中文转拼音类库
-
 ### 1.3.9
 
-- 优化代码结构
-- 优化Upload类文件上传参数配置
+- 优化代码
 - 增加UploadSilce类，用户处理大文件分片上传
+- 增加Pinyin类，中文转拼音
+
 
 ### 1.3.8
 

@@ -44,7 +44,7 @@ class GIF
                 $this->frames = $de->GIFGetFrames();
                 $this->delays = $de->GIFGetDelays();
             } catch (Exception $e) {
-                throw new ImgException("解码GIF图片出错", ImgException::ERROR_GIT_PARSE);
+                throw new ImgException("解码GIF图片出错!" . $e->getMessage(), ImgException::ERROR_GIT_PARSE);
             }
         }
     }

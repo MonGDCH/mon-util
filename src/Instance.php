@@ -2,7 +2,7 @@
 
 namespace mon\util;
 
-use Exception;
+use InvalidArgumentException;
 
 /**
  * 单例trait
@@ -50,7 +50,7 @@ trait Instance
         if (0 === mb_strpos($method, '_') && is_callable([static::$instance, $call])) {
             return call_user_func_array([static::$instance, $call], (array) $params);
         } else {
-            throw new Exception("method not found => " . $method);
+            throw new InvalidArgumentException("method not found => " . $method);
         }
     }
 }

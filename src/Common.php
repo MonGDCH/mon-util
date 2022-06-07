@@ -257,26 +257,34 @@ class Common
     }
 
     /**
+     * 递归转换数组数据为XML，只作为exportXML的辅助方法使用
+     *
+     * @param  array  $data 输出的数据
+     * @return string
+     */
+    public function arrToXML(array $data)
+    {
+        $xml = '';
+        foreach ($data as $key => $val) {
+            $xml .= "<{$key}>";
+            $xml .= (is_array($val) || is_object($val)) ? $this->arrToXML($val) : $val;
+            $xml .= "</{$key}>";
+        }
+
+        return $xml;
+    }
+
+    /**
      * XML转数组
      *
-     * @param  string $xml XML内容
+     * @param string $xml
      * @return array
      */
-    public function xml2array($xml)
+    public function xmlToArr($xml)
     {
-        $p = xml_parser_create();
-        xml_parse_into_struct($p, $xml, $vals, $index);
-        xml_parser_free($p);
-        $data = [];
-        foreach ($index as $key => $value) {
-            if (strtolower($key) == 'xml') {
-                continue;
-            }
-            $tag = $vals[$value[0]]['tag'];
-            $value = $vals[$value[0]]['value'];
-            $data[$tag] = $value;
-        }
-        return $data;
+        $obj = simplexml_load_string($xml);
+        $json = json_encode($obj);
+        return json_decode($json, true);
     }
 
     /**

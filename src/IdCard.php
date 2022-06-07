@@ -2,7 +2,8 @@
 
 namespace mon\util;
 
-use Exception;
+use RuntimeException;
+use InvalidArgumentException;
 
 /**
  * 身份证号码工具类(支持15位和18位)
@@ -100,7 +101,7 @@ class IdCard
      * 获取所属省份城市
      *
      * @param string $idcard 身份证号码
-     * @throws Exception
+     * @throws RuntimeException
      * @return string
      */
     public function getCity($idcard)
@@ -108,7 +109,7 @@ class IdCard
         if (is_null($this->location)) {
             $this->location = include($this->dataFile);
             if (empty($this->location) || !is_array($this->location)) {
-                throw new Exception('Failed to get extended location information data!');
+                throw new RuntimeException('Failed to get extended location information data!');
             }
         }
 
@@ -120,7 +121,7 @@ class IdCard
      * 获取所属省份城市地区信息
      *
      * @param string $idcard 身份证号码
-     * @throws Exception
+     * @throws RuntimeException
      * @return string
      */
     public function getLocation($idcard)
@@ -128,7 +129,7 @@ class IdCard
         if (is_null($this->location)) {
             $this->location = include($this->dataFile);
             if (empty($this->location) || !is_array($this->location)) {
-                throw new Exception('Failed to get extended location information data!');
+                throw new RuntimeException('Failed to get extended location information data!');
             }
         }
         $code = mb_substr($idcard, 0, 6);
@@ -204,14 +205,14 @@ class IdCard
      * 获取校验码
      *
      * @param string $idCardBase 17位以上的身份号码
-     * @throws Exception
+     * @throws InvalidArgumentException
      * @return string
      */
     protected function getCode($idCardBase)
     {
         $length = 17;
         if (mb_strlen($idCardBase) < $length) {
-            throw new Exception('idCardBase params faild');
+            throw new InvalidArgumentException('idCardBase params faild');
         }
         $factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
         $verifyNumbers = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
