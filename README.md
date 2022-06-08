@@ -37,22 +37,10 @@ composer require mongdch/mon-util
 
 ## 版本
 
-### 1.3.9
-
-- 优化代码
-- 增加UploadSilce类，用户处理大文件分片上传
-- 增加Pinyin类，中文转拼音
-
-
-### 1.3.8
-
-- 优化增加文件导出压缩包 Tool::exportZip 方法
-- 增加 Tool::exportZipForDir 方法，压缩导出整个目录
-- 优化代码注解
-
 ### 1.3.7
 
 * 优化增强Image类
+* 补全版本
 
 ### 1.3.6
 
