@@ -8,7 +8,7 @@ use mon\util\Instance;
  * 公共工具类库(数据处理)
  *
  * @author Mon <985558837@qq.com>
- * @version v1.0.0
+ * @version 1.1.1 优化代码 2022-07-8
  */
 class Common
 {
@@ -221,7 +221,7 @@ class Common
      *
      * @param  integer $bn 被除数
      * @param  integer $sn 除数
-     * @return integer 余
+     * @return float 余
      */
     public function mod($bn, $sn)
     {
@@ -237,7 +237,7 @@ class Common
      */
     public function ip2long_positive($ip)
     {
-        return sprintf("%u", $this->ip2long_mon($ip));
+        return sprintf("%u", $this->mIp2long($ip));
     }
 
     /**
@@ -248,7 +248,7 @@ class Common
      * @param string $ip 要转换的 ip 地址
      * @return integer 转换完成的数字
      */
-    public function ip2long_mon($ip)
+    public function mIp2long($ip)
     {
         $ip_arr = explode('.', $ip);
         $iplong = (16777216 * intval($ip_arr[0])) + (65536 * intval($ip_arr[1])) + (256 * intval($ip_arr[2])) + intval($ip_arr[3]);
@@ -694,9 +694,9 @@ class Common
      * 删除字符串中的空格
      *
      * @param $str 要删除空格的字符串
-     * @return $str 返回删除空格后的字符串
+     * @return string 返回删除空格后的字符串
      */
-    public function trimall($str)
+    public function trimAll($str)
     {
         $str = str_replace(" ", '', $str);
         $str = str_ireplace(array("\r", "\n", '\r', '\n'), '', $str);

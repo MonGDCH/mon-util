@@ -8,7 +8,7 @@ use mon\util\exception\UploadException;
  * 大文件分片上传
  * 
  * @author Mon <985558837@qq.com>
- * @version 1.0.0
+ * @version 1.0.1 优化代码 2022-07-08
  */
 class UploadSlice
 {
@@ -84,13 +84,56 @@ class UploadSlice
     }
 
     /**
+     * 保存上传的文件分片到临时文件目录
+     *
+     * @param string $fileID 文件唯一ID
+     * @param integer $chunk 文件分片序号，从0递增到N
+     * @param array $files 文件流，默认 $_FILES
+     * @param string $name 文件流索引，默认 file
+     * @throws UploadException
+     * @return false|array 文件保存路径
+     */
+    public function upload($fileID, $chunk = 0, $name = 'file', $files = null)
+    {
+        if (is_null($files)) {
+            $files = $_FILES;
+        }
+        if (empty($files) || !isset($files[$name])) {
+            throw new UploadException('未上传文件', UploadException::ERROR_UPLOAD_FAILD);
+        }
+        // 检测上传保存路径
+        if (!$this->checkPath()) {
+            return false;
+        }
+        // 文件信息
+        $file = $files[$name];
+        // 校验文件
+        if (!$this->checkFile($file)) {
+            return false;
+        }
+        // 保存临时文件
+        $fileName = md5($fileID) . '_' . $chunk;
+        $tmpPath = $this->config['rootPath'] . DIRECTORY_SEPARATOR . $this->config['tmpPath'] . DIRECTORY_SEPARATOR . $fileID;
+        if (!File::instance()->createDir($tmpPath)) {
+            throw new UploadException('创建临时文件存储目录失败', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
+        }
+        $savePath = $tmpPath . DIRECTORY_SEPARATOR . $fileName;
+        if (!move_uploaded_file($file['tmp_name'], $savePath)) {
+            throw new UploadException('临时文件保存失败', UploadException::ERROR_UPLOAD_SAVE_FAILD);
+        }
+
+        return ['savePath' => $savePath, 'saveDir' => $tmpPath, 'fileName' => $fileName];
+    }
+
+    /**
      * 合并分片临时文件，生成上传文件
      *
      * @param string $fileID    文件唯一ID
      * @param integer $chunkLength  文件分片长度
      * @param string $fileName  保存文件名
      * @param string $saveDir   基于 rootPath 路径下的多级目录存储路径
-     * @return array
+     * @throws UploadException
+     * @return array 文件保存路径
      */
     public function merge($fileID, $chunkLength, $fileName, $saveDir = '')
     {
@@ -144,55 +187,14 @@ class UploadSlice
         // 删除临时目录
         File::instance()->removeDir($tmpPath);
 
-        return ['savePath'  => $saveFile];
-    }
-
-    /**
-     * 保存上传的文件分片到临时文件目录
-     *
-     * @param string $fileID 文件唯一ID
-     * @param integer $chunk 文件分片序号，从0递增到N
-     * @param array $files 文件流，默认 $_FILES
-     * @param string $name 文件流索引，默认 file
-     * @return array
-     */
-    public function upload($fileID, $chunk = 0, $name = 'file', $files = null)
-    {
-        if (is_null($files)) {
-            $files = $_FILES;
-        }
-        if (empty($files) || !isset($files[$name])) {
-            throw new UploadException('未上传文件', UploadException::ERROR_UPLOAD_FAILD);
-        }
-        // 检测上传保存路径
-        if (!$this->checkPath()) {
-            return false;
-        }
-        // 文件信息
-        $file = $files[$name];
-        // 校验文件
-        if (!$this->checkFile($file)) {
-            return false;
-        }
-        // 保存临时文件
-        $fileName = md5($fileID) . '_' . $chunk;
-        $tmpPath = $this->config['rootPath'] . DIRECTORY_SEPARATOR . $this->config['tmpPath'] . DIRECTORY_SEPARATOR . $fileID;
-        if (!File::instance()->createDir($tmpPath)) {
-            throw new UploadException('创建临时文件存储目录失败', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
-        }
-        $savePath = $tmpPath . DIRECTORY_SEPARATOR . $fileName;
-        if (!move_uploaded_file($file['tmp_name'], $savePath)) {
-            throw new UploadException('临时文件保存失败', UploadException::ERROR_UPLOAD_SAVE_FAILD);
-        }
-
-        return ['savePath' => $savePath];
+        return ['savePath' => $saveFile, 'saveDir' => $savePath, 'fileName' => $fileName];
     }
 
     /**
      * 校验文件
      *
      * @param array $file 文件信息
-     * @return void
+     * @return boolean
      */
     protected function checkFile($file)
     {
@@ -222,12 +224,13 @@ class UploadSlice
      */
     protected function checkPath()
     {
-        if (!(is_dir($this->config['rootPath']) && is_writable($this->config['rootPath']))) {
-            throw new UploadException('上传文件保存目录不存在或不可写入！请尝试手动创建:' . $this->config['rootPath'], UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
+        $rootPath = $this->config['rootPath'];
+        if ((!is_dir($rootPath) && !File::instance()->createDir($rootPath)) || (is_dir($rootPath) && !is_writable($rootPath))) {
+            throw new UploadException('上传文件保存目录不可写入：' . $rootPath, UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
         }
-        $tmpPath = $this->config['rootPath'] . DIRECTORY_SEPARATOR . $this->config['tmpPath'];
-        if (!(is_dir($tmpPath) && is_writable($tmpPath))) {
-            throw new UploadException('上传文件临时保存目录不存在或不可写入！请尝试手动创建:' . $tmpPath, UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
+        $tmpPath = $rootPath . DIRECTORY_SEPARATOR . $this->config['tmpPath'];
+        if ((!is_dir($tmpPath) && !File::instance()->createDir($tmpPath)) || (is_dir($tmpPath) && !is_writable($tmpPath))) {
+            throw new UploadException('上传文件临时保存目录不可写入：' . $tmpPath, UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
         }
         return true;
     }

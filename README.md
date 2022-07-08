@@ -37,6 +37,12 @@ composer require mongdch/mon-util
 
 ## 版本
 
+### 1.3.10
+
+* 优化代码
+* `Tool`类增加base64图片转换方法
+
+
 ### 1.3.9
 
 * 优化代码

@@ -6,7 +6,7 @@ namespace mon\util;
  * id转换为code字符串
  * 
  * @author Mon <985558837@qq.com>
- * @version 1.0.0
+ * @version 1.0.1 优化代码 2022-07-08
  */
 class IdCode
 {
@@ -66,7 +66,7 @@ class IdCode
     /**
      * ID转code(10位内id 返回7位字母数字)
      *
-     * @see 十机制数转换成三十二进制数
+     * @see 10进制数转换成32进制数
      * @param integer $id   id值
      * @return string
      */
@@ -80,33 +80,12 @@ class IdCode
         $num1 = intval($str[0] . $str[2] . $str[6] . $str[9]);
         $num2 = intval($str[1] . $str[3] . $str[4] . $str[5] . $str[7] . $str[8]);
         $str1 = $str2 = '';
-
-        $str1 = $this->_id2String($num1);
+        $str1 = $this->id2String($num1);
         $str1 = strrev($str1);
-
-        $str2 = $this->_id2String($num2);
+        $str2 = $this->id2String($num2);
         $str2 = strrev($str2);
-
-        // 补足3、4位U、L
+        // 补足第3、4位
         return str_pad($str1, 3, $this->three, STR_PAD_RIGHT) . str_pad($str2, 4, $this->four, STR_PAD_RIGHT);
-    }
-
-    /**
-     * 公用方法，数字进行进制转换
-     * 
-     * @param $num  数值
-     * @return string
-     */
-    private function _id2String($num)
-    {
-        $str = '';
-        while ($num != 0) {
-            $tmp = $num % $this->type;
-            $str .= $this->baseChar[$tmp];
-            $num = intval($num / $this->type);
-        }
-
-        return $str;
     }
 
     /**
@@ -122,8 +101,8 @@ class IdCode
         $str1 = trim(mb_substr($code, 0, 3), $this->three);
         $str2 = trim(mb_substr($code, 3, 4), $this->four);
         // 转换数值
-        $num1 = $this->_string2Id($str1);
-        $num2 = $this->_string2Id($str2);
+        $num1 = $this->string2Id($str1);
+        $num2 = $this->string2Id($str2);
         // 补位拼接
         $str1 = str_pad($num1, 4, '0', STR_PAD_LEFT);
         $str2 = str_pad($num2, 6, '0', STR_PAD_LEFT);
@@ -137,12 +116,30 @@ class IdCode
     }
 
     /**
-     * 公用方法字符串转数字
+     * 数字进行进制转换
+     * 
+     * @param integer $num  数值
+     * @return string
+     */
+    protected function id2String($num)
+    {
+        $str = '';
+        while ($num != 0) {
+            $tmp = $num % $this->type;
+            $str .= $this->baseChar[$tmp];
+            $num = intval($num / $this->type);
+        }
+
+        return $str;
+    }
+
+    /**
+     * 字符串转数字
      *
-     * @param $str
+     * @param string $str
      * @return float|int|string
      */
-    private function _string2Id($str)
+    protected function string2Id($str)
     {
         //转换为数组
         $charArr = array_flip((array)str_split($this->baseChar));

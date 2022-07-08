@@ -12,8 +12,7 @@ use RecursiveDirectoryIterator;
  * 文章操作类
  *
  * @author Mon <985558837@qq.com>
- * @version 1.0
- * @version 1.1 优化代码
+ * @version 1.1.1 优化注解 2022-07-08
  */
 class File
 {
@@ -201,7 +200,7 @@ class File
      *
      * @param  string $dir 目录路径
      * @throws InvalidArgumentException
-     * @return array|false
+     * @return array
      */
     public function getDirContent($dir)
     {
@@ -250,7 +249,7 @@ class File
      * @param  string  $content 写入内容
      * @param  string  $path    文件路径
      * @param  boolean $append  存在文件是否继续写入
-     * @return boolean
+     * @return boolean|integer
      */
     public function createFile($content, $path, $append = true)
     {
@@ -269,7 +268,7 @@ class File
      * 删除文件
      *
      * @param  string $path 文件路径
-     * @return mixed
+     * @return boolean
      */
     public function removeFile($path)
     {
@@ -277,6 +276,8 @@ class File
         if (file_exists($path)) {
             return unlink($path);
         }
+
+        return true;
     }
 
     /**
@@ -393,7 +394,7 @@ class File
      * @param  string  $rollNum 分卷数
      * @param  string  $postfix 文件后缀
      * @throws RuntimeException
-     * @return mixed
+     * @return boolean|integer
      */
     public function subsectionFile($content, $path, $maxSize = 20480000, $rollNum = 3, $postfix = '.log')
     {
@@ -420,7 +421,7 @@ class File
      *
      * @param string  $path  路径
      * @param boolean $tree  输出树结构还是数组
-     * @return mixed
+     * @return array
      */
     public function getFoldersContent($path, $tree = false)
     {
@@ -436,7 +437,7 @@ class File
      * 获取路径下所有的内容及后代内容转数组辅助方法
      *
      * @param DirectoryIterator $dir
-     * @return mixed
+     * @return array
      */
     protected function directoryIteratorToArray(DirectoryIterator $dir)
     {
@@ -460,7 +461,7 @@ class File
      * 获取路径下所有的内容及后代内容转树结构辅助方法
      *
      * @param DirectoryIterator $dir
-     * @return mixed
+     * @return array
      */
     protected function directoryIteratorToTree(DirectoryIterator $dir)
     {
@@ -511,9 +512,8 @@ class File
             // 最新的一卷不需要加上分卷号
             if ($i == 0) {
                 $oldFile = $path;
-            }
-            // 获取分卷号文件名称
-            else {
+            } else {
+                // 获取分卷号文件名称
                 $oldFile = $this->buildShiftName($path, $i);
             }
 

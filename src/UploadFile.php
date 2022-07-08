@@ -218,7 +218,7 @@ class UploadFile
      *
      * @param string $file 文件路径
      * @throws UploadException
-     * @return void
+     * @return boolean
      */
     protected function checkImg($file)
     {

@@ -44,7 +44,7 @@ use mon\util\exception\ValidateException;
  * @method eq	 		比较值
  *
  * @author Mon <985558837@qq.com>
- * @version v1.3.3	2021-04-26 优化代码，增加getError获取错误信息，check方法返回固定boolean值
+ * @version 1.3.3	2021-04-26 优化代码，增加getError获取错误信息，check方法返回固定boolean值
  */
 class Validate
 {
@@ -137,7 +137,6 @@ class Validate
 		if (!empty($data) && is_array($data)) {
 			$this->data = array_merge($this->data, $data);
 		}
-
 		// 解析验证规则
 		$errorItme = null;
 		$checkRule = empty($this->checkRule) ? $this->rule : $this->checkRule;
@@ -173,31 +172,29 @@ class Validate
 			}
 		}
 
-		// 判断是否存在错误节点
-		if (!empty($errorItme)) {
-			// 判断是否存在错误提示信息, 存在返回错误提示信息
-			if (isset($this->message[$errorItme[0]])) {
-				if (is_string($this->message[$errorItme[0]])) {
-					// 字符串，直接返回提示
-					$this->error = $this->message[$errorItme[0]];
-					return false;
-				} elseif (isset($this->message[$errorItme[0]][$errorItme[1]])) {
-					// 数组，返回对应节点提示
-					$this->error = $this->message[$errorItme[0]][$errorItme[1]];
-					return false;
-				} else {
-					// 返回默认提示
-					$this->error = $errorItme[0] . ' check error';
-					return false;
-				}
-			} else {
-				// 返回默认提示
-				$this->error = $errorItme[0] . ' check faild';
-				return false;
-			}
-		} else {
+		// 不存在错误节点，验证通过
+		if (empty($errorItme)) {
 			return true;
 		}
+		// 存在错误提示信息, 返回错误提示信息
+		if (isset($this->message[$errorItme[0]])) {
+			if (is_string($this->message[$errorItme[0]])) {
+				// 字符串，直接返回提示
+				$this->error = $this->message[$errorItme[0]];
+				return false;
+			} elseif (isset($this->message[$errorItme[0]][$errorItme[1]])) {
+				// 数组，返回对应节点提示
+				$this->error = $this->message[$errorItme[0]][$errorItme[1]];
+				return false;
+			} else {
+				// 返回默认提示
+				$this->error = $errorItme[0] . ' check error';
+				return false;
+			}
+		}
+		// 返回默认提示
+		$this->error = $errorItme[0] . ' check faild';
+		return false;
 	}
 
 	/**
@@ -210,7 +207,7 @@ class Validate
 	public function checked(array $data = [])
 	{
 		$check = $this->check($data);
-		if (!$check !== true) {
+		if ($check !== true) {
 			throw new ValidateException($this->getError(), 500);
 		}
 
@@ -259,7 +256,7 @@ class Validate
 	/**
 	 * 设置校验场景
 	 *
-	 * @param string $item 查询场景名称
+	 * @param string|array $item 查询场景名称
 	 * @return Validate
 	 */
 	public function scope($item)
@@ -292,7 +289,7 @@ class Validate
 	 * @param mixed $value	验证的值
 	 * @param mixed $rule	对应的验证规则
 	 * @param string $dataItem 验证的字段名
-	 * @return mixed 成功返回true,失败返回验证失败的规则名称
+	 * @return true|string 成功返回true,失败返回验证失败的规则名称
 	 */
 	protected function analysis($value, $rule, $dataItem)
 	{

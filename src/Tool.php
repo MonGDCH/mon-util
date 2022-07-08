@@ -205,7 +205,7 @@ class Tool
      * @param  array  $data     输出的数据
      * @param  string $root     根节点
      * @param  string $encoding 编码
-     * @return string
+     * @return void
      */
     public function exportXML(array $data, $root = "Mon", $encoding = 'UTF-8')
     {
@@ -300,7 +300,6 @@ class Tool
      * @param float $lat1 纬度1
      * @param float $lng2 经度2
      * @param float $lat2 纬度2
-     *
      * @return float
      */
     public function getDistance($lng1, $lat1, $lng2, $lat2)
@@ -668,5 +667,33 @@ class Tool
             ];
         }
         return $rgb;
+    }
+
+    /**
+     * base64转图片
+     *
+     * @param string $base64 图片base64
+     * @param string $path 保存路径
+     * @return boolean|integer
+     */
+    public function base64_img($base64, $path)
+    {
+        $base64Info = explode(',', $base64);
+        $content = base64_decode($base64Info[1]);
+        return File::instance()->createFile($content, $path, false);
+    }
+
+    /**
+     * 图片转base64
+     *
+     * @param string $path 图片路径
+     * @return string
+     */
+    public function img_base64($path)
+    {
+        $img = getimagesize($path);
+        $content = chunk_split(base64_encode(file_get_contents($path)));
+        $base64 = 'data:' . $img['mime'] . ';base64,' . $content;
+        return $base64;
     }
 }

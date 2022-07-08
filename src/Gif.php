@@ -53,7 +53,7 @@ class GIF
      * 设置或获取当前帧的数据
      *
      * @param  string $stream 二进制数据流
-     * @return boolean        获取到的数据
+     * @return mixed          获取到的数据
      */
     public function image($stream = null)
     {
@@ -68,7 +68,7 @@ class GIF
     /**
      * 将当前帧移动到下一帧
      *
-     * @return string 当前帧数据
+     * @return mixed 当前帧数据
      */
     public function nextImage()
     {
@@ -79,6 +79,7 @@ class GIF
      * 保存当前GIF图片
      *
      * @param  string $gifname 图片名称
+     * @return boolean|integer
      */
     public function save($gifname)
     {

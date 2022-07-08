@@ -6,8 +6,7 @@ namespace mon\util;
  * 时间日期相关操作
  *
  * @author Mon 985558837@qq.com
- * @version 1.0.1 2021-03-18 移除内置单例
- * @version 1.0.2 增加获取年月日周开始、结束时间
+ * @version 1.0.3 优化代码 2022-07-08
  */
 class Date
 {
@@ -279,7 +278,7 @@ class Date
      * 根据指定日期和1~7来获取周一至周日对应的日期
      *
      * @param string $date 指定日期，为空则默认为当前天
-     * @param int $weekday 指定返回周几的日期（1~7），默认为返回周一对应的日期
+     * @param integer $weekday 指定返回周几的日期（1~7），默认为返回周一对应的日期
      * @param string $format 指定返回日期的格式
      * @return  string
      */
@@ -294,7 +293,8 @@ class Date
     /**
      * 是否为闰年
      *
-     * @return string
+     * @param string $year 年份
+     * @return boolean
      */
     public function isLeapYear($year = '')
     {
@@ -363,16 +363,16 @@ class Date
     public function timeDiff($time, $precision = false)
     {
         if (!is_numeric($precision) && !is_bool($precision)) {
-            static $_diff = array('y' => '年', 'M' => '个月', 'd' => '天', 'w' => '周', 's' => '秒', 'h' => '小时', 'm' => '分钟');
+            static $_diff = ['y' => '年', 'm' => '个月', 'd' => '天', 'h' => '小时', 'i' => '分钟', 's' => '秒', 'w' => '周'];
             return ceil($this->dateDiff($time, $precision)) . $_diff[$precision] . '前';
         }
         $diff = abs($this->parse($time) - $this->date);
-        static $chunks = array(array(31536000, '年'), array(2592000, '个月'), array(604800, '周'), array(86400, '天'), array(3600, '小时'), array(60, '分钟'), array(1, '秒'));
+        static $chunks = [[31536000, '年'], [2592000, '个月'], [604800, '周'], [86400, '天'], [3600, '小时'], [60, '分钟'], [1, '秒']];
         $count = 0;
         $since = '';
         for ($i = 0; $i < count($chunks); $i++) {
             if ($diff >= $chunks[$i][0]) {
-                $num   =  floor($diff / $chunks[$i][0]);
+                $num = floor($diff / $chunks[$i][0]);
                 $since .= sprintf('%d' . $chunks[$i][1], $num);
                 $diff =  (int) ($diff - $chunks[$i][0] * $num);
                 $count++;
@@ -388,11 +388,12 @@ class Date
     /**
      * 返回周的某一天 返回Date对象
      *
+     * @param integer $n 星期几
      * @return Date
      */
     public function getDayOfWeek($n)
     {
-        $week = array(0 => 'sunday', 1 => 'monday', 2 => 'tuesday', 3 => 'wednesday', 4 => 'thursday', 5 => 'friday', 6 => 'saturday');
+        $week = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         return (new self($week[$n]));
     }
 
@@ -549,7 +550,7 @@ class Date
     public function numberToCh($number)
     {
         $number = intval($number);
-        $array  = array('一', '二', '三', '四', '五', '六', '七', '八', '九', '十');
+        $array  = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
         $str = '';
         if ($number  == 0) {
             $str .= "十";
@@ -576,7 +577,7 @@ class Date
      */
     public function yearToCh($yearStr, $flag = false)
     {
-        $array = array('零', '一', '二', '三', '四', '五', '六', '七', '八', '九');
+        $array = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
         $str = $flag ? '公元' : '';
         for ($i = 0; $i < 4; $i++) {
             $str .= $array[mb_substr($yearStr, $i, 1)];
@@ -601,8 +602,8 @@ class Date
 
         switch ($type) {
             case 'XZ': //星座
-                $XZDict = array('摩羯', '宝瓶', '双鱼', '白羊', '金牛', '双子', '巨蟹', '狮子', '处女', '天秤', '天蝎', '射手');
-                $Zone   = array(1222, 122, 222, 321, 421, 522, 622, 722, 822, 922, 1022, 1122, 1222);
+                $XZDict = ['摩羯', '宝瓶', '双鱼', '白羊', '金牛', '双子', '巨蟹', '狮子', '处女', '天秤', '天蝎', '射手'];
+                $Zone   = [1222, 122, 222, 321, 421, 522, 622, 722, 822, 922, 1022, 1122, 1222];
                 if ((100 * $m + $d) >= $Zone[0] || (100 * $m + $d) < $Zone[1]) {
                     $i = 0;
                 } else {
@@ -617,15 +618,15 @@ class Date
 
             case 'GZ': //干支
                 $GZDict = array(
-                    array('甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'),
-                    array('子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥')
+                    ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'],
+                    ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']
                 );
                 $i = $y - 1900 + 36;
                 $result = $GZDict[0][$i % 10] . $GZDict[1][$i % 12];
                 break;
 
             case 'SX': //生肖
-                $SXDict = array('鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪');
+                $SXDict = ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪'];
                 $result = $SXDict[($y - 4) % 12];
                 break;
         }

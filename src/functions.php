@@ -19,6 +19,7 @@ if (!function_exists('check')) {
      *
      * @param string $type  格式类型，支持validate类的默认的所有方式
      * @param array $args   可变参数
+     * @throws \Exception
      * @return boolean
      */
     function check($type, ...$args)
@@ -113,16 +114,16 @@ if (!function_exists('hideMoble')) {
     }
 }
 
-if (!function_exists('trimall')) {
+if (!function_exists('trimAll')) {
     /**
      * 删除字符串中的空格
      *
      * @param $str 要删除空格的字符串
      * @return $str 返回删除空格后的字符串
      */
-    function trimall($str)
+    function trimAll($str)
     {
-        return Common::instance()->trimall($str);
+        return Common::instance()->trimAll($str);
     }
 }
 
@@ -227,32 +228,6 @@ if (!function_exists('decryption')) {
     }
 }
 
-if (!function_exists('isXDigit')) {
-    /**
-     * 判断是否为16进制，由于PHP没有相关的API，所以折中处理
-     *
-     * @param  string  $src 验证的字符串
-     * @return boolean
-     */
-    function isXDigit($src)
-    {
-        return Common::instance()->isXDigit($src);
-    }
-}
-
-if (!function_exists('isUtf8')) {
-    /**
-     * 检查字符串是否是UTF8编码
-     *
-     * @param string $string 验证的字符串
-     * @return boolean
-     */
-    function isUtf8($str)
-    {
-        return Common::instance()->isXDigit($str);
-    }
-}
-
 if (!function_exists('mod')) {
     /**
      * 获取余数
@@ -277,21 +252,6 @@ if (!function_exists('ip2long_positive')) {
     function ip2long_positive($ip)
     {
         return Common::instance()->ip2long_positive($ip);
-    }
-}
-
-if (!function_exists('ip2long_mon')) {
-    /**
-     * IP地址转为数字地址
-     * php 的 ip2long 这个函数有问题
-     * 133.205.0.0 ==>> 2244804608
-     *
-     * @param string $ip 要转换的 ip 地址
-     * @return integer
-     */
-    function ip2long_mon($ip)
-    {
-        return Common::instance()->ip2long_mon($ip);
     }
 }
 
@@ -375,18 +335,6 @@ if (!function_exists('array2DSort')) {
     }
 }
 
-if (!function_exists('getFirstChar')) {
-    /**
-     * php获取中文字符拼音首字母
-     *
-     * @param  string $str 中文字符串
-     * @return string
-     */
-    function getFirstChar($str)
-    {
-        return Common::instance()->getFirstChar($str);
-    }
-}
 
 if (!function_exists('uuid')) {
     /**
@@ -445,59 +393,6 @@ if (!function_exists('randString')) {
     }
 }
 
-if (!function_exists('iconv_recursion')) {
-    /**
-     * 递归转换字符集
-     *
-     * @param  mixed  $data         要转换的数据
-     * @param  string $out_charset  输出编码
-     * @param  string $in_charset   输入编码
-     * @return mixed
-     */
-    function iconv_recursion($data, $out_charset, $in_charset)
-    {
-        return Common::instance()->iconv_recursion($data, $out_charset, $in_charset);
-    }
-}
-
-if (!function_exists('getDistance')) {
-    /**
-     * 获取两坐标距离
-     *
-     * @param float $lng1 经度1
-     * @param float $lat1 纬度1
-     * @param float $lng2 经度2
-     * @param float $lat2 纬度2
-     *
-     * @return float
-     */
-    function getDistance($lng1, $lat1, $lng2, $lat2)
-    {
-        return Tool::instance()->getDistance($lng1, $lat1, $lng2, $lat2);
-    }
-}
-
-if (!function_exists('getSquarePoint')) {
-    /**
-     * 计算某个经纬度的周围某段距离的正方形的四个点
-     * $lng = '116.655540';
-     * $lat = '39.910980';
-     * $squares = GetSquarePoint($lng, $lat);
-     *
-     * print_r($squares);
-     * $info_sql = "select id,locateinfo,lat,lng from `lbs_info` where lat<>0 and lat>{$squares['right-bottom']['lat']} and lat<{$squares['left-top']['lat']} and lng>{$squares['left-top']['lng']} and lng<{$squares['right-bottom']['lng']} ";
-     * 
-     * @param float $lng 经度
-     * @param float $lat 纬度
-     * @param float $distance 该点所在圆的半径，该圆与此正方形内切，默认值为0.5千米
-     * @return array 正方形的四个点的经纬度坐标
-     */
-    function getSquarePoint($lng, $lat, $distance = 0.5)
-    {
-        return Tool::instance()->getSquarePoint($lng, $lat, $distance);
-    }
-}
-
 if (function_exists('getBaseName')) {
     /**
      * 获取文件的名称，兼容中文名
@@ -533,75 +428,5 @@ if (!function_exists('code2id')) {
     function code2id($code)
     {
         return IdCode::instance()->code2id($code);
-    }
-}
-
-if (!function_exists('specCartesian')) {
-    /**
-     * 笛卡尔积生成规格
-     *
-     * @example 
-     *  $data = [["title" => "颜色","value" => ["黑色", "白色", "蓝色"]],["title" => "尺码","value" => ["S", "M", "L", "XL", "XXL"]],["title" => "长度","value" => ["5分裤", "7分裤", "9分裤", "长裤"]]];
-     *  debug(specCartesian($data));
-     *
-     * @param array $arr   要进行笛卡尔积的二维数组
-     * @return array
-     */
-    function specCartesian($arr)
-    {
-        return Common::instance()->specCartesian($arr);
-    }
-}
-
-if (!function_exists('rgb2hex')) {
-    /**
-     * RGB颜色值转十六进制
-     * 
-     * @param string|array $reg reg颜色值
-     * @return string
-     */
-    function rgb2hex($rgb)
-    {
-        return Tool::instance()->rgb2hex($rgb);
-    }
-}
-
-if (!function_exists('hex2rgb')) {
-    /**
-     * 十六进制转RGB颜色
-     * 
-     * @param string $hex_color 十六进制颜色值
-     * @return string
-     */
-    function hex2rgb($hex_color)
-    {
-        return Tool::instance()->hex2rgb($hex_color);
-    }
-}
-
-if (!function_exists('str2ascii')) {
-    /**
-     * 字符串转Ascii码
-     *
-     * @param string $str 字符串  
-     * @return string
-     */
-    function str2ascii($str)
-    {
-        return Common::instance()->str2ascii($str);
-    }
-}
-
-
-if (!function_exists('ascii2str')) {
-    /**
-     * Ascii码转字符串
-     *
-     * @param string $ascii Ascii码
-     * @return string
-     */
-    function ascii2str($str)
-    {
-        return Common::instance()->ascii2str($str);
     }
 }

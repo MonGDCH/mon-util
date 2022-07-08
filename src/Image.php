@@ -9,7 +9,7 @@ use mon\util\exception\ImgException;
  * 图像操作类
  * 
  * @author Name <985558837@qq.com>
- * @version 1.1.0
+ * @version 1.1.1 优化代码 2022-07-8
  */
 class Image
 {
@@ -102,7 +102,7 @@ class Image
      * @param  string  $type      图像类型
      * @param  boolean $interlace 是否对JPEG类型图像设置隔行扫描
      * @throws ImgException
-     * @return mixed|boolean
+     * @return boolean|integer
      */
     public function save($imgname, $type = null, $interlace = true)
     {
@@ -273,7 +273,6 @@ class Image
         //设置保存尺寸
         empty($width)  && $width  = $w;
         empty($height) && $height = $h;
-
         do {
             // 创建新图像
             $img = imagecreatetruecolor($width, $height);
@@ -312,7 +311,6 @@ class Image
         // 原图宽度和高度
         $w = $this->info['width'];
         $h = $this->info['height'];
-
         // 计算缩略图生成的必要参数
         switch ($type) {
             case 1:
@@ -373,7 +371,6 @@ class Image
                     // 调整默认颜色
                     $color = imagecolorallocate($img, 255, 255, 255);
                     imagefill($img, 0, 0, $color);
-
                     // 裁剪
                     imagecopyresampled($img, $this->img, $posx, $posy, $x, $y, $neww, $newh, $w, $h);
                     imagedestroy($this->img); //销毁原图
@@ -418,11 +415,10 @@ class Image
             throw new ImgException('非法水印文件', ImgException::ERROR_IMG_FAILD_WATER);
         }
         // 创建水印图像资源
-        $fun   = 'imagecreatefrom' . image_type_to_extension($info[2], false);
+        $fun = 'imagecreatefrom' . image_type_to_extension($info[2], false);
         $water = $fun($source);
         // 设定水印图像的混色模式
         imagealphablending($water, true);
-
         // 设定水印位置
         switch ($locate) {
             case 3:
@@ -430,54 +426,45 @@ class Image
                 $x = $this->info['width'] - $info[0];
                 $y = $this->info['height'] - $info[1];
                 break;
-
             case 1:
                 // 左下角水印
                 $x = 0;
                 $y = $this->info['height'] - $info[1];
                 break;
-
             case 7:
                 // 左上角水印
                 $x = $y = 0;
                 break;
-
             case 9:
                 // 右上角水印
                 $x = $this->info['width'] - $info[0];
                 $y = 0;
                 break;
-
             case 5:
                 // 居中水印
                 $x = ($this->info['width'] - $info[0]) / 2;
                 $y = ($this->info['height'] - $info[1]) / 2;
                 break;
-
             case 2:
                 // 下居中水印
                 $x = ($this->info['width'] - $info[0]) / 2;
                 $y = $this->info['height'] - $info[1];
                 break;
-
             case 6:
                 // 右居中水印
                 $x = $this->info['width'] - $info[0];
                 $y = ($this->info['height'] - $info[1]) / 2;
                 break;
-
             case 8:
                 // 上居中水印
                 $x = ($this->info['width'] - $info[0]) / 2;
                 $y = 0;
                 break;
-
             case 4:
                 // 左居中水印
                 $x = 0;
                 $y = ($this->info['height'] - $info[1]) / 2;
                 break;
-
             default:
                 // 自定义水印坐标
                 if (is_array($locate)) {
@@ -485,6 +472,7 @@ class Image
                 } else {
                     throw new ImgException('不支持的水印位置类型', ImgException::ERROR_IMG_NOT_SUPPORT_WATER);
                 }
+                break;
         }
 
         do {
@@ -496,11 +484,9 @@ class Image
             imagecopy($src, $this->img, 0, 0, $x, $y, $info[0], $info[1]);
             imagecopy($src, $water, 0, 0, 0, 0, $info[0], $info[1]);
             imagecopymerge($this->img, $src, $x, $y, 0, 0, $info[0], $info[1], 100);
-
             //销毁零时图片资源
             imagedestroy($src);
         } while (!empty($this->gif) && $this->gifNext());
-
         // 销毁水印资源
         imagedestroy($water);
 
@@ -549,49 +535,40 @@ class Image
                 $x += $this->info['width']  - $w;
                 $y += $this->info['height'] - $h;
                 break;
-
             case 1:
                 // 左下角文字
                 $y += $this->info['height'] - $h;
                 break;
-
             case 7:
                 // 左上角文字，起始坐标即为左上角坐标，无需调整
                 break;
-
             case 9:
                 // 右上角文字
                 $x += $this->info['width'] - $w;
                 break;
-
             case 5:
                 // 居中文字
                 $x += ($this->info['width']  - $w) / 2;
                 $y += ($this->info['height'] - $h) / 2;
                 break;
-
             case 2:
                 // 下居中文字
                 $x += ($this->info['width'] - $w) / 2;
                 $y += $this->info['height'] - $h;
                 break;
-
             case 6:
                 // 右居中文字
                 $x += $this->info['width'] - $w;
                 $y += ($this->info['height'] - $h) / 2;
                 break;
-
             case 8:
                 // 上居中文字
                 $x += ($this->info['width'] - $w) / 2;
                 break;
-
             case 4:
                 // 左居中文字
                 $y += ($this->info['height'] - $h) / 2;
                 break;
-
             default:
                 // 自定义文字坐标
                 if (is_array($locate)) {
@@ -601,6 +578,7 @@ class Image
                 } else {
                     throw new ImgException('不支持的文字位置类型', ImgException::ERROR_IMG_NOT_SUPPORT_FONT);
                 }
+                break;
         }
 
         // 设置偏移量

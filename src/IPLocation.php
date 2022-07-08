@@ -9,7 +9,7 @@ use mon\util\exception\IPLocationException;
  * 
  * @see https://cz88.net/ 可通过纯真IP库官网下载最新版IP库文件
  * @author Mon <985558837@qq.com>
- * @version 1.0.0
+ * @version 1.0.1 优化注解 2022-07-08
  */
 class IPLocation
 {
@@ -48,26 +48,14 @@ class IPLocation
      *
      * @var array
      */
-    private $dict_isp = [
-        '联通',
-        '移动',
-        '铁通',
-        '电信',
-        '长城',
-        '鹏博士',
-    ];
+    private $dict_isp = ['联通', '移动', '铁通', '电信', '长城', '鹏博士'];
 
     /**
      * 直辖市
      *
      * @var array
      */
-    private $dict_city_directly = [
-        '北京',
-        '天津',
-        '重庆',
-        '上海',
-    ];
+    private $dict_city_directly = ['北京', '天津', '重庆', '上海'];
 
     /**
      * 省份
@@ -75,40 +63,8 @@ class IPLocation
      * @var array
      */
     private $dict_province = [
-        '北京',
-        '天津',
-        '重庆',
-        '上海',
-        '河北',
-        '山西',
-        '辽宁',
-        '吉林',
-        '黑龙江',
-        '江苏',
-        '浙江',
-        '安徽',
-        '福建',
-        '江西',
-        '山东',
-        '河南',
-        '湖北',
-        '湖南',
-        '广东',
-        '海南',
-        '四川',
-        '贵州',
-        '云南',
-        '陕西',
-        '甘肃',
-        '青海',
-        '台湾',
-        '内蒙古',
-        '广西',
-        '宁夏',
-        '新疆',
-        '西藏',
-        '香港',
-        '澳门',
+        '北京', '天津', '重庆', '上海', '河北', '山西', '辽宁', '吉林', '黑龙江', '江苏', '浙江', '安徽', '福建', '江西', '山东', '河南', '湖北', '湖南',
+        '广东', '海南', '四川', '贵州', '云南', '陕西', '甘肃', '青海', '台湾', '内蒙古', '广西', '宁夏', '新疆', '西藏', '香港', '澳门'
     ];
 
     /**
@@ -180,7 +136,8 @@ class IPLocation
      * </code>
      *
      * @param string $ip IP地址
-     * @return array|IPLocationException
+     * @throws IPLocationException
+     * @return array
      */
     public function getLocation($ip)
     {
@@ -219,19 +176,16 @@ class IPLocation
             if (isset($_tmp_province[1])) {
                 $is_china = true;
                 $location['province'] = $_tmp_province[0];
-
                 // 存在市
                 if (mb_strpos($_tmp_province[1], $seperator_shi) !== false) {
                     $_tmp_city = explode($seperator_shi, $_tmp_province[1]);
                     $location['city'] = $_tmp_city[0] . $seperator_shi;
-
                     // 存在县
                     if (isset($_tmp_city[1])) {
                         if (mb_strpos($_tmp_city[1], $seperator_xian) !== false) {
                             $_tmp_county = explode($seperator_xian, $_tmp_city[1]);
                             $location['county'] = $_tmp_county[0] . $seperator_xian;
                         }
-
                         // 存在区
                         if (!$location['county'] && mb_strpos($_tmp_city[1], $seperator_qu) !== false) {
                             $_tmp_qu = explode($seperator_qu, $_tmp_city[1]);
@@ -250,7 +204,6 @@ class IPLocation
                             // 上海市浦江区xxx
                             if ($_tmp_province[0] == $value) {
                                 $location['province'] = $_tmp_province[0];
-
                                 // 市辖区
                                 if (isset($_tmp_province[1])) {
                                     if (mb_strpos($_tmp_province[1], $seperator_qu) !== false) {
@@ -279,14 +232,12 @@ class IPLocation
                                 // 市
                                 $_tmp_city = explode($seperator_shi, $_tmp_city);
                                 $location['city'] = $_tmp_city[0] . $seperator_shi;
-
                                 // 县
                                 if (isset($_tmp_city[1])) {
                                     if (mb_strpos($_tmp_city[1], $seperator_xian) !== false) {
                                         $_tmp_county = explode($seperator_xian, $_tmp_city[1]);
                                         $location['county'] = $_tmp_county[0] . $seperator_xian;
                                     }
-
                                     // 区
                                     if (!$location['county'] && mb_strpos($_tmp_city[1], $seperator_qu) !== false) {
                                         $_tmp_qu = explode($seperator_qu, $_tmp_city[1]);
@@ -472,7 +423,7 @@ class IPLocation
     {
         // 将IP地址转化为长整型数，如果在PHP5中，IP地址错误，则返回False，
         // 这时intval将Flase转化为整数-1，之后压缩成big-endian编码的字符串
-        return pack('N', intval(Common::instance()->ip2long_mon($ip)));
+        return pack('N', intval(Common::instance()->mIp2long($ip)));
     }
 
     /**
