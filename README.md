@@ -27,6 +27,7 @@ PHP常用工具、辅助类集合，包含各种常用的类库
 * Nework类，网络客户端工具类
 * UploadSilce类，处理大文件分片上传
 * Pinyin类，中文转拼音
+* Migrate类，Mysql数据库备份迁移
 
 
 ## 安装
@@ -36,6 +37,12 @@ composer require mongdch/mon-util
 ```
 
 ## 版本
+
+### 1.3.11
+
+* 优化`Sql`类
+* 优化`Dictionary`类
+* 增加`Migrate`Mysql数据库备份迁移类
 
 ### 1.3.10
 

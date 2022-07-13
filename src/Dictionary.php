@@ -3,6 +3,7 @@
 namespace mon\util;
 
 use PDO;
+use PDOException;
 
 /**
  * mysql数据字典
@@ -26,27 +27,21 @@ class Dictionary
      */
     protected $config = [
         // 数据库类型
-        'type'                          => 'mysql',
+        'type'          => 'mysql',
         // 服务器地址
-        'host'                          => '127.0.0.1',
+        'host'          => '127.0.0.1',
         // 数据库名
-        'database'                      => '',
+        'database'      => '',
         // 用户名
-        'username'                      => '',
+        'username'      => '',
         // 密码
-        'password'                      => '',
+        'password'      => '',
         // 端口
-        'port'                          => '3306',
-        // 数据库连接参数
-        'params'          => [
-            PDO::ATTR_CASE              => PDO::CASE_NATURAL,
-            PDO::ATTR_ERRMODE           => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_ORACLE_NULLS      => PDO::NULL_NATURAL,
-            PDO::ATTR_STRINGIFY_FETCHES => false,
-            PDO::ATTR_EMULATE_PREPARES  => false,
-        ],
+        'port'          => '3306',
         // 数据库编码默认采用utf8
-        'charset'                       => 'utf8',
+        'charset'       => 'utf8mb4',
+        // 数据库连接参数
+        'params'        => []
     ];
 
     /**
@@ -90,46 +85,6 @@ class Dictionary
     {
         $this->viewMark = $mark;
         return $this;
-    }
-
-    /**
-     * 获取DB链接
-     *
-     * @return PDO
-     */
-    protected function getDB()
-    {
-        if (!$this->db) {
-            // 生成mysql连接dsn
-            $is_port = (isset($this->config['port']) && is_int($this->config['port'] * 1));
-            $dsn = 'mysql:host=' . $this->config['host'] . ($is_port ? ';port=' . $this->config['port'] : '') .
-                ';dbname=' . $this->config['database'];
-            if (!empty($this->config['charset'])) {
-                $dsn .= ';charset=' . $this->config['charset'];
-            }
-            // 链接
-            $this->db = new PDO(
-                $dsn,
-                $this->config['username'],
-                $this->config['password'],
-                $this->config['params']
-            );
-        }
-
-        return $this->db;
-    }
-
-    /**
-     * 执行查询语句
-     *
-     * @param string $sql  SQL语句
-     * @return array
-     */
-    protected function query($sql)
-    {
-        $query = $this->getDB()->prepare($sql);
-        $query->execute();
-        return $query->fetchAll();
     }
 
     /**
@@ -329,5 +284,56 @@ class Dictionary
         header("Content-Type: application/html");
         header("Content-Disposition: attachment; filename={$this->config['database']}库数据字典.html");
         echo $this->getHTML();
+    }
+
+    /**
+     * 获取DB链接
+     *
+     * @throws PDOException
+     * @return PDO
+     */
+    protected function getDB()
+    {
+        if (!$this->db) {
+            // 生成mysql连接dsn
+            $is_port = (isset($this->config['port']) && is_int($this->config['port'] * 1));
+            $dsn = 'mysql:host=' . $this->config['host'] . ($is_port ? ';port=' . $this->config['port'] : '') . ';dbname=' . $this->config['database'];
+            if (!empty($this->config['charset'])) {
+                $dsn .= ';charset=' . $this->config['charset'];
+            }
+            // 数据库连接参数
+            $params = [
+                PDO::ATTR_CASE              => PDO::CASE_NATURAL,
+                PDO::ATTR_ERRMODE           => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_ORACLE_NULLS      => PDO::NULL_NATURAL,
+                PDO::ATTR_STRINGIFY_FETCHES => false,
+                PDO::ATTR_EMULATE_PREPARES  => false,
+            ];
+            if (isset($config['params']) && is_array($config['params'])) {
+                $params = $config['params'] + $params;
+            }
+            // 链接
+            $this->db = new PDO(
+                $dsn,
+                $this->config['username'],
+                $this->config['password'],
+                $params
+            );
+        }
+
+        return $this->db;
+    }
+
+    /**
+     * 执行查询语句
+     *
+     * @param string $sql  SQL语句
+     * @return array
+     */
+    protected function query($sql)
+    {
+        $query = $this->getDB()->prepare($sql);
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_BOTH);
     }
 }

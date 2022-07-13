@@ -2,13 +2,11 @@
 
 namespace mon\util;
 
-use mon\util\exception\SqlException;
-
 /**
  * 解析SQL文件，获取SQL语句
  * 
  * @author Mon <985558837@qq.com>
- * @version 1.0.0
+ * @version 1.0.1   采用File对象读取sql文件
  */
 class Sql
 {
@@ -18,16 +16,11 @@ class Sql
      * 解析SQL文件
      *
      * @param string $file  sql文件路径
-     * @throws SqlException sql文件不存在
      * @return array
      */
     public function parseFile($file)
     {
-        if (!file_exists($file)) {
-            throw new SqlException('SQL File not found!', SqlException::ERROR_SQL_FILE_NOT_FOUND);
-        }
-
-        $content = file_get_contents($file);
+        $content = File::instance()->read($file);
         return $this->parseSql($content);
     }
 

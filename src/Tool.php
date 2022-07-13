@@ -498,7 +498,7 @@ class Tool
      */
     public function exportFile($filename, $showname = '', $expire = 180)
     {
-        if (!is_file($filename)) {
+        if (!file_exists($filename)) {
             throw new InvalidArgumentException($filename . '下载文件不存在!');
         }
 
