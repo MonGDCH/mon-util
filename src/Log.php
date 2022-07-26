@@ -2,24 +2,18 @@
 
 namespace mon\util;
 
+use Psr\Log\LogLevel;
+use Psr\Log\LoggerInterface;
+
 /**
  * 日志处理
  * 
  * @author Mon <985558837@qq.com>
- * @version 1.0.0
+ * @version 1.1.0   引入psr/log标准 2022-07-26
  */
-class Log
+class Log implements LoggerInterface
 {
     use Instance;
-
-    /**
-     * 日志级别
-     */
-    const ERROR     = 'error';
-    const WARNING   = 'warning';
-    const NOTICE    = 'notice';
-    const INFO      = 'info';
-    const DEBUG     = 'debug';
 
     /**
      * 日志配置
@@ -27,11 +21,18 @@ class Log
      * @var array
      */
     protected $config = [
-        'maxSize'       => 20480000,     // 日志文件大小
-        'logPath'       => '',           // 日志目录
-        'rollNum'       => 3,            // 日志滚动卷数
-        'logName'       => '',           // 日志名称，空则使用当前日期作为名称
+        // 日志文件大小
+        'maxSize'       => 20480000,
+        // 日志目录
+        'logPath'       => __DIR__,
+        // 日志滚动卷数   
+        'rollNum'       => 3,
+        // 日志名称，空则使用当前日期作为名称       
+        'logName'       => '',
+        // 日志分割符
         'splitLine'     => '====================================================================================',
+        // 是否自动执行save方法保存日志
+        'save'          => false,
     ];
 
     /**
@@ -96,91 +97,156 @@ class Log
     }
 
     /**
-     * 记录日志信息
+     * 任意级别日志信息
      *
-     * @param string  $message  日志信息
-     * @param string  $type     日志类型
+     * @param string $level     日志级别
+     * @param string $message   日志信息
+     * @param array $context    替换内容
      * @param boolean $trace    是否开启日志追踪
-     * @param integer $level    日志追踪层级，一般不需要自定义
+     * @param integer $layer    日志追踪层级，一般不需要自定义
      * @return Log
      */
-    public function record($message, $type = Log::INFO, $trace = false, $level = 1)
+    public function log($level, $message, array $context = [], $trace = false, $layer =  1)
     {
+        // 内容替换
+        if (!empty($context)) {
+            $replace = [];
+            foreach ($context as $key => $val) {
+                $replace['{' . $key . '}'] = $val;
+            }
+
+            $message = strtr($message, $replace);
+        }
+        // 日志追踪
         if ($trace) {
-            $traceInfo = debug_backtrace(false, $level);
-            $infoLevel = $level - 1;
-            $file = $traceInfo[$infoLevel]['file'];
-            $line = $traceInfo[$infoLevel]['line'];
+            $traceInfo = debug_backtrace(false, $layer);
+            $infoLayer = $layer - 1;
+            $file = $traceInfo[$infoLayer]['file'];
+            $line = $traceInfo[$infoLayer]['line'];
             $message = "[{$file} => {$line}] " . $message;
         }
-
-        $this->log[strtolower($type)][] = $message;
+        // 记录日志
+        $this->log[$level][] = $message;
+        // 写入日志
+        if ($this->config['save']) {
+            $this->save();
+        }
         return $this;
     }
 
     /**
-     * 记录调试信息
+     * 系统无法使用错误级别信息
      *
-     * @param string  $message  日志信息
+     * @param string $message   日志信息
+     * @param array $context    替换内容
      * @param boolean $trace    是否开启日志追踪
      * @return Log
      */
-    public function debug($message, $trace = false)
+    public function emergency($message, array $context = [], $trace = false)
     {
-        $level = $trace ? 2 : 1;
-        return $this->record($message, Log::DEBUG, $trace, $level);
+        $layer = $trace ? 2 : 1;
+        return $this->log(LogLevel::EMERGENCY, $message, $context, $trace, $layer);
     }
 
     /**
-     * 记录一般信息
+     * 必须立即采取行动错误级别信息
      *
-     * @param string  $message  日志信息
+     * 例如: 整个网站宕机了，数据库挂了，等等。 这应该发送短信通知警告你.
+     * @param string $message   日志信息
+     * @param array $context    替换内容
      * @param boolean $trace    是否开启日志追踪
      * @return Log
      */
-    public function info($message, $trace = false)
+    public function alert($message, array $context = [], $trace = false)
     {
-        $level = $trace ? 2 : 1;
-        return $this->record($message, Log::INFO, $trace, $level);
+        $layer = $trace ? 2 : 1;
+        return $this->log(LogLevel::ALERT, $message, $context, $trace, $layer);
     }
 
     /**
-     * 记录通知信息
+     * 临界错误级别信息
      *
-     * @param string  $message  日志信息
+     * 例如: 应用组件不可用，意外的异常
+     * @param string $message   日志信息
+     * @param array $context    替换内容
      * @param boolean $trace    是否开启日志追踪
      * @return Log
      */
-    public function notice($message, $trace = false)
+    public function critical($message, array $context = [], $trace = false)
     {
-        $level = $trace ? 2 : 1;
-        return $this->record($message, Log::NOTICE, $trace, $level);
+        $layer = $trace ? 2 : 1;
+        return $this->log(LogLevel::CRITICAL, $message, $context, $trace, $layer);
     }
 
     /**
-     * 记录警告信息
+     * 运行时错误级别信息
      *
-     * @param string  $message  日志信息
+     * @param string $message   日志信息
+     * @param array $context    替换内容
      * @param boolean $trace    是否开启日志追踪
      * @return Log
      */
-    public function warning($message, $trace = false)
+    public function error($message, array $context = [], $trace = false)
     {
         $level = $trace ? 2 : 1;
-        return $this->record($message, Log::WARNING, $trace, $level);
+        return $this->log(LogLevel::ERROR, $message, $context, $trace, $level);
     }
 
     /**
-     * 记录错误信息
+     * 警告级别错误信息
      *
-     * @param string  $message  日志信息
+     * 例如: 使用过时的API，API使用不当
+     * @param string $message   日志信息
+     * @param array $context    替换内容
      * @param boolean $trace    是否开启日志追踪
      * @return Log
      */
-    public function error($message, $trace = false)
+    public function warning($message, array $context = [], $trace = false)
     {
         $level = $trace ? 2 : 1;
-        return $this->record($message, Log::ERROR, $trace, $level);
+        return $this->log(LogLevel::WARNING, $message, $context, $trace, $level);
+    }
+
+    /**
+     * 事件级别信息
+     *
+     * @param string $message   日志信息
+     * @param array $context    替换内容
+     * @param boolean $trace    是否开启日志追踪
+     * @return Log
+     */
+    public function notice($message, array $context = [], $trace = false)
+    {
+        $level = $trace ? 2 : 1;
+        return $this->log(LogLevel::NOTICE, $message, $context, $trace, $level);
+    }
+
+    /**
+     * 一般级别信息
+     *
+     * @param string $message   日志信息
+     * @param array $context    替换内容
+     * @param boolean $trace    是否开启日志追踪
+     * @return Log
+     */
+    public function info($message, array $context = [], $trace = false)
+    {
+        $level = $trace ? 2 : 1;
+        return $this->log(LogLevel::INFO, $message, $context, $trace, $level);
+    }
+
+    /**
+     * 调试级别信息
+     *
+     * @param string $message   日志信息
+     * @param array $context    替换内容
+     * @param boolean $trace    是否开启日志追踪
+     * @return Log
+     */
+    public function debug($message, array $context = [], $trace = false)
+    {
+        $level = $trace ? 2 : 1;
+        return $this->log(LogLevel::DEBUG, $message, $context, $trace, $level);
     }
 
     /**
@@ -196,6 +262,7 @@ class Log
             $time = time();
             $logName = empty($this->config['logName']) ? date('Ym', $time) . DIRECTORY_SEPARATOR . date('Ymd', $time) : $this->config['logName'];
             $path = $this->config['logPath'] . DIRECTORY_SEPARATOR . $logName;
+            debug($path);
             // 分卷记录日志
             $save = File::instance()->subsectionFile($log, $path, $this->config['maxSize'], $this->config['rollNum']);
             // 保存成功，清空日志

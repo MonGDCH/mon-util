@@ -7,6 +7,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionFunction;
 use InvalidArgumentException;
+use Psr\Container\ContainerInterface;
 
 /**
  * 服务容器类
@@ -15,8 +16,9 @@ use InvalidArgumentException;
  * @author Mon 985558837@qq.com
  * @version 1.2  2018-07-05
  * @version 1.3.0   优化代码，增强注解  2021-03-01
+ * @version 1.3.1   移除静态支持，接入psr标准 2022-07-26
  */
-class Container
+class Container implements ContainerInterface
 {
     use Instance;
 
@@ -35,31 +37,6 @@ class Container
     protected $service = [];
 
     /**
-     * 获取容器中的对象实例
-     *
-     * @param  string  $abstract    对象名称或标识
-     * @param  array   $vars        入参
-     * @param  boolean $newInstance 是否获取新的实例
-     * @return mixed
-     */
-    public static function get($abstract, $vars = [], $newInstance = false)
-    {
-        return static::instance()->make($abstract, $vars, $newInstance);
-    }
-
-    /**
-     * 绑定一个类、闭包、实例、接口实现到容器
-     *
-     * @param string $abstract 类名称或标识符
-     * @param mixed  $server   要绑定的实例
-     * @return Container
-     */
-    public static function set($abstract, $server = null)
-    {
-        return static::instance()->bind($abstract, $server);
-    }
-
-    /**
      * 私有化构造方法
      */
     protected function __construct()
@@ -67,14 +44,71 @@ class Container
     }
 
     /**
-     * 魔术方法获取实例
+     * get方法别名
      *
-     * @param  string $abstract 对象名称或标识
+     * @param  string  $abstract    对象名称或标识
+     * @param  array   $vars        入参
+     * @param  boolean $newInstance 是否获取新的实例
+     * @throws InvalidArgumentException
      * @return mixed
      */
-    public function __get($abstract)
+    public function make($abstract, $vars = [], $newInstance = false)
     {
-        return static::get($abstract);
+        return $this->get($abstract, $vars, $newInstance);
+    }
+
+    /**
+     * set方法别名
+     *
+     * @param string $abstract 类名称或标识符
+     * @param mixed  $server   要绑定的实例
+     * @return Container
+     */
+    public function bind($abstract, $server = null)
+    {
+        return $this->bind($abstract, $server);
+    }
+
+    /**
+     * 创建获取对象的实例
+     *
+     * @param  string  $name     类名称或标识符
+     * @param  array   $vars     绑定的参数
+     * @param  boolean $new      是否保存实例
+     * @throws InvalidArgumentException
+     * @return mixed
+     */
+    public function get($name, $vars = [], $new = false)
+    {
+        if (isset($this->service[$name]) && !$new) {
+            $object = $this->service[$name];
+        } else {
+            if (isset($this->bind[$name])) {
+                // 存在标识
+                $service = $this->bind[$name];
+
+                if ($service instanceof Closure) {
+                    // 匿名函数，绑定参数
+                    $object = $this->invokeFunction($service, $vars);
+                } elseif (is_object($service)) {
+                    // 已实例化的对象
+                    $object = $service;
+                } else {
+                    // 类对象，回调获取实例
+                    $object = $this->get($service, $vars, $new);
+                }
+            } else {
+                // 不存在，判断为直接写入的类对象, 获取实例
+                $object = $this->invokeClass($name, $vars);
+            }
+
+            // 保存实例
+            if (!$new) {
+                $this->service[$name] = $object;
+            }
+        }
+
+        return $object;
     }
 
     /**
@@ -84,7 +118,7 @@ class Container
      * @param  mixed  $server   要绑定的实例
      * @return Container
      */
-    public function bind($abstract, $server = null)
+    public function set($abstract, $server = null)
     {
         // 传入数组，批量注册
         if (is_array($abstract)) {
@@ -115,47 +149,6 @@ class Container
     public function has($name)
     {
         return isset($this->bind[$name]) || isset($this->service[$name]);
-    }
-
-    /**
-     * 创建获取对象的实例
-     *
-     * @param  string  $name     类名称或标识符
-     * @param  array   $vars     绑定的参数
-     * @param  boolean $new      是否保存实例
-     * @return mixed
-     */
-    public function make($name, $vars = [], $new = false)
-    {
-        if (isset($this->service[$name]) && !$new) {
-            $object = $this->service[$name];
-        } else {
-            if (isset($this->bind[$name])) {
-                // 存在标识
-                $service = $this->bind[$name];
-
-                if ($service instanceof Closure) {
-                    // 匿名函数，绑定参数
-                    $object = $this->invokeFunction($service, $vars);
-                } elseif (is_object($service)) {
-                    // 已实例化的对象
-                    $object = $service;
-                } else {
-                    // 类对象，回调获取实例
-                    $object = $this->make($service, $vars, $new);
-                }
-            } else {
-                // 不存在，判断为直接写入的类对象, 获取实例
-                $object = $this->invokeClass($name, $vars);
-            }
-
-            // 保存实例
-            if (!$new) {
-                $this->service[$name] = $object;
-            }
-        }
-
-        return $object;
     }
 
     /**
@@ -290,7 +283,7 @@ class Container
 
                 if ($class) {
                     $className = $class->getName();
-                    $args[] = $this->make($className);
+                    $args[] = $this->get($className);
                 } elseif (1 == $type && !empty($vars)) {
                     $args[] = array_shift($vars);
                 } elseif (0 == $type && isset($vars[$name])) {
@@ -304,5 +297,28 @@ class Container
         }
 
         return $args;
+    }
+
+    /**
+     * 魔术方法获取实例
+     *
+     * @param  string $name 对象名称或标识
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        return $this->get($name);
+    }
+
+    /**
+     * 魔术方法获取实例
+     *
+     * @param  string $name 对象名称或标识
+     * @param  array  $args 参数
+     * @return mixed
+     */
+    public function __call($name, $args)
+    {
+        return $this->get($name, $args);
     }
 }
