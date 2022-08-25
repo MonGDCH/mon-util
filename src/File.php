@@ -12,7 +12,7 @@ use RecursiveDirectoryIterator;
  * 文章操作类
  *
  * @author Mon <985558837@qq.com>
- * @version 1.1.1 优化注解 2022-07-08
+ * @version 1.1.2 优化注解，增加copyFile 2022-08-25
  */
 class File
 {
@@ -114,21 +114,26 @@ class File
      *
      * @param string $source 源文件夹
      * @param string $dest   目标文件夹
+     * @param boolean $overwrite   文件是否覆盖，默认不覆盖
      * @return void
      */
-    public function copydir($source, $dest)
+    public function copydir($source, $dest, $overwrite = false)
     {
         $this->createDir($dest);
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::SELF_FIRST
-        );
+        $dir_iterator = new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS);
+        $iterator = new RecursiveIteratorIterator($dir_iterator, RecursiveIteratorIterator::SELF_FIRST);
+        /** @var RecursiveDirectoryIterator $iterator */
         foreach ($iterator as $item) {
             if ($item->isDir()) {
                 $sontDir = $dest . '/' . $iterator->getSubPathName();
                 $this->createDir($sontDir);
             } else {
-                copy($item, $dest . '/' . $iterator->getSubPathName());
+                $file = $dest . '/' . $iterator->getSubPathName();
+                if (file_exists($file) && !$overwrite) {
+                    continue;
+                }
+
+                copy($item, $file);
             }
         }
     }
@@ -278,6 +283,28 @@ class File
         }
 
         return true;
+    }
+
+    /**
+     * 复制文件
+     *
+     * @param string $source 源文件
+     * @param string $dest   目标文件
+     * @param boolean $overwrite   文件是否覆盖，默认不覆盖
+     * @return boolean
+     */
+    public function copyFile($source, $desc, $overwrite = false)
+    {
+        // 源文件不存在
+        if (!file_exists($source)) {
+            return false;
+        }
+        // 目标文件存在且不进行覆盖
+        if (file_exists($desc) && !$overwrite) {
+            return true;
+        }
+
+        return copy($source, $desc);
     }
 
     /**
