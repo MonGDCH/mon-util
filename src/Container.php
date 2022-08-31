@@ -52,7 +52,7 @@ class Container implements ContainerInterface
      * @throws InvalidArgumentException
      * @return mixed
      */
-    public function make($abstract, $vars = [], $newInstance = false)
+    public function make($abstract, $vars = [], $newInstance = true)
     {
         return $this->get($abstract, $vars, $newInstance);
     }
@@ -66,7 +66,7 @@ class Container implements ContainerInterface
      */
     public function bind($abstract, $server = null)
     {
-        return $this->bind($abstract, $server);
+        return $this->set($abstract, $server);
     }
 
     /**

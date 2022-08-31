@@ -25,7 +25,7 @@ class Tool
      * @param boolean   $strict 是否严谨 默认为true
      * @return void|string
      */
-    public function debug($var, $echo = true, $label = null, $flags = ENT_SUBSTITUTE)
+    public function dd($var, $echo = true, $label = null, $flags = ENT_SUBSTITUTE)
     {
         $label = (null === $label) ? '' : rtrim($label) . ':';
         ob_start();

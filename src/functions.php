@@ -36,7 +36,7 @@ if (!function_exists('check')) {
 }
 
 
-if (!function_exists('debug')) {
+if (!function_exists('dd')) {
     /**
      * 调试方法(浏览器友好处理)
      *
@@ -46,9 +46,9 @@ if (!function_exists('debug')) {
      * @param boolean   $strict 是否严谨 默认为true
      * @return void|string
      */
-    function debug($var, $echo = true, $label = null, $flags = ENT_SUBSTITUTE)
+    function dd($var, $echo = true, $label = null, $flags = ENT_SUBSTITUTE)
     {
-        return Tool::instance()->debug($var, $echo, $label, $flags);
+        return Tool::instance()->dd($var, $echo, $label, $flags);
     }
 }
 
