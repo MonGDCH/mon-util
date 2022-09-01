@@ -64,6 +64,14 @@ class Dictionary
     }
 
     /**
+     * 析构方法，断开DB链接
+     */
+    public function __destruct()
+    {
+        $this->db = null;
+    }
+
+    /**
      * 设置DB配置
      *
      * @param array $config DB配置信息

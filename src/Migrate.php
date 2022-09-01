@@ -95,11 +95,12 @@ class Migrate
     }
 
     /**
-     * 析构方法，用于关闭文件资源
+     * 析构方法，用于关闭资源
      */
     public function __destruct()
     {
         $this->close();
+        $this->db = null;
     }
 
     /**

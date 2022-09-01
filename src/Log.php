@@ -262,7 +262,6 @@ class Log implements LoggerInterface
             $time = time();
             $logName = empty($this->config['logName']) ? date('Ym', $time) . DIRECTORY_SEPARATOR . date('Ymd', $time) : $this->config['logName'];
             $path = $this->config['logPath'] . DIRECTORY_SEPARATOR . $logName;
-            debug($path);
             // 分卷记录日志
             $save = File::instance()->subsectionFile($log, $path, $this->config['maxSize'], $this->config['rollNum']);
             // 保存成功，清空日志

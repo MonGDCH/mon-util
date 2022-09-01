@@ -24,7 +24,7 @@ class IdCode
      *
      * @var string
      */
-    private $baseChar = '8745692031ZYXWVTSRQPNMKJHGFEDCBA';
+    private $baseChar = '8749562031ZYXWVTSRQPNMKJHGFEDCBA';
 
     /**
      * 使用32进制运算
@@ -54,7 +54,7 @@ class IdCode
      * @param string $baseChar  进制的基本字符串
      * @return IdCode
      */
-    public function init($initNum = 4015732869, $baseChar = '8745692031ZYXWVTSRQPNMKJHGFEDCBA', $three = 'K', $four = 'X')
+    public function init($initNum = 4015732869, $baseChar = '8749562031ZYXWVTSRQPNMKJHGFEDCBA', $three = 'K', $four = 'X')
     {
         $this->initNum = $initNum;
         $this->baseChar = $baseChar;
