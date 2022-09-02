@@ -47,7 +47,7 @@ class Log implements LoggerInterface
      *
      * @param array $config 配置信息
      */
-    protected function __construct(array $config = [])
+    public function __construct(array $config = [])
     {
         $this->setConfig($config);
     }
