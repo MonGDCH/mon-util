@@ -119,7 +119,7 @@ class Log implements LoggerInterface
         }
         // 日志追踪
         if ($trace) {
-            $traceInfo = debug_backtrace(false, $layer);
+            $traceInfo = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $layer);
             $infoLayer = $layer - 1;
             $file = $traceInfo[$infoLayer]['file'];
             $line = $traceInfo[$infoLayer]['line'];
