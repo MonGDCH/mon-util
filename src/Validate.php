@@ -116,14 +116,24 @@ class Validate
 	 * @var array
 	 */
 	protected $regex = [
+		// 手机号
 		'moble'		=> '/^[1][3456789][0-9]{9}$/',
+		// 电话号码
 		'tel'		=> '/^(0\d{2,3}-\d{7,8})(-\d{1,4})?$/',
-		'china'		=> '/^[\x{4e00}-\x{9fa5}]+$/u',	// 中文
-		'language'	=> '/^\w*$/',					// 英文数字
-		'alpha'		=> '/^[A-Za-z]+$/',				// 只允许英文
-		'account'	=> '/^[A-Za-z0-9\-\_]+$/',		// 只允许字母、数字和下划线 破折号
-		'lower'		=> '/^[a-z]+$/',				// 小写字母
-		'upper'		=> '/^[A-Z]+$/',				// 大写字母
+		// 中文
+		'china'		=> '/^[\x{4e00}-\x{9fa5}]+$/u',
+		// 英文数字
+		'language'	=> '/^\w*$/',
+		// 只允许英文
+		'alpha'		=> '/^[A-Za-z]+$/',
+		// 只允许字母、数字和下划线 破折号
+		'account'	=> '/^[A-Za-z0-9\-\_]+$/',
+		// 小写字母
+		'lower'		=> '/^[a-z]+$/',
+		// 大写字母
+		'upper'		=> '/^[A-Z]+$/',
+		// 营业执照
+		'license'	=> '/[^_IOZSVa-z\W]{2}\d{6}[^_IOZSVa-z\W]{10}/'
 	];
 
 	/**
@@ -595,6 +605,17 @@ class Validate
 	public function account($value)
 	{
 		return preg_match($this->regex['account'], $value) === 1;
+	}
+
+	/**
+	 * 验证营业执照
+	 *
+	 * @param mixed $value
+	 * @return boolean
+	 */
+	public function license($value)
+	{
+		return preg_match($this->regex['license'], $value) === 1;
 	}
 
 	/**
