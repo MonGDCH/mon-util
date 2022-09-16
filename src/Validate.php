@@ -7,42 +7,6 @@ use mon\util\exception\ValidateException;
 /**
  * 验证器
  *
- * @method ip 			验证IP地址
- * @method moble		验证手机号码
- * @method tel			验证固定电话号码
- * @method email 		验证邮箱
- * @method china 		验证中文
- * @method language 	验证字母数字
- * @method alpha 		验证字母
- * @method lower 		验证小写字母
- * @method upper 		验证大写字母
- * @method account  	验证账号，只允许字母、数字和下划线、破折号
- * @method id  			验证ID, 大于0的正整数
- * @method num 			验证数字
- * @method max 			验证最大值
- * @method min 			验证最小值
- * @method length 		验证长度
- * @method maxLength 	验证最大长度
- * @method minLength 	验证最小长度
- * @method required 	验证不能为空
- * @method date   		验证是否为一个有效的日期
- * @method timestamp   	验证是否为一个有效的时间戳
- * @method after 		验证最后日期
- * @method before 		验证最早日期
- * @method url 			验证URL
- * @method float 		验证浮点数
- * @method integer 		验证整数
- * @method regexp 		自定义正则验证
- * @method in 			相当于in_array
- * @method notIn 		相当于!in_array
- * @method str 			验证字符串
- * @method arr 			验证数组
- * @method json 		验证JSON
- * @method xml 			验证XML
- * @method idCard		验证身份证号
- * @method confirm		比较字段
- * @method eq	 		比较值
- *
  * @author Mon <985558837@qq.com>
  * @version 1.3.3	2021-04-26 优化代码，增加getError获取错误信息，check方法返回固定boolean值
  */
@@ -126,7 +90,7 @@ class Validate
 		'language'	=> '/^\w*$/',
 		// 只允许英文
 		'alpha'		=> '/^[A-Za-z]+$/',
-		// 只允许字母、数字和下划线 破折号
+		// 只允许字母、数字、下划线和破折号
 		'account'	=> '/^[A-Za-z0-9\-\_]+$/',
 		// 小写字母
 		'lower'		=> '/^[a-z]+$/',

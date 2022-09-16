@@ -11,4 +11,4 @@ $url = 'http://localhost/index.php';
 
 $data = Network::instance()->sendFile($url, $path, ['a' => 1, 'b' => 2]);
 
-var_dump($data);
+dd($data);

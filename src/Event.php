@@ -8,7 +8,7 @@ use Closure;
  * 事件监听
  * 
  * @author Mon <985558837@qq.com>
- * @version 1.0.0
+ * @version 1.0.1 优化业务代码 2022-09-16
  */
 class Event
 {
@@ -75,24 +75,17 @@ class Event
     }
 
     /**
-     * 设置回调方法名
+     * 设置获取回调方法名
      *
-     * @param string $mehtod
-     * @return Event
-     */
-    public function setHandler($mehtod)
-    {
-        $this->handler = $mehtod;
-        return $this;
-    }
-
-    /**
-     * 获取回调方法名
-     *
+     * @param string $name 回调方法名
      * @return string
      */
-    public function getHandler()
+    public function handler($name = '')
     {
+        if (!empty($name)) {
+            $this->handler = $name;
+        }
+
         return $this->handler;
     }
 
@@ -107,6 +100,7 @@ class Event
     {
         isset($this->tags[$tag]) || $this->tags[$tag] = [];
         $this->tags[$tag][] = $callbak;
+
         return $this;
     }
 
@@ -122,7 +116,7 @@ class Event
         $tags = $this->get($tag);
         $results = [];
         foreach ($tags as $name => $handler) {
-            $results[$name] = $this->exec($handler, ...$args);
+            $results[$name] = $this->execute($handler, ...$args);
             if ($results[$name] === false) {
                 // 如果返回false 则中断行为执行
                 break;
@@ -138,7 +132,7 @@ class Event
      * @param string|array $tag
      * @return Event
      */
-    public function off($tag)
+    public function remove($tag)
     {
         if (is_array($tag)) {
             foreach ($tag as $name) {
@@ -163,19 +157,20 @@ class Event
     }
 
     /**
-     * 执行一个行为
+     * 执行行为
      *
      * @param  mixed  $class    行为回调
      * @param  array  $args     可变参数
      * @return mixed
      */
-    protected function exec($class, ...$args)
+    protected function execute($class, ...$args)
     {
         if ($class instanceof Closure) {
             // 匿名回调
             return Container::instance()->invokeFunction($class, (array)$args);
         } elseif (is_string($class) && !empty($class)) {
-            return Container::instance()->invokeMethd([$class, $this->handler], (array)$args);
+            // 类方法回调
+            return Container::instance()->invokeMethd([$class, $this->handler()], (array)$args);
         }
     }
 }

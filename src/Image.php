@@ -9,7 +9,7 @@ use mon\util\exception\ImgException;
  * 图像操作类
  * 
  * @author Name <985558837@qq.com>
- * @version 1.1.1 优化代码 2022-07-8
+ * @version 1.1.2 优化代码 2022-09-16
  */
 class Image
 {
@@ -102,7 +102,7 @@ class Image
      * @param  string  $type      图像类型
      * @param  boolean $interlace 是否对JPEG类型图像设置隔行扫描
      * @throws ImgException
-     * @return boolean|integer
+     * @return boolean
      */
     public function save($imgname, $type = null, $interlace = true)
     {
@@ -530,44 +530,44 @@ class Image
 
         // 设定文字位置
         switch ($locate) {
-            case 3:
-                // 右下角文字
-                $x += $this->info['width']  - $w;
-                $y += $this->info['height'] - $h;
-                break;
             case 1:
                 // 左下角文字
                 $y += $this->info['height'] - $h;
-                break;
-            case 7:
-                // 左上角文字，起始坐标即为左上角坐标，无需调整
-                break;
-            case 9:
-                // 右上角文字
-                $x += $this->info['width'] - $w;
-                break;
-            case 5:
-                // 居中文字
-                $x += ($this->info['width']  - $w) / 2;
-                $y += ($this->info['height'] - $h) / 2;
                 break;
             case 2:
                 // 下居中文字
                 $x += ($this->info['width'] - $w) / 2;
                 $y += $this->info['height'] - $h;
                 break;
+            case 3:
+                // 右下角文字
+                $x += $this->info['width']  - $w;
+                $y += $this->info['height'] - $h;
+                break;
+            case 4:
+                // 左居中文字
+                $y += ($this->info['height'] - $h) / 2;
+                break;
+            case 5:
+                // 居中文字
+                $x += ($this->info['width']  - $w) / 2;
+                $y += ($this->info['height'] - $h) / 2;
+                break;
             case 6:
                 // 右居中文字
                 $x += $this->info['width'] - $w;
                 $y += ($this->info['height'] - $h) / 2;
                 break;
+            case 7:
+                // 左上角文字，起始坐标即为左上角坐标，无需调整
+                break;
             case 8:
                 // 上居中文字
                 $x += ($this->info['width'] - $w) / 2;
                 break;
-            case 4:
-                // 左居中文字
-                $y += ($this->info['height'] - $h) / 2;
+            case 9:
+                // 右上角文字
+                $x += $this->info['width'] - $w;
                 break;
             default:
                 // 自定义文字坐标
@@ -575,10 +575,8 @@ class Image
                     list($posx, $posy) = $locate;
                     $x += $posx;
                     $y += $posy;
-                } else {
-                    throw new ImgException('不支持的文字位置类型', ImgException::ERROR_IMG_NOT_SUPPORT_FONT);
                 }
-                break;
+                throw new ImgException('不支持的文字位置类型', ImgException::ERROR_IMG_NOT_SUPPORT_FONT);
         }
 
         // 设置偏移量

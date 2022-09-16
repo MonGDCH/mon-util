@@ -9,21 +9,23 @@ class T
 {
     public function test($args)
     {
-        debug($args);
+        dd($args);
     }
 }
 
 // 绑定匿名函数
-Container::instance()->bind('dump', function ($ages) {
-    debug($ages);
+Container::instance()->set('dump', function ($ages) {
+    dd($ages);
 });
 
 // 调用
 Container::instance()->get('dump', ['asdfgg']);
 
-
 // 绑定对象
-Container::set('t', T::class);
+Container::instance()->set('t', T::class);
 
-// 调用
-Container::instance()->t->test('aaasd');
+// 魔术方法调用
+Container::instance()->t()->test('aaasd');
+
+// 魔术属性调用
+Container::instance()->dump('test');

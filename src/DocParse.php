@@ -117,8 +117,8 @@ class DocParse
                     break;
             }
             return [
-                'type'  => $param,
-                'data'  => $value
+                'type' => $param,
+                'data' => $value
             ];
         }
 
@@ -140,9 +140,9 @@ class DocParse
             $desc = isset($data[1]) ? $data[1] : '';
 
             return [
-                'type'  => $type,
-                'name'  => '',
-                'desc'  => trim($desc)
+                'type' => $type,
+                'name' => '',
+                'desc' => trim($desc)
             ];
         }
 
@@ -169,9 +169,9 @@ class DocParse
             }
 
             return [
-                'type'  => $type,
-                'name'  => $name,
-                'desc'  => isset($desc) ? trim($desc) : ''
+                'type' => $type,
+                'name' => $name,
+                'desc' => isset($desc) ? trim($desc) : ''
             ];
         }
 

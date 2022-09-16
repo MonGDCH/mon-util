@@ -6,6 +6,7 @@ use Closure;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionFunction;
+use ReflectionException;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 
@@ -17,6 +18,7 @@ use Psr\Container\ContainerInterface;
  * @version 1.2  2018-07-05
  * @version 1.3.0   优化代码，增强注解  2021-03-01
  * @version 1.3.1   移除静态支持，接入psr标准 2022-07-26
+ * @version 1.3.2   优化业务 2022-09-16
  */
 class Container implements ContainerInterface
 {
@@ -44,67 +46,42 @@ class Container implements ContainerInterface
     }
 
     /**
-     * get方法别名
-     *
-     * @param  string  $abstract    对象名称或标识
-     * @param  array   $vars        入参
-     * @param  boolean $newInstance 是否获取新的实例
-     * @throws InvalidArgumentException
-     * @return mixed
-     */
-    public function make($abstract, $vars = [], $newInstance = true)
-    {
-        return $this->get($abstract, $vars, $newInstance);
-    }
-
-    /**
-     * set方法别名
-     *
-     * @param string $abstract 类名称或标识符
-     * @param mixed  $server   要绑定的实例
-     * @return Container
-     */
-    public function bind($abstract, $server = null)
-    {
-        return $this->set($abstract, $server);
-    }
-
-    /**
      * 创建获取对象的实例
      *
-     * @param  string  $name     类名称或标识符
-     * @param  array   $vars     绑定的参数
-     * @param  boolean $new      是否保存实例
+     * @param  string  $id  类名称或标识符
+     * @param  array   $val 绑定的参数
+     * @param  boolean $new 是否保存实例
+     * @throws ReflectionException
      * @throws InvalidArgumentException
      * @return mixed
      */
-    public function get($name, $vars = [], $new = false)
+    public function get($id, array $val = [], $new = false)
     {
-        if (isset($this->service[$name]) && !$new) {
-            $object = $this->service[$name];
+        if (isset($this->service[$id]) && !$new) {
+            $object = $this->service[$id];
         } else {
-            if (isset($this->bind[$name])) {
+            if (isset($this->bind[$id])) {
                 // 存在标识
-                $service = $this->bind[$name];
+                $service = $this->bind[$id];
 
                 if ($service instanceof Closure) {
                     // 匿名函数，绑定参数
-                    $object = $this->invokeFunction($service, $vars);
+                    $object = $this->invokeFunction($service, $val);
                 } elseif (is_object($service)) {
                     // 已实例化的对象
                     $object = $service;
                 } else {
                     // 类对象，回调获取实例
-                    $object = $this->get($service, $vars, $new);
+                    $object = $this->get($service, $val, $new);
                 }
             } else {
                 // 不存在，判断为直接写入的类对象, 获取实例
-                $object = $this->invokeClass($name, $vars);
+                $object = $this->invokeClass($id, $val);
             }
 
             // 保存实例
             if (!$new) {
-                $this->service[$name] = $object;
+                $this->service[$id] = $object;
             }
         }
 
@@ -114,27 +91,19 @@ class Container implements ContainerInterface
     /**
      * 绑定类、闭包、实例、接口实现到容器
      *
-     * @param  mixed  $abstract 类名称或标识符或者数组
+     * @param  mixed  $id       类名称或标识符或者数组
      * @param  mixed  $server   要绑定的实例
      * @return Container
      */
-    public function set($abstract, $server = null)
+    public function set($id, $server = null)
     {
         // 传入数组，批量注册
-        if (is_array($abstract)) {
-            foreach ($abstract as $prefix => $service) {
-                // 数组，定义前缀并绑定服务
-                if (is_array($service)) {
-                    foreach ($service as $k => $v) {
-                        $name = $prefix . '_' . $k;
-                        $this->register($name, $v);
-                    }
-                } else {
-                    $this->register($prefix, $service);
-                }
+        if (is_array($id)) {
+            foreach ($id as $name => $service) {
+                $this->bindServer($name, $service);
             }
         } else {
-            $this->register($abstract, $server);
+            $this->bindServer($id, $server);
         }
 
         return $this;
@@ -143,22 +112,38 @@ class Container implements ContainerInterface
     /**
      * 判断容器中是否存在某个类或标识
      *
-     * @param  string  $name     类名称或标识符
-     * @return boolean           [description]
+     * @param string $id 类名称或标识符
+     * @return boolean
      */
-    public function has($name)
+    public function has($id)
     {
-        return isset($this->bind[$name]) || isset($this->service[$name]);
+        return isset($this->bind[$id]) || isset($this->service[$id]);
+    }
+
+    /**
+     * get方法别名，重新获取实例
+     *
+     * @param  string  $id  对象名称或标识
+     * @param  array   $val 入参
+     * @param  boolean $new 是否获取新的实例
+     * @throws ReflectionException
+     * @throws InvalidArgumentException
+     * @return mixed
+     */
+    public function make($id, array $val = [], $new = true)
+    {
+        return $this->get($id, $val, $new);
     }
 
     /**
      * 绑定参数，执行函数或者闭包
      *
-     * @param  mixed $function 函数或者闭包
+     * @param  Closure $function 函数或者闭包
      * @param  array $vars     绑定参数
+     * @throws ReflectionException
      * @return mixed
      */
-    public function invokeFunction($function, $vars = [])
+    public function invokeFunction($function, array $vars = [])
     {
         // 创建反射对象
         $reflact = new ReflectionFunction($function);
@@ -173,9 +158,10 @@ class Container implements ContainerInterface
      *
      * @param  string|array $method 类方法, 用@分割, 如: Test@say
      * @param  array        $vars   绑定参数
+     * @throws ReflectionException
      * @return mixed
      */
-    public function invokeMethd($method, $vars = [])
+    public function invokeMethd($method, array $vars = [])
     {
         // 字符串转数组
         if (is_string($method)) {
@@ -196,9 +182,10 @@ class Container implements ContainerInterface
      *
      * @param  string $class 对象名称
      * @param  array  $vars  绑定构造方法参数
+     * @throws ReflectionException
      * @return mixed
      */
-    public function invokeClass($class, $vars = [])
+    public function invokeClass($class, array $vars = [])
     {
         $reflect = new ReflectionClass($class);
         // 获取构造方法
@@ -219,9 +206,10 @@ class Container implements ContainerInterface
      *
      * @param  mixed  $callback 回调方法
      * @param  array  $vars     参数
+     * @throws ReflectionException
      * @return mixed
      */
-    public function invoke($callback, $vars = [])
+    public function invoke($callback, array $vars = [])
     {
         if ($callback instanceof Closure) {
             $result = $this->invokeFunction($callback, $vars);
@@ -239,18 +227,16 @@ class Container implements ContainerInterface
      * @param mixed  $server   要绑定的实例
      * @return Container
      */
-    protected function register($name, $server)
+    protected function bindServer($name, $server)
     {
-        // 闭包，绑定闭包
         if ($server instanceof Closure) {
+            // 闭包，绑定闭包
             $this->bind[$name] = $server;
-        }
-        // 实例化后的对象, 保存到实例容器中
-        elseif (is_object($server)) {
+        } elseif (is_object($server)) {
+            // 实例化后的对象, 保存到实例容器中
             $this->service[$name] = $server;
-        }
-        // 对象类名称，先保存，不实例化
-        else {
+        } else {
+            // 对象类名称，先保存，不实例化
             $this->bind[$name] = $server;
         }
 
@@ -265,7 +251,7 @@ class Container implements ContainerInterface
      * @throws InvalidArgumentException
      * @return array
      */
-    protected function bindParams($reflact, $vars = [])
+    protected function bindParams($reflact, array $vars = [])
     {
         $args = [];
         if ($reflact->getNumberOfParameters() > 0) {
@@ -313,12 +299,12 @@ class Container implements ContainerInterface
     /**
      * 魔术方法获取实例
      *
-     * @param  string $name 对象名称或标识
+     * @param  string $id 对象名称或标识
      * @param  array  $args 参数
      * @return mixed
      */
-    public function __call($name, $args)
+    public function __call($id, array $args)
     {
-        return $this->get($name, $args);
+        return $this->get($id, $args);
     }
 }

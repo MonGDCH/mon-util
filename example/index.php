@@ -1,13 +1,12 @@
 <?php
 
-use mon\util\File;
-use mon\util\Instance;
+use mon\util\Date;
 
 require __DIR__ . '/../vendor/autoload.php';
 
 
-$source = __DIR__ . '/a';
+$date = new Date();
 
-$desc = __DIR__ . '/b';
+$sunday = $date->getDayOfWeek(0);
 
-File::instance()->copydir($source, $desc, true);
+dd($sunday->format());

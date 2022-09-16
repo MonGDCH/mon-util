@@ -6,7 +6,7 @@ namespace mon\util;
  * 时间日期相关操作
  *
  * @author Mon 985558837@qq.com
- * @version 1.0.3 优化代码 2022-07-08
+ * @version 1.0.4 优化代码 2022-09-16
  */
 class Date
 {
@@ -16,13 +16,6 @@ class Date
      * @var integer
      */
     protected $date;
-
-    /**
-     * 时区
-     *
-     * @var integer
-     */
-    protected $timezone;
 
     /**
      * 年
@@ -74,13 +67,6 @@ class Date
     protected $weekday;
 
     /**
-     * 星期的完整表示
-     *
-     * @var string
-     */
-    protected $cWeekday;
-
-    /**
      * 一年中的天数 0－365
      *
      * @var integer
@@ -88,47 +74,12 @@ class Date
     protected $yDay;
 
     /**
-     * 月份的完整表示
-     *
-     * @var string
-     */
-    protected $cMonth;
-
-    /**
-     * 日期CDATE表示
-     *
-     * @var string
-     */
-    protected $CDATE;
-
-    /**
-     * 日期的YMD表示
-     *
-     * @var string
-     */
-    protected $YMD;
-
-    /**
-     * 时间的输出表示
-     *
-     * @var string
-     */
-    protected $CTIME;
-
-    /**
-     * 星期的输出
-     *
-     * @var array
-     */
-    protected $Week = array("日", "一", "二", "三", "四", "五", "六");
-
-    /**
      * 构造方法
      *
      * @param string $date 日期
      * @return void
      */
-    public function __construct($date = '')
+    public function __construct($date = null)
     {
         $this->date = $this->parse($date);
         $this->setDate($this->date);
@@ -138,27 +89,27 @@ class Date
      * 日期分析，获取时间戳
      *
      * @param  mixed $date 日期
-     * @return string 时间戳
+     * @return integer 时间戳
      */
-    public function parse($date)
+    public function parse($date = null)
     {
         // 字符串解析
         if (is_numeric($date)) {
-            //数字格式直接转换为时间戳
+            // 数字格式直接转换为时间戳
             $tmpdate = $date;
         } elseif (is_null($date)) {
-            //为空默认取得当前时间戳
+            // 为空默认取得当前时间戳
             $tmpdate = time();
         } elseif (is_string($date)) {
             if (($date == '') || strtotime($date) == -1) {
-                //为空默认取得当前时间戳
+                // 为空默认取得当前时间戳
                 $tmpdate = time();
             } else {
-                //把字符串转换成UNIX时间戳
+                // 把字符串转换成UNIX时间戳
                 $tmpdate = strtotime($date);
             }
         } else {
-            //默认取当前时间戳
+            // 默认取当前时间戳
             $tmpdate = time();
         }
 
@@ -173,25 +124,48 @@ class Date
      */
     public function setDate($date)
     {
-        $dateArray          =   getdate($date);
-        $this->date         =   $dateArray[0];            //时间戳
-        $this->second       =   $dateArray["seconds"];    //秒
-        $this->minute       =   $dateArray["minutes"];    //分
-        $this->hour         =   $dateArray["hours"];      //时
-        $this->day          =   $dateArray["mday"];       //日
-        $this->month        =   $dateArray["mon"];        //月
-        $this->year         =   $dateArray["year"];       //年
-
-        $this->weekday      =   $dateArray["wday"];       //星期 0～6
-        $this->cWeekday     =   '星期' . $this->Week[$this->weekday]; //$dateArray["weekday"];    //星期完整表示
-        $this->yDay         =   $dateArray["yday"];       //一年中的天数 0－365
-        $this->cMonth       =   $dateArray["month"];      //月份的完整表示
-
-        $this->CDATE        =   $this->format("Y-m-d"); //日期表示
-        $this->YMD          =   $this->format("Ymd");  //简单日期
-        $this->CTIME        =   $this->format("H:i:s"); //时间表示
+        // 时间信息
+        $dateArray      = getdate($date);
+        // 时间戳
+        $this->date     = $dateArray[0];
+        // 秒
+        $this->second   = $dateArray["seconds"];
+        // 分 
+        $this->minute   = $dateArray["minutes"];
+        // 时
+        $this->hour     = $dateArray["hours"];
+        // 日
+        $this->day      = $dateArray["mday"];
+        // 月
+        $this->month    = $dateArray["mon"];
+        // 年 
+        $this->year     = $dateArray["year"];
+        // 星期 0～6
+        $this->weekday  = $dateArray["wday"];
+        // 一年中的天数 0－365
+        $this->yDay     = $dateArray["yday"];
 
         return $this;
+    }
+
+    /**
+     * 获取当前周几, 0-6
+     *
+     * @return integer
+     */
+    public function getWeek()
+    {
+        return $this->weekday;
+    }
+
+    /**
+     * 获取当前一年中第几天，0－365
+     *
+     * @return integer
+     */
+    public function getYearDay()
+    {
+        return $this->yDay;
     }
 
     /**
@@ -321,12 +295,12 @@ class Date
      */
     public function dateDiff($date, $elaps = "d")
     {
-        $__DAYS_PER_WEEK__       = (7);
-        $__DAYS_PER_MONTH__      = (30);
-        $__DAYS_PER_YEAR__       = (365);
-        $__HOURS_IN_A_DAY__      = (24);
-        $__MINUTES_IN_A_DAY__    = (1440);
-        $__SECONDS_IN_A_DAY__    = (86400);
+        $__DAYS_PER_WEEK__      = (7);
+        $__DAYS_PER_MONTH__     = (30);
+        $__DAYS_PER_YEAR__      = (365);
+        $__HOURS_IN_A_DAY__     = (24);
+        $__MINUTES_IN_A_DAY__   = (1440);
+        $__SECONDS_IN_A_DAY__   = (86400);
         //计算天数差
         $__DAYSELAPS = ($this->parse($date) - $this->date) / $__SECONDS_IN_A_DAY__;
         switch ($elaps) {
@@ -363,18 +337,18 @@ class Date
     public function timeDiff($time, $precision = false)
     {
         if (!is_numeric($precision) && !is_bool($precision)) {
-            static $_diff = ['y' => '年', 'm' => '个月', 'd' => '天', 'h' => '小时', 'i' => '分钟', 's' => '秒', 'w' => '周'];
+            $_diff = ['y' => '年', 'm' => '个月', 'd' => '天', 'h' => '小时', 'i' => '分钟', 's' => '秒', 'w' => '周'];
             return ceil($this->dateDiff($time, $precision)) . $_diff[$precision] . '前';
         }
         $diff = abs($this->parse($time) - $this->date);
-        static $chunks = [[31536000, '年'], [2592000, '个月'], [604800, '周'], [86400, '天'], [3600, '小时'], [60, '分钟'], [1, '秒']];
+        $chunks = [[31536000, '年'], [2592000, '个月'], [604800, '周'], [86400, '天'], [3600, '小时'], [60, '分钟'], [1, '秒']];
         $count = 0;
         $since = '';
         for ($i = 0; $i < count($chunks); $i++) {
             if ($diff >= $chunks[$i][0]) {
                 $num = floor($diff / $chunks[$i][0]);
                 $since .= sprintf('%d' . $chunks[$i][1], $num);
-                $diff =  (int) ($diff - $chunks[$i][0] * $num);
+                $diff = intval($diff - $chunks[$i][0] * $num);
                 $count++;
                 if (!$precision || $count >= $precision) {
                     break;
@@ -394,7 +368,7 @@ class Date
     public function getDayOfWeek($n)
     {
         $week = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        return (new self($week[$n]));
+        return new self($week[$n]);
     }
 
     /**
@@ -470,99 +444,95 @@ class Date
     /**
      * 取得指定间隔日期
      *
-     *    yyyy - 年
-     *    q    - 季度
+     *    y    - 年
      *    m    - 月
-     *    y    - day of year
      *    d    - 日
-     *    w    - 周
-     *    ww   - week of year
      *    h    - 小时
-     *    n    - 分钟
+     *    i    - 分钟
      *    s    - 秒
+     *    q    - 季度
+     *    w    - 周
      *
      * @param integer $number 间隔数目
-     * @param string $interval  比较类型
+     * @param string $interval  间隔类型
      * @return Date
      */
     public function dateAdd($number = 0, $interval = "d")
     {
-        $hours =  $this->hour;
-        $minutes =  $this->minute;
-        $seconds =  $this->second;
-        $month =  $this->month;
-        $day =  $this->day;
-        $year =  $this->year;
+        $year       = $this->year;
+        $month      = $this->month;
+        $day        = $this->day;
+        $hours      = $this->hour;
+        $minutes    = $this->minute;
+        $seconds    = $this->second;
 
         switch ($interval) {
-            case "yyyy":
-                //---Add $number to year
+            case "y":
+                // 年
                 $year += $number;
                 break;
 
-            case "q":
-                //---Add $number to quarter
-                $month += ($number * 3);
-                break;
-
             case "m":
-                //---Add $number to month
+                // 月
                 $month += $number;
                 break;
 
-            case "y":
             case "d":
-            case "w":
-                //---Add $number to day of year, day, day of week
+                // 日
                 $day += $number;
                 break;
 
-            case "ww":
-                //---Add $number to week
-                $day += ($number * 7);
-                break;
-
             case "h":
-                //---Add $number to hours
+                // 时
                 $hours += $number;
                 break;
 
-            case "n":
-                //---Add $number to minutes
+            case "i":
+                // 分
                 $minutes += $number;
                 break;
 
             case "s":
-                //---Add $number to seconds
+                // 秒
                 $seconds += $number;
+                break;
+
+            case "q":
+                // 季
+                $month += ($number * 3);
+                break;
+
+            case "w":
+                // 周
+                $day += ($number * 7);
                 break;
         }
 
-        return (new self(mktime($hours, $minutes, $seconds, $month, $day, $year)));
+        return new self(mktime($hours, $minutes, $seconds, $month, $day, $year));
     }
 
     /**
-     * 日期数字转中文,用于日和月、周
+     * 月中日期数字转中文
      *
-     * @param integer $number 日期数字
+     * @param integer $day 日期数字
      * @return string
      */
-    public function numberToCh($number)
+    public function mdayToCh($mday = null)
     {
-        $number = intval($number);
+        $mday = is_null($mday) ? $this->day : intval($mday);
         $array  = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
         $str = '';
-        if ($number  == 0) {
+        if ($mday == 0) {
             $str .= "十";
         }
-        if ($number  <  10) {
-            $str .= $array[$number - 1];
-        } elseif ($number  <  20) {
-            $str .= "十" . $array[$number - 11];
-        } elseif ($number  <  30) {
-            $str .= "二十" . $array[$number - 21];
+        if ($mday < 10) {
+            $str .= $array[$mday - 1];
+        } elseif ($mday < 20) {
+            $str .= "十" . $array[$mday - 11];
+        } elseif ($mday  <  30) {
+            $str .= "二十" . $array[$mday - 21];
         } else {
-            $str .= "三十" . $array[$number - 31];
+            $str .= "三十" . $array[$mday - 31];
         }
 
         return $str;
@@ -571,16 +541,17 @@ class Date
     /**
      * 年份数字转中文
      *
-     * @param integer $yearStr 年份数字
+     * @param integer $year 年份数字
      * @param boolean $flag 是否显示公元
      * @return string
      */
-    public function yearToCh($yearStr, $flag = false)
+    public function yearToCh($year = null, $flag = false)
     {
+        $year = is_null($year) ? $this->year : intval($year);
         $array = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
         $str = $flag ? '公元' : '';
         for ($i = 0; $i < 4; $i++) {
-            $str .= $array[mb_substr($yearStr, $i, 1)];
+            $str .= $array[mb_substr($year, $i, 1)];
         }
 
         return $str;
@@ -596,8 +567,8 @@ class Date
     public function magicInfo($type)
     {
         $result = '';
-        $m = $this->month;
         $y = $this->year;
+        $m = $this->month;
         $d = $this->day;
 
         switch ($type) {

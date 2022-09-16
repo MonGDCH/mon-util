@@ -2,6 +2,16 @@
 
 > 所有值得注意的版本信息都将记录在该文件中
 
+#### [1.4.0]
+
+- 精简`File`文件类
+- 移除`Log`类，请使用`mongdch/mon-log`包
+- 移除`Pinyin`类，请使用`overtrue/pinyin`包
+- 验证器`Validate`内置验证规则增加
+- `debug`函数更名为`dd`函数
+- 优化`Event`类
+
+
 #### [1.3.13](#https://github.com/MonGDCH/mon-util/commit/f7c9f735fa4cc01a0ee2640382fae1c0f08b218f) (2022-07-26)
 
 - 增加`Event`事件监听类

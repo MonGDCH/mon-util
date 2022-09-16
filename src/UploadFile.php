@@ -120,7 +120,7 @@ class UploadFile
             return false;
         }
         // 文件md5
-        $file['md5']  = md5_file($file['tmp_name']);
+        $file['md5'] = md5_file($file['tmp_name']);
         // 文件sha1
         $file['sha1'] = sha1_file($file['tmp_name']);
 

@@ -82,6 +82,7 @@ class IdCard
                 return false;
             }
         }
+
         return true;
     }
 

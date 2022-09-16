@@ -2,7 +2,6 @@
 
 namespace mon\util;
 
-use RuntimeException;
 use DirectoryIterator;
 use InvalidArgumentException;
 use RecursiveIteratorIterator;
@@ -13,6 +12,7 @@ use RecursiveDirectoryIterator;
  *
  * @author Mon <985558837@qq.com>
  * @version 1.1.2 优化注解，增加copyFile 2022-08-25
+ * @version 1.1.3 精简代码 2022-09-16
  */
 class File
 {
@@ -65,34 +65,6 @@ class File
             default:
                 throw new InvalidArgumentException("type prams invalid.[group|mode|ower]");
         }
-    }
-
-    /**
-     * 获取上传文件信息
-     *
-     * @param  string $field $_FILES 字段索引
-     * @param array $files 文件信息源，默认$_FILES
-     * @return array
-     */
-    public function uploadFileInfo($field, $files = [])
-    {
-        $files = empty($files) ? $_FILES : $files;
-        // 取得上传文件基本信息
-        $fileInfo = $files[$field];
-        $info = [];
-        // 取得文件类型
-        $info['type'] = strtolower(trim(stripslashes(preg_replace("/^(.+?);.*$/", "\\1", $fileInfo['type'])), '"'));
-        // 取得上传文件在服务器中临时保存目录
-        $info['temp'] = $fileInfo['tmp_name'];
-        // 取得上传文件大小
-        $info['size'] = $fileInfo['size'];
-        // 取得文件上传错误
-        $info['error'] = $fileInfo['error'];
-        // 取得上传文件名
-        $info['name'] = $fileInfo['name'];
-        // 取得上传文件后缀
-        $info['ext'] = $this->getExt($fileInfo['name']);
-        return $info;
     }
 
     /**
@@ -413,37 +385,6 @@ class File
     }
 
     /**
-     * 分卷记录文件
-     *
-     * @param  string  $content 记录的内容
-     * @param  string  $path    保存的路径, 不含后缀
-     * @param  integer $maxSize 文件最大尺寸
-     * @param  string  $rollNum 分卷数
-     * @param  string  $postfix 文件后缀
-     * @throws RuntimeException
-     * @return boolean|integer
-     */
-    public function subsectionFile($content, $path, $maxSize = 20480000, $rollNum = 3, $postfix = '.log')
-    {
-        $destination = $path . $postfix;
-        $contentLength = mb_strlen($content);
-        // 判断写入内容的大小
-        if ($contentLength > $maxSize) {
-            throw new RuntimeException("Save content size cannot exceed {$maxSize}, content size: {$contentLength}");
-        }
-        // 判断记录文件是否已存在，存在时文件大小不足写入
-        elseif (file_exists($destination) && floor($maxSize) < (filesize($destination) + $contentLength)) {
-            // 超出剩余写入大小，分卷写入
-            $this->shiftFile($path, (int) $rollNum, $postfix);
-            return $this->createFile($content, $destination, false);
-        }
-        // 不存在文件或文件大小足够继续写入
-        else {
-            return $this->createFile($content, $destination);
-        }
-    }
-
-    /**
      * 获取路径下所有的内容及后代内容
      *
      * @param string  $path  路径
@@ -514,58 +455,6 @@ class File
             }
         }
         return $result;
-    }
-
-    /**
-     * 分卷重命名文件
-     *
-     * @param  string $path    文件路径
-     * @param  int    $rollNum 分卷数
-     * @param  string $postfix 后缀名
-     * @throws RuntimeException
-     * @return void
-     */
-    protected function shiftFile($path, $rollNum, $postfix = '.log')
-    {
-        // 判断是否存在最老的一份文件，存在则删除
-        $oldest = $this->buildShiftName($path, ($rollNum - 1));
-        $oldestFile = $oldest . $postfix;
-        if (!$this->removeFile($oldestFile)) {
-            throw new RuntimeException("Failed to delete old file, oldFileName: {$oldestFile}");
-        }
-
-        // 循环重命名文件
-        for ($i = ($rollNum - 2); $i >= 0; $i--) {
-            // 最新的一卷不需要加上分卷号
-            if ($i == 0) {
-                $oldFile = $path;
-            } else {
-                // 获取分卷号文件名称
-                $oldFile = $this->buildShiftName($path, $i);
-            }
-
-            // 重命名文件
-            $oldFileName = $oldFile . $postfix;
-            if (file_exists($oldFileName)) {
-                $newFileNmae = $this->buildShiftName($path, ($i + 1)) . $postfix;
-                // 重命名
-                if (!$this->rename($oldFile, $newFileNmae)) {
-                    throw new RuntimeException("Failed to rename volume file name, oldFileName: {$oldFileName}, newFileNmae: {$newFileNmae}");
-                }
-            }
-        }
-    }
-
-    /**
-     * 构造分卷文件名称
-     *
-     * @param  string  $fileName 文件名称，不含后缀
-     * @param  integer $num      分卷数
-     * @return string
-     */
-    protected function buildShiftName($fileName, $num)
-    {
-        return $fileName . '_' . $num;
     }
 
     /**

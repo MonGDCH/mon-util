@@ -6,7 +6,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 
 $data = DocParse::instance()->parseClass(DemoTest::class);
-debug($data);
+dd($data);
 
 class DemoTest
 {

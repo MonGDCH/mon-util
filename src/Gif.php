@@ -79,12 +79,13 @@ class GIF
      * 保存当前GIF图片
      *
      * @param  string $gifname 图片名称
-     * @return boolean|integer
+     * @return boolean
      */
     public function save($gifname)
     {
         $gif = new GIFEncoder($this->frames, $this->delays, 0, 2, 0, 0, 0, 'bin');
-        return file_put_contents($gifname, $gif->GetAnimation());
+        $save = file_put_contents($gifname, $gif->GetAnimation());
+        return $save !== false;
     }
 }
 
