@@ -4,14 +4,43 @@ use mon\util\Container;
 
 require __DIR__ . '/../vendor/autoload.php';
 
+class D
+{
+    protected $t;
+
+    public function __construct(T $t)
+    {
+        $this->t = $t;
+    }
+
+    public function getT()
+    {
+        return $this->t;
+    }
+
+    public function test(T $t, $params)
+    {
+        return $t->test($params);
+    }
+}
+
 
 class T
 {
     public function test($args)
     {
         dd($args);
+        return __METHOD__;
     }
 }
+
+
+$d = Container::instance()->get(D::class);
+
+$test = Container::instance()->invokeMethd('D@test', ['params' => '123456']);
+dd($test);
+return;
+
 
 // 绑定匿名函数
 Container::instance()->set('dump', function ($ages) {

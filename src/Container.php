@@ -15,10 +15,7 @@ use Psr\Container\ContainerInterface;
  *
  * @see 注意：该类由[mongdch/mon-container]包迁移，后续将不再维护[mongdch/mon-container]包。
  * @author Mon 985558837@qq.com
- * @version 1.2  2018-07-05
- * @version 1.3.0   优化代码，增强注解  2021-03-01
- * @version 1.3.1   移除静态支持，接入psr标准 2022-07-26
- * @version 1.3.2   优化业务 2022-09-16
+ * @version 1.3.3   优化参数绑定 2022-09-19
  */
 class Container implements ContainerInterface
 {
@@ -246,7 +243,7 @@ class Container implements ContainerInterface
     /**
      * 为反射对象绑定参数
      *
-     * @param  mixed  $reflact 反射对象
+     * @param  \ReflectionFunctionAbstract  $reflact 反射对象
      * @param  array  $vars    参数
      * @throws InvalidArgumentException
      * @return array
@@ -258,15 +255,15 @@ class Container implements ContainerInterface
             // 判断数组类型 数字数组时按顺序绑定参数
             reset($vars);
             $type = key($vars) === 0 ? 1 : 0;
-
             // 获取类方法需要的参数
             $params = $reflact->getParameters();
-
             // 获取参数类型, 绑定参数
             foreach ($params as $param) {
+                // 变量名
                 $name  = $param->getName();
-                $class = $param->getClass();
-
+                // 变量类型
+                $class = $param->getType();
+                // 绑定参数
                 if ($class) {
                     $className = $class->getName();
                     $args[] = $this->get($className);
