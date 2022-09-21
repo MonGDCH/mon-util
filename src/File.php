@@ -265,18 +265,21 @@ class File
      * @param boolean $overwrite   文件是否覆盖，默认不覆盖
      * @return boolean
      */
-    public function copyFile($source, $desc, $overwrite = false)
+    public function copyFile($source, $dest, $overwrite = false)
     {
         // 源文件不存在
         if (!file_exists($source)) {
             return false;
         }
         // 目标文件存在且不进行覆盖
-        if (file_exists($desc) && !$overwrite) {
+        if (file_exists($dest) && !$overwrite) {
             return true;
         }
-
-        return copy($source, $desc);
+        // 创建目标文件目录
+        if (!File::instance()->createDir(dirname($dest))) {
+            return false;
+        }
+        return copy($source, $dest);
     }
 
     /**

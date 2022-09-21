@@ -19,7 +19,7 @@ if (!function_exists('check')) {
      *
      * @param string $type  格式类型，支持validate类的默认的所有方式
      * @param array $args   可变参数
-     * @throws \Exception
+     * @throws \ErrorException
      * @return boolean
      */
     function check($type, ...$args)
@@ -31,7 +31,7 @@ if (!function_exists('check')) {
         if (method_exists($validate, $type)) {
             return call_user_func_array([$validate, $type], (array) $args);
         }
-        throw new \Exception('不支持的验证类型[' . $type . ']');
+        throw new \ErrorException('不支持的验证类型[' . $type . ']');
     }
 }
 
