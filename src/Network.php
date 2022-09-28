@@ -23,23 +23,6 @@ class Network
     protected $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36';
 
     /**
-     * 数组转换成uri
-     *
-     * @param array $data 一维数组
-     * @return string uri
-     */
-    public function arrToUri(array $data)
-    {
-        $ds = "&";
-        $result = "";
-        foreach ($data as $key => $value) {
-            $result = $result . $ds . trim($key) . "=" . trim($value);
-        }
-
-        return $result;
-    }
-
-    /**
      * HTTP以URL的形式发送请求
      *
      * @param   string  $url     请求地址
@@ -57,7 +40,7 @@ class Network
         $queryData = $data;
         // get请求
         if ($method == 'GET' && is_array($data) && count($data) > 0) {
-            $uri = $this->arrToUri($data);
+            $uri = Common::instance()->mapToStr($data);
             $url = $url . (strpos($url, '?') === false ? '?' : '') . $uri;
             $queryData = [];
         }
@@ -361,7 +344,7 @@ class Network
         if (isset($item['data']) && !empty($item['data'])) {
             $data = $item['data'];
             if ($method == 'GET') {
-                $uri = $this->arrToUri($data);
+                $uri = Common::instance()->mapToStr($data);
                 $url = $url . (strpos($url, '?') === false ? '?' : '') . $uri;
                 $data = [];
             }

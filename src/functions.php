@@ -320,7 +320,7 @@ if (!function_exists('isAssoc')) {
     }
 }
 
-if (!function_exists('array2DSort')) {
+if (!function_exists('array_2D_Sort')) {
     /**
      * 二维数组排序
      *
@@ -329,9 +329,9 @@ if (!function_exists('array2DSort')) {
      * @param integer $sort 排序方式，默认值：SORT_DESC
      * @return array
      */
-    function array2DSort($array, $keys, $sort = SORT_DESC)
+    function array_2D_Sort($array, $keys, $sort = SORT_DESC)
     {
-        return Common::instance()->array2DSort($array, $keys, $sort);
+        return Common::instance()->array_2D_Sort($array, $keys, $sort);
     }
 }
 
@@ -390,18 +390,6 @@ if (!function_exists('randString')) {
     function randString($len = 6, $type = '', $addChars = '')
     {
         return Common::instance()->randString($len, $type, $addChars);
-    }
-}
-
-if (function_exists('getBaseName')) {
-    /**
-     * 获取文件的名称，兼容中文名
-     *
-     * @return string
-     */
-    function getBaseName($filename)
-    {
-        return Tool::instance()->getBaseName($filename);
     }
 }
 

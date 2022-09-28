@@ -331,7 +331,7 @@ class Tool
     public function getSquarePoint($lng, $lat, $distance = 0.5)
     {
         if (empty($lng) || empty($lat)) {
-            return '';
+            return [];
         };
 
         // 地球半径，平均半径为6371km
@@ -370,13 +370,14 @@ class Tool
         }
         foreach ($list as $key => $val) {
             // 把文件追加到Zip包
-            $zip->addFile($val, basename($val));
+            $name = (is_string($key) && !empty($key)) ? $key : basename($val);
+            $zip->addFile($val, $name);
         }
         // 关闭Zip对象
         $zip->close();
 
         // 下载Zip包
-        $fileName = $fileName ? $fileName : basename($downloadZip);
+        $fileName = $fileName ?: basename($downloadZip);
         header('Cache-Control: max-age=0');
         header('Content-Description: File Transfer');
         header('Content-disposition: attachment; filename=' . $fileName);
@@ -496,48 +497,31 @@ class Tool
      * @throws InvalidArgumentException
      * @return void
      */
-    public function exportFile($filename, $showname = '', $expire = 180)
+    public function exportFile($filename, $showname = '', $expire = 3600)
     {
         if (!file_exists($filename)) {
-            throw new InvalidArgumentException($filename . '下载文件不存在!');
+            throw new InvalidArgumentException('[' . $filename . ']下载文件不存在!');
         }
-
+        // 下载文件名
+        $showname = $showname ?: File::instance()->getBaseName($filename);
+        // 文件大小
         $length = filesize($filename);
-        if (empty($showname)) {
-            $showname = $filename;
-        }
-        $showname = $this->getBaseName($showname);;
-        if (!empty($filename)) {
-            $finfo = new \finfo(FILEINFO_MIME);
-            $type  = $finfo->file($filename);
-        } else {
-            $type = "application/octet-stream";
-        }
+        // 文件mimetype
+        $mimeType = File::instance()->getMimeType($filename);
+        // 文件更新时间
+        $mtime = filemtime($filename) ?: time();
+
         // 发送Http Header信息 开始下载
-        header("Pragma: public");
         header("Cache-Control: max-age=" . $expire);
-        // header('Cache-Control: no-store, no-cache, must-revalidate');
         header("Expires: " . gmdate("D, d M Y H:i:s", time() + $expire) . "GMT");
-        header("Last-Modified: " . gmdate("D, d M Y H:i:s", time()) . "GMT");
+        header("Last-Modified: " . gmdate("D, d M Y H:i:s", $mtime) . "GMT");
         header("Content-Disposition: attachment; filename=" . $showname);
         header("Content-Length: " . $length);
-        header("Content-type: " . $type);
-        header('Content-Encoding: none');
-        header("Content-Transfer-Encoding: binary");
+        header("Content-type: " . $mimeType);
         // 清空文件的头部信息，解决文件下载无法打开问题
         ob_clean();
         flush();
         readfile($filename);
-    }
-
-    /**
-     * 获取文件的名称，兼容中文名
-     *
-     * @return string
-     */
-    public function getBaseName($filename)
-    {
-        return preg_replace('/^.+[\\\\\\/]/', '', $filename);
     }
 
     /**

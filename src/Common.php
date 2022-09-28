@@ -316,14 +316,13 @@ class Common
      */
     public function mapToStr(array $map)
     {
-        $str = "";
-        if (!empty($map)) {
-            foreach ($map as $k => $v) {
-                $str .= "&" . $k . "=" . $v;
-            }
+        $ds = "&";
+        $result = "";
+        foreach ($map as $key => $value) {
+            $result = $result . $ds . trim($key) . "=" . trim($value);
         }
 
-        return $str;
+        return $result;
     }
 
     /**
@@ -375,6 +374,24 @@ class Common
     }
 
     /**
+     * 二维数组排序
+     *
+     * @param array $array  排序的数组
+     * @param string $keys  排序的键名
+     * @param integer $sort 排序方式，默认值：SORT_DESC
+     * @return array
+     */
+    public function array_2D_Sort($array, $keys, $sort = SORT_DESC)
+    {
+        $keysValue = [];
+        foreach ($array as $k => $v) {
+            $keysValue[$k] = $v[$keys];
+        }
+        array_multisort($keysValue, $sort, $array);
+        return $array;
+    }
+
+    /**
      * 是否为关联数组
      *
      * @param  array   $array 验证码的数组
@@ -384,24 +401,6 @@ class Common
     {
         $keys = array_keys($array);
         return array_keys($keys) !== $keys;
-    }
-
-    /**
-     * 二维数组排序
-     *
-     * @param array $array  排序的数组
-     * @param string $keys  排序的键名
-     * @param integer $sort 排序方式，默认值：SORT_DESC
-     * @return array
-     */
-    public function array2DSort($array, $keys, $sort = SORT_DESC)
-    {
-        $keysValue = [];
-        foreach ($array as $k => $v) {
-            $keysValue[$k] = $v[$keys];
-        }
-        array_multisort($keysValue, $sort, $array);
-        return $array;
     }
 
     /**
@@ -554,7 +553,7 @@ class Common
         } else {
             // 中文随机字
             for ($i = 0; $i < $len; $i++) {
-                $str .= $this->msubstr($chars, floor(mt_rand(0, mb_strlen($chars, 'utf-8') - 1)), 1, 'utf-8', false);
+                $str .= $this->mSubstr($chars, floor(mt_rand(0, mb_strlen($chars, 'utf-8') - 1)), 1, 'utf-8', false);
             }
         }
 

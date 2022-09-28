@@ -1,12 +1,9 @@
 <?php
 
 use mon\util\Date;
+use mon\util\Tool;
 
 require __DIR__ . '/../vendor/autoload.php';
 
 
-$date = new Date();
-
-$sunday = $date->getDayOfWeek(0);
-
-dd($sunday->format());
+Tool::instance()->exportFile('./lottery.php');
