@@ -44,51 +44,113 @@ class Tool
         if ($echo) {
             echo ($output);
             return;
-        } else {
-            return $output;
         }
+
+        return $output;
+    }
+
+    /**
+     * 构建生成URL
+     *
+     * @param string $url URL路径
+     * @param array $vars 传参
+     * @return string
+     */
+    public function buildURL($url, array $vars = [])
+    {
+        // 判断是否包含域名,解析URL和传参
+        if (strpos($url, '://') === false && strpos($url, '/') !== 0) {
+            $info = parse_url($url);
+            $url  = $info['path'] ?: '';
+            // 判断是否存在锚点,解析请求串
+            if (isset($info['fragment'])) {
+                // 解析锚点
+                $anchor = $info['fragment'];
+                if (strpos($anchor, '?') !== false) {
+                    // 解析参数
+                    list($anchor, $info['query']) = explode('?', $anchor, 2);
+                }
+            }
+        } elseif (strpos($url, '://') !== false) {
+            // 存在协议头，自带domain
+            $info = parse_url($url);
+            $url  = $info['host'];
+            $scheme = isset($info['scheme']) ? $info['scheme'] : 'http';
+            // 判断是否存在锚点,解析请求串
+            if (isset($info['fragment'])) {
+                // 解析锚点
+                $anchor = $info['fragment'];
+                if (strpos($anchor, '?') !== false) {
+                    // 解析参数
+                    list($anchor, $info['query']) = explode('?', $anchor, 2);
+                }
+            }
+        }
+
+        // 判断是否已传入URL,且URl中携带传参, 解析传参到$vars中
+        if ($url && isset($info['query'])) {
+            // 解析地址里面参数 合并到vars
+            parse_str($info['query'], $params);
+            $vars = array_merge($params, $vars);
+            unset($info['query']);
+        }
+
+        // 还原锚点
+        $anchor = !empty($anchor) ? '#' . $anchor : '';
+        // 组装传参
+        if (!empty($vars)) {
+            $vars = http_build_query($vars);
+            $url .= '?' . $vars;
+        }
+        $url .= $anchor;
+
+        if (!isset($scheme)) {
+            // 补全baseUrl
+            $url = '/' . ltrim($url, '/');
+        } else {
+            $url = $scheme . '://' . $url;
+        }
+
+        return $url;
     }
 
     /**
      * 判断是否为微信浏览器发起的请求
      *
+     * @param string $ua    请求user-agent
      * @return boolean
      */
-    public function is_wx()
+    public function is_wx($ua = '')
     {
-        if (mb_strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false) {
-            return true;
-        }
+        $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
 
-        return false;
+        return mb_strpos($ua, 'MicroMessenger') !== false;
     }
 
     /**
      * 判断是否为安卓发起的请求
      *
+     * @param string $ua    请求user-agent
      * @return boolean
      */
-    public function is_android()
+    public function is_android($ua = '')
     {
-        if (mb_strpos($_SERVER['HTTP_USER_AGENT'], 'Android') !== false) {
-            return true;
-        }
+        $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
 
-        return false;
+        return mb_strpos($ua, 'Android') !== false;
     }
 
     /**
      * 判断是否为苹果发起的请求
      *
+     * @param string $ua    请求user-agent
      * @return boolean 
      */
-    public function is_ios()
+    public function is_ios($ua = '')
     {
-        if (mb_strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone') !== false || mb_strpos($_SERVER['HTTP_USER_AGENT'], 'iPad') !== false) {
-            return true;
-        }
+        $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
 
-        return false;
+        return (mb_strpos($ua, 'iPhone') !== false || mb_strpos($ua, 'iPad') !== false);
     }
 
     /**
@@ -101,7 +163,7 @@ class Tool
      * @param string  $tokenTimeName  cookie创建token创建时间的名称
      * @return array
      */
-    public function createTicket($ticket, $salt = "MonUtil", $expire = 3600, $tokenName = '_token_', $tokenTimeName = '_tokenTime_')
+    public function createTicket($ticket, $salt = 'mon-util', $expire = 3600, $tokenName = '_token_', $tokenTimeName = '_tokenTime_')
     {
         $now = time();
         $token = md5($salt . $now . $ticket);
@@ -127,7 +189,7 @@ class Tool
      * @param string  $tokenTimeName  Cookie创建token创建时间的名称
      * @return boolean
      */
-    public function checkTicket($ticket, $token = null, $tokenTime = null, $salt = "MonUtil", $destroy = true, $expire = 3600, $tokenName = '_token_', $tokenTimeName = '_tokenTime_')
+    public function checkTicket($ticket, $token = null, $tokenTime = null, $salt = 'mon-util', $destroy = true, $expire = 3600, $tokenName = '_token_', $tokenTimeName = '_tokenTime_')
     {
         $token = empty($token) ? (isset($_COOKIE[$tokenName]) ? $_COOKIE[$tokenName] : '') : $token;
         $tokenTime = empty($tokenTime) ? (isset($_COOKIE[$tokenTimeName]) ? $_COOKIE[$tokenTimeName] : 0) : $tokenTime;
@@ -157,13 +219,14 @@ class Tool
     /**
      * 导出CSV格式文件
      *
-     * @param  string $filename  导出文件名
-     * @param  array  $title     表格标题列表(生成："序号,姓名,性别,年龄\n")
-     * @param  array  $titleKey  表格标题列表对应键名(注意：对应title排序)
-     * @param  array  $data      导出数据
-     * @return void
+     * @param  string  $filename  导出文件名
+     * @param  array   $title     表格标题列表(生成："序号,姓名,性别,年龄\n")
+     * @param  array   $titleKey  表格标题列表对应键名(注意：对应title排序)
+     * @param  array   $data      导出数据
+     * @param  boolean $output    是否输出
+     * @return mixed
      */
-    public function exportCsv($filename, $title, $titleKey = [], $data = [])
+    public function exportCsv($filename, $title, $titleKey = [], $data = [], $output = true)
     {
         // 清空之前的输出
         ob_get_contents() && ob_end_clean();
@@ -187,27 +250,40 @@ class Tool
             }
         }
 
-        // 输出头信息
-        header("Content-type:text/csv");
-        header("Content-Disposition:attachment;filename=" . $filename . ".csv");
-        header('Cache-Control:must-revalidate,post-check=0,pre-check=0');
-        header('Expires:0');
-        header('Pragma:public');
-        header("Content-Length: " . mb_strlen($str));
-        header("Content-Transfer-Encoding: binary");
-        // 输出文件
-        echo $str;
+        // 响应头信息
+        $headers = [
+            'Content-type:text/csv',
+            'Content-Disposition:attachment;filename=' . $filename . '.csv',
+            'Cache-Control:must-revalidate,post-check=0,pre-check=0',
+            'Expires:0',
+            'Pragma:public',
+            'Content-Length: ' . mb_strlen($str),
+            'Content-Transfer-Encoding: binary'
+        ];
+
+        if ($output) {
+            // 输出头信息
+            foreach ($headers as $header) {
+                header($header);
+            }
+            // 输出文件
+            echo $str;
+            return;
+        }
+
+        return ['header' => $headers, 'content' => $str];
     }
 
     /**
      * 导出XML
      *
-     * @param  array  $data     输出的数据
-     * @param  string $root     根节点
-     * @param  string $encoding 编码
-     * @return void
+     * @param  array   $data     输出的数据
+     * @param  string  $root     根节点
+     * @param  string  $encoding 编码
+     * @param  boolean $output   是否输出
+     * @return mixed
      */
-    public function exportXML(array $data, $root = "Mon", $encoding = 'UTF-8')
+    public function exportXML(array $data, $root = 'mon', $encoding = 'UTF-8', $output = true)
     {
         // 清空之前的输出
         ob_get_contents() && ob_end_clean();
@@ -216,8 +292,18 @@ class Tool
         $xml .= Common::instance()->arrToXML($data);
         $xml .= "</{$root}>";
 
-        header("Content-type:text/xml");
-        echo $xml;
+        $headers = ['Content-type:text/xml'];
+        if ($output) {
+            // 输出头信息
+            foreach ($headers as $header) {
+                header($header);
+            }
+            // 输出
+            echo $xml;
+            return;
+        }
+
+        return ['header' => $headers, 'content' => $xml];
     }
 
     /**
@@ -255,13 +341,15 @@ class Tool
     /**
      * 获取客户端的IP地址
      *
+     * @param array $header 头信息，默认 $_SERVER
      * @return string
      */
-    public function ip()
+    public function ip($header = [])
     {
+        $header = $header ?: $_SERVER;
         foreach (['X_FORWARDED_FOR', 'HTTP_X_FORWARDED_FOR', 'CLIENT_IP', 'HTTP_CLIENT_IP', 'REMOTE_ADDR'] as $key) {
-            if (isset($_SERVER[$key])) {
-                return $_SERVER[$key];
+            if (isset($header[$key])) {
+                return $header[$key];
             }
         }
 
@@ -271,15 +359,12 @@ class Tool
     /**
      * 安全IP检测，支持IP段检测
      *
-     * @param string $ip 要检测的IP，','分割，例如白名单IP：192.168.1.13,123.23.23.44,193.134.*.*
-     * @param string|array $ips  白名单IP或者黑名单IP
+     * @param string $ip 要检测的IP
+     * @param array $ips  白名单IP或者黑名单IP，例如白名单IP：['192.168.1.13', '123.23.23.44', '193.134.*.*']
      * @return boolean true 在白名单或者黑名单中，否则不在
      */
-    public function safe_ip($ip, $ips)
+    public function safe_ip($ip, array $ips)
     {
-        if (is_string($ips)) {
-            $ips = explode(",", $ips);
-        }
         if (in_array($ip, $ips)) {
             return true;
         }
@@ -352,13 +437,14 @@ class Tool
     /**
      * 文件打包下载
      *
-     * @param string $downloadZip 打包后保存的文件名
-     * @param array $list 打包文件列表
-     * @param string $fileName 下载文件名，默认为打包后的文件名
+     * @param string    $downloadZip    打包后保存的文件名
+     * @param array     $list           打包文件列表
+     * @param string    $fileName       下载文件名，默认为打包后的文件名
+     * @param boolean   $output         是否输出
      * @throws RuntimeException
-     * @return void
+     * @return mixed
      */
-    public function exportZip($downloadZip, array $list, $fileName = null)
+    public function exportZip($downloadZip, array $list, $fileName = null, $output = true)
     {
         // 初始化Zip并打开
         $zip = new \ZipArchive();
@@ -375,31 +461,45 @@ class Tool
         }
         // 关闭Zip对象
         $zip->close();
-
-        // 下载Zip包
+        // 下载Zip包名
         $fileName = $fileName ?: basename($downloadZip);
-        header('Cache-Control: max-age=0');
-        header('Content-Description: File Transfer');
-        header('Content-disposition: attachment; filename=' . $fileName);
-        header('Content-Type: application/zip');                // zip格式的
-        header('Content-Transfer-Encoding: binary');            // 二进制文件
-        header('Content-Length: ' . filesize($downloadZip));    // 文件大小
-        // 清空文件的头部信息，解决文件下载无法打开问题
-        ob_clean();
-        flush();
-        readfile($downloadZip);
+        // 响应头
+        $headers = [
+            'Cache-Control: max-age=0',
+            'Content-Description: File Transfer',
+            'Content-disposition: attachment; filename=' . $fileName,
+            'Content-Type: application/zip',
+            'Content-Transfer-Encoding: binary',
+            'Content-Length: ' . filesize($downloadZip)
+        ];
+
+        if ($output) {
+            // 清空文件的头部信息，解决文件下载无法打开问题
+            ob_clean();
+            flush();
+            // 输出头信息
+            foreach ($headers as $header) {
+                header($header);
+            }
+            // 输出文件
+            readfile($downloadZip);
+            return;
+        }
+
+        return ['header' => $headers, 'content' => file_get_contents($downloadZip)];
     }
 
     /**
      * 目录打包下载
      *
-     * @param string $downloadZip 打包后保存的文件名
-     * @param string $dirPath 打包的目录
-     * @param string $fileName 下载文件名，默认为打包后的文件名
+     * @param string    $downloadZip    打包后保存的文件名
+     * @param string    $dirPath        打包的目录
+     * @param string    $fileName       下载文件名，默认为打包后的文件名
+     * @param boolean   $output         是否输出
      * @throws InvalidArgumentException
      * @return void
      */
-    public function exportZipForDir($downloadZip, $dirPath, $fileName = null)
+    public function exportZipForDir($downloadZip, $dirPath, $fileName = null, $output = true)
     {
         if (!is_dir($dirPath)) {
             throw new InvalidArgumentException('打包目录不存在!');
@@ -415,19 +515,32 @@ class Tool
         $this->compressZip($zip, opendir($dirPath), $dirPath);
         // 关闭Zip对象
         $zip->close();
-
         // 下载Zip包
         $fileName = $fileName ? $fileName : basename($downloadZip);
-        header('Cache-Control: max-age=0');
-        header('Content-Description: File Transfer');
-        header('Content-disposition: attachment; filename=' . $fileName);
-        header('Content-Type: application/zip');
-        header('Content-Transfer-Encoding: binary');
-        header('Content-Length: ' . filesize($downloadZip));
-        // 清空文件的头部信息，解决文件下载无法打开问题
-        ob_clean();
-        flush();
-        readfile($downloadZip);
+        // 响应头
+        $headers = [
+            'Cache-Control: max-age=0',
+            'Content-Description: File Transfer',
+            'Content-disposition: attachment; filename=' . $fileName,
+            'Content-Type: application/zip',
+            'Content-Transfer-Encoding: binary',
+            'Content-Length: ' . filesize($downloadZip)
+        ];
+
+        if ($output) {
+            // 清空文件的头部信息，解决文件下载无法打开问题
+            ob_clean();
+            flush();
+            // 输出头信息
+            foreach ($headers as $header) {
+                header($header);
+            }
+            // 输出文件
+            readfile($downloadZip);
+            return;
+        }
+
+        return ['header' => $headers, 'content' => file_get_contents($downloadZip)];
     }
 
     /**
@@ -494,10 +607,11 @@ class Tool
      * @param string $filename 下载文件名
      * @param string $showname 下载显示的文件名
      * @param integer $expire  下载内容浏览器缓存时间
+     * @param boolean $output  是否输出
      * @throws InvalidArgumentException
      * @return void
      */
-    public function exportFile($filename, $showname = '', $expire = 3600)
+    public function exportFile($filename, $showname = '', $expire = 3600, $output = true)
     {
         if (!file_exists($filename)) {
             throw new InvalidArgumentException('[' . $filename . ']下载文件不存在!');
@@ -510,18 +624,30 @@ class Tool
         $mimeType = File::instance()->getMimeType($filename);
         // 文件更新时间
         $mtime = filemtime($filename) ?: time();
+        // 响应头信息
+        $headers = [
+            'Cache-Control: max-age=' . $expire,
+            'Expires: ' . gmdate("D, d M Y H:i:s", time() + $expire) . 'GMT',
+            'Last-Modified: ' . gmdate("D, d M Y H:i:s", $mtime) . 'GMT',
+            'Content-Disposition: attachment; filename=' . $showname,
+            'Content-Length: ' . $length,
+            'Content-type: ' . $mimeType
+        ];
 
-        // 发送Http Header信息 开始下载
-        header("Cache-Control: max-age=" . $expire);
-        header("Expires: " . gmdate("D, d M Y H:i:s", time() + $expire) . "GMT");
-        header("Last-Modified: " . gmdate("D, d M Y H:i:s", $mtime) . "GMT");
-        header("Content-Disposition: attachment; filename=" . $showname);
-        header("Content-Length: " . $length);
-        header("Content-type: " . $mimeType);
-        // 清空文件的头部信息，解决文件下载无法打开问题
-        ob_clean();
-        flush();
-        readfile($filename);
+        if ($output) {
+            // 清空文件的头部信息，解决文件下载无法打开问题
+            ob_clean();
+            flush();
+            // 输出头信息
+            foreach ($headers as $header) {
+                header($header);
+            }
+            // 输出文件
+            readfile($filename);
+            return;
+        }
+
+        return ['header' => $headers, 'content' => file_get_contents($filename)];
     }
 
     /**

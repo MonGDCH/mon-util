@@ -13,6 +13,20 @@ use mon\util\Common;
 use mon\util\IdCode;
 use mon\util\Validate;
 
+if (!function_exists('buildURL')) {
+    /**
+     * 构建生成URL
+     *
+     * @param string $url URL路径
+     * @param array $vars 传参
+     * @return string
+     */
+    function buildURL($url, array $vars = [])
+    {
+        return Tool::instance()->buildURL($url, $vars);
+    }
+}
+
 if (!function_exists('check')) {
     /**
      * 验证格式

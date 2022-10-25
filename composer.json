@@ -2,16 +2,18 @@
     "name": "mongdch/mon-util",
     "description": "常用的PHP工具类库，包含了各种各式各样的工具，如：容器、时间、验证器、多语言、图片处理、二维码生成、IP地址解析、文文件操作、数据安全、数据字典等等等等。。。",
     "license": "Apache-2.0",
+    "homepage": "http://gdmon.com/",
     "keywords": [
         "mon",
         "util",
         "tool"
     ],
-    "homepage": "http://www.gdmon.com",
     "authors": [
         {
-            "name": "MonGDCH",
-            "email": "985558837@qq.com"
+            "name": "Mon",
+            "email": "985558837@qq.com",
+            "homepage": "http://www.gdmon.com/",
+            "role": "Developer"
         }
     ],
     "require": {

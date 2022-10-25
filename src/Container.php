@@ -14,8 +14,9 @@ use Psr\Container\ContainerInterface;
  * 服务容器类
  *
  * @see 注意：该类由[mongdch/mon-container]包迁移，后续将不再维护[mongdch/mon-container]包。
- * @author Mon 985558837@qq.com
+ * @author Mon <985558837@qq.com>
  * @version 1.3.3   优化参数绑定 2022-09-19
+ * @version 1.3.4   优化PHP7支持 2022-10-25
  */
 class Container implements ContainerInterface
 {
@@ -250,6 +251,9 @@ class Container implements ContainerInterface
      */
     protected function bindParams($reflact, array $vars = [])
     {
+        // PHP内置常规类型
+        $adapters = ['int', 'float', 'string', 'bool', 'array', 'object', 'mixed', 'resource'];
+        // 参数结果集
         $args = [];
         if ($reflact->getNumberOfParameters() > 0) {
             // 判断数组类型 数字数组时按顺序绑定参数
@@ -264,14 +268,18 @@ class Container implements ContainerInterface
                 // 变量类型
                 $class = $param->getType();
                 // 绑定参数
-                if ($class) {
+                if ($class && !in_array($class->getName(), $adapters)) {
+                    // 对象类型，且不是PHP内置常规类型，获取对象实例注入
                     $className = $class->getName();
                     $args[] = $this->get($className);
                 } elseif (1 == $type && !empty($vars)) {
+                    // 参数为索引数组
                     $args[] = array_shift($vars);
                 } elseif (0 == $type && isset($vars[$name])) {
+                    // 参数为关联数组
                     $args[] = $vars[$name];
                 } elseif ($param->isDefaultValueAvailable()) {
+                    // 获取默认值
                     $args[] = $param->getDefaultValue();
                 } else {
                     throw new InvalidArgumentException('bind parameters were not found![' . $name . ']', 500);
