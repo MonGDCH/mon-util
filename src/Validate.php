@@ -751,4 +751,15 @@ class Validate
 	{
 		return $value == $rule;
 	}
+
+	/**
+	 * 判断值是否为金额
+	 *
+	 * @param mixed $value	操作的数据
+	 * @return boolean
+	 */
+	public function money($value)
+	{
+		return $this->num($value) && $this->int($value * 100) && $value >= 0;
+	}
 }
