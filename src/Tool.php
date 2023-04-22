@@ -32,7 +32,7 @@ class Tool
         var_dump($var);
         $output = ob_get_clean();
         $output = preg_replace('/\]\=\>\n(\s+)/m', '] => ', $output);
-        if (PHP_SAPI == 'cli' || PHP_SAPI == 'cli-server') {
+        if (PHP_SAPI == 'cli') {
             // CLI模式
             $output = PHP_EOL . $label . $output . PHP_EOL;
         } else {
@@ -805,5 +805,47 @@ class Tool
         $content = chunk_split(base64_encode(file_get_contents($path)));
         $base64 = 'data:' . $img['mime'] . ';base64,' . $content;
         return $base64;
+    }
+
+    /**
+     * require_once 优化版本
+     *
+     * @param string $file  文件地址
+     * @throws InvalidArgumentException
+     * @return mixed
+     */
+    public function require_cache($file)
+    {
+        static $import_files = [];
+        if (!isset($import_files[$file])) {
+            if (!file_exists($file)) {
+                throw new RuntimeException('Require file not extsis! file: ' . $file);
+            }
+
+            $import_files[$file] = require_once($file);
+        }
+
+        return $import_files[$file];
+    }
+
+    /**
+     * include_once 优化版本
+     *
+     * @param string $file  文件地址
+     * @throws InvalidArgumentException
+     * @return mixed
+     */
+    public function include_cache($file)
+    {
+        static $import_files = [];
+        if (!isset($import_files[$file])) {
+            if (!file_exists($file)) {
+                throw new RuntimeException('Include file not extsis! file: ' . $file);
+            }
+
+            $import_files[$file] = include_once($file);
+        }
+
+        return $import_files[$file];
     }
 }

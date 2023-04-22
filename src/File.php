@@ -391,14 +391,15 @@ class File
      * 获取文件mimetype
      *
      * @param string $file  文件路径
+     * @param string $default  默认文件mimetype
      * @return string
      */
-    public function getMimeType($file)
+    public function getMimeType($file, $default = 'application/octet-stream')
     {
         // 默认类型
-        $mimeType = 'application/octet-stream';
+        $mimeType = $default;
         if (function_exists('mime_content_type')) {
-            // 使用 mime_content_type 函数
+            // 使用 mime_content_type 函数，需要安装 Fileinfo 扩展
             $mimeType = mime_content_type($file);
         } else {
             // 使用自定义函数

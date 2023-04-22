@@ -17,41 +17,43 @@ class IdCode
      *
      * @var integer
      */
-    private $initNum = 4015732869;
+    protected $initNum = 4015732869;
 
     /**
      * 进制的基本字符串
      *
      * @var string
      */
-    private $baseChar = '8749562031ZYXWVTSRQPNMKJHGFEDCBA';
+    protected $baseChar = '8749562031ZYXWVTSRQPNMKJHGFEDCBA';
 
     /**
      * 使用32进制运算
      *
      * @var integer
      */
-    private $type = 32;
+    protected $type = 32;
 
     /**
      * 补足第3位
      *
      * @var string
      */
-    private $three = 'K';
+    protected $three = 'K';
 
     /**
      * 补足第4位
      *
      * @var string
      */
-    private $four = 'X';
+    protected $four = 'X';
 
     /**
-     * 初始化
+     * 初始化配置
      *
      * @param integer $initNum  起始数
      * @param string $baseChar  进制的基本字符串
+     * @param string $three     4位补位符
+     * @param string $four      4位补位符
      * @return IdCode
      */
     public function init($initNum = 4015732869, $baseChar = '8749562031ZYXWVTSRQPNMKJHGFEDCBA', $three = 'K', $four = 'X')

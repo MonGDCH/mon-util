@@ -28,13 +28,13 @@ class Network
      * @param   string  $url     请求地址
      * @param   array   $data    传递数据
      * @param   string  $type    请求类型
+     * @param   array   $header  请求头
      * @param   boolean $toJson  解析json返回数组
      * @param   integer $timeOut 请求超时时间
-     * @param   array   $header  请求头
      * @param   string  $agent   请求user-agent
      * @return  mixed 结果集
      */
-    public function sendHTTP($url, $data = [], $type = 'GET', $toJson = false, $timeOut = 2, array $header = [], $agent = '')
+    public function sendHTTP($url, $data = [], $type = 'GET', array $header = [], $toJson = false, $timeOut = 2, $agent = '')
     {
         $method = strtoupper($type);
         $queryData = $data;
@@ -48,7 +48,8 @@ class Network
         $ch = $this->getRequest($url, $queryData, $method, $timeOut, $header, $agent);
         // 发起请求
         $html = curl_exec($ch);
-        if ($html === false) {
+        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($html === false || $status != 200) {
             throw new NetWorkException('发起HTTP请求失败!', 0, null, $ch);
         }
         // 关闭请求句柄
@@ -62,12 +63,12 @@ class Network
      *
      * @param array $queryList 请求列表
      * @param integer $rolling 默认最大滚动窗口数
-     * @param integer $timeOut 默认超时时间
      * @param array $header 默认请求头
+     * @param integer $timeOut 默认超时时间
      * @param string $agent 默认user-agent
      * @return array 成功结果集与失败结果集
      */
-    public function sendMultiHTTP($queryList, $rolling = 5, $timeOut = 2, $header = [], $agent = '')
+    public function sendMultiHTTP($queryList, $rolling = 5, $header = [], $timeOut = 2, $agent = '')
     {
         $result = [];
         $errors = [];
@@ -148,15 +149,16 @@ class Network
      * @param string $filename 模拟post表单input的name值
      * @param string $name 文件名
      * @param array $header 额外的请求头
+     * @param boolean $toJson 是否解析json返回数据
      * @param string $agent 请求user-agent
      * @param integer $timeout 上传超时时间
      * @return mixed
      */
-    public function sendFile($url, $path, $data = [], $filename = '', $name = 'file', $toJson = false, $header = [], $agent = '', $timeout = 300)
+    public function sendFile($url, $path, $data = [], $filename = '', $name = 'file', $header = [], $toJson = false, $agent = '', $timeout = 300)
     {
         // 处理文件上传数据集
         $filename = empty($filename) ? basename($path) : $filename;
-        $sendData = array_merge($data, [$name => new \CURLFile(realpath($path), mime_content_type($path), $filename)]);
+        $sendData = array_merge($data, [$name => new \CURLFile(realpath($path), File::instance()->getMimeType($path), $filename)]);
         $header = array_merge(['Content-Type: multipart/form-data'], $header);
         $ch = $this->getRequest($url, $sendData, 'post', $timeout, $header, $agent);
         // 发起请求

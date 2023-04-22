@@ -3,12 +3,14 @@
 namespace mon\util;
 
 use Closure;
+use RuntimeException;
 
 /**
  * 事件监听
  * 
  * @author Mon <985558837@qq.com>
  * @version 1.0.1 优化业务代码 2022-09-16
+ * @version 1.0.2 优化回调执行，不存在抛出异常。 2023-04-22
  */
 class Event
 {
@@ -161,6 +163,7 @@ class Event
      *
      * @param  mixed  $class    行为回调
      * @param  array  $args     可变参数
+     * @throws RuntimeException
      * @return mixed
      */
     protected function execute($class, ...$args)
@@ -172,5 +175,7 @@ class Event
             // 类方法回调
             return Container::instance()->invokeMethd([$class, $this->handler()], (array)$args);
         }
+
+        throw new RuntimeException('Event handler not found!');
     }
 }

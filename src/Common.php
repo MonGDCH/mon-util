@@ -15,6 +15,30 @@ class Common
     use Instance;
 
     /**
+     * 随机生成指定区间内一定个数的随机数
+     *
+     * @param integer $min      最小数
+     * @param integer $max      最大数
+     * @param integer $count    生成数量
+     * @param array $filter     过滤的数据
+     * @return array
+     */
+    public function rand_num_arr($min, $max, $count, array $filter = [])
+    {
+        $i = 0;
+        $result = [];
+        while ($i < $count) {
+            $num = mt_rand($min, $max);
+            if (!in_array($num, $filter)) {
+                $result[] = $num;
+                $filter[] = $num;
+                $i++;
+            }
+        }
+        return $result;
+    }
+
+    /**
      * 字符串编码过滤（中文、英文、数字不过滤，只过滤特殊字符）
      *
      * @param  string $src 安全转码的字符串
@@ -448,7 +472,7 @@ class Common
         if ($asc >= -12556 && $asc <= -11848) return 'X';
         if ($asc >= -11847 && $asc <= -11056) return 'Y';
         if ($asc >= -11055 && $asc <= -10247) return 'Z';
-        return null;
+        return '';
     }
 
     /**
@@ -459,7 +483,8 @@ class Common
     public function uuid()
     {
         $charid = md5(uniqid(mt_rand(), true));
-        $hyphen = chr(45); // "-"
+        // 字符"-"
+        $hyphen = chr(45);
         $uuid = mb_substr($charid, 0, 8) . $hyphen
             . mb_substr($charid, 8, 4) . $hyphen
             . mb_substr($charid, 12, 4) . $hyphen
@@ -487,9 +512,10 @@ class Common
      * @param string $length    截取长度
      * @param string $charset   编码格式
      * @param string $suffix    截断显示字符
+     * @param string $addChar   截断显示字符内容
      * @return string
      */
-    public function mSubstr($str, $length, $start = 0, $charset = "utf-8", $suffix = true)
+    public function mSubstr($str, $length, $start = 0, $charset = "utf-8", $suffix = true, $addChar = '...')
     {
         if (function_exists("mb_substr")) {
             $slice = mb_substr($str, $start, $length, $charset);
@@ -504,7 +530,7 @@ class Common
             $slice = join('', array_slice($match[0], $start, $length));
         }
 
-        return $suffix ? $slice . '...' : $slice;
+        return $suffix ? ($slice . $addChar) : $slice;
     }
 
     /**
@@ -544,7 +570,7 @@ class Common
                 break;
         }
         if ($len > 10) {
-            //位数过长重复字符串一定次数
+            // 位数过长重复字符串一定次数
             $chars = ($type == 1) ? str_repeat($chars, $len) : str_repeat($chars, 5);
         }
         if ($type != 4) {
@@ -692,7 +718,7 @@ class Common
     /**
      * 删除字符串中的空格
      *
-     * @param $str 要删除空格的字符串
+     * @param string $str 要删除空格的字符串
      * @return string 返回删除空格后的字符串
      */
     public function trimAll($str)
