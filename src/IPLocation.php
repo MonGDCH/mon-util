@@ -364,11 +364,11 @@ class IPLocation
                 break;
         }
         // GBK转UTF8
-        $location['country'] = iconv("GBK", "UTF-8", $location['country']);
-        $location['area'] = iconv("GBK", "UTF-8", $location['area']);
+        $location['country'] = iconv('GBK', 'UTF-8', $location['country']);
+        $location['area'] = iconv('GBK', 'UTF-8', $location['area']);
         // CZ88.NET表示没有有效信息
         if ((mb_strpos($location['country'], 'CZ88.NET') !== false)) {
-            $location['country'] = "未知";
+            $location['country'] = '未知';
         }
         if (mb_strpos($location['area'], 'CZ88.NET') !== false) {
             $location['area'] = '';
@@ -432,7 +432,7 @@ class IPLocation
      * @param string $data
      * @return string
      */
-    private function getstring($data = "")
+    private function getstring($data = '')
     {
         $char = fread($this->fp, 1);
         while (ord($char) > 0) {
@@ -457,7 +457,7 @@ class IPLocation
         switch (ord($byte)) {
             case 0:
                 // 没有区域信息
-                $area = "";
+                $area = '';
                 break;
             case 1:
             case 2:

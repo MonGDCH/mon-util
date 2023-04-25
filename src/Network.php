@@ -268,7 +268,7 @@ class Network
     public function getRequest($url, $data = [], $type = 'GET', $timeOut = 2, array $header = [], $agent = '')
     {
         // 判断是否为https请求
-        $ssl = strtolower(substr($url, 0, 8)) == "https://" ? true : false;
+        $ssl = strtolower(substr($url, 0, 8)) == 'https://' ? true : false;
         $ch = curl_init();
         // 设置请求URL
         curl_setopt($ch, CURLOPT_URL, $url);

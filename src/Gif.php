@@ -101,12 +101,12 @@ class GIFEncoder
     private $DIS =  2;
     private $COL = -1;
     private $IMG = -1;
-    private $ERR = array(
+    private $ERR = [
         'ERR00' => "Does not supported function for only one image!",
         'ERR01' => "Source is not a GIF image!",
         'ERR02' => "Unintelligible flag ",
         'ERR03' => "Does not make animation from animated GIF source",
-    );
+    ];
 
     /**
      * 构造方法

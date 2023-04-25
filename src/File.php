@@ -28,7 +28,7 @@ class File
      */
     public function formatByte($size, $dec = 0, $toString = true)
     {
-        $type = array("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB");
+        $type = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
         $pos = 0;
         while ($size >= 1024) {
             $size /= 1024;
@@ -63,7 +63,7 @@ class File
                 // 改变文件所有者。
                 return chown($file, $ch_info);
             default:
-                throw new InvalidArgumentException("type prams invalid.[group|mode|ower]");
+                throw new InvalidArgumentException('type prams invalid.[group|mode|ower]');
         }
     }
 
@@ -151,7 +151,7 @@ class File
         $total_size = 0;
         $file_cout = 0;
         while (false !== ($path = readdir($handle))) {
-            if ($path != "." && $path != "..") {
+            if ($path != '.' && $path != '..') {
                 $next_path = $dir . '/' . $path;
                 if (is_dir($next_path)) {
                     $directory_count++;
@@ -182,7 +182,7 @@ class File
     public function getDirContent($dir)
     {
         if (!is_dir($dir)) {
-            throw new InvalidArgumentException("dir path is not dir!");
+            throw new InvalidArgumentException('dir path is not dir!');
         }
         //遍历目录取得文件信息
         $data = [];

@@ -168,12 +168,12 @@ class UploadSlice
         // 合并文件
         $saveFile = $savePath . DIRECTORY_SEPARATOR . $fileName;
         // 打开保存文件句柄
-        $writerFp = fopen($saveFile, "ab");
+        $writerFp = fopen($saveFile, 'ab');
         for ($k = 0; $k < $chunkLength; $k++) {
             $checkName = $chunkName . '_' . $k;
             $chunkPath = $tmpPath . DIRECTORY_SEPARATOR . $checkName;
             // 读取临时文件
-            $readerFp = fopen($chunkPath, "rb");
+            $readerFp = fopen($chunkPath, 'rb');
             // 写入
             fwrite($writerFp, fread($readerFp, filesize($chunkPath)));
             // 关闭句柄

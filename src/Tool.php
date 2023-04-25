@@ -170,8 +170,8 @@ class Tool
 
         $_COOKIE[$tokenName] = $token;
         $_COOKIE[$tokenTimeName] = $now;
-        setcookie($tokenName, $token, $now + $expire, "/");
-        setcookie($tokenTimeName, $now, $now + $expire, "/");
+        setcookie($tokenName, $token, $now + $expire, '/');
+        setcookie($tokenTimeName, $now, $now + $expire, '/');
 
         return ['token' => $token, 'tokenTime' => $now];
     }
@@ -209,8 +209,8 @@ class Tool
 
         // 判断是否需要清空Cookie
         if ($destroy) {
-            setcookie($tokenName, "", $now - $expire, "/");
-            setcookie($tokenTimeName, "", $now - $expire, "/");
+            setcookie($tokenName, '', $now - $expire, '/');
+            setcookie($tokenTimeName, '', $now - $expire, '/');
         }
 
         return $result;

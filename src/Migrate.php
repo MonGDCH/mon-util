@@ -239,12 +239,12 @@ class Migrate
                 $name = date('Ymd-His', $time) . '-*.sql*';
                 $path = realpath($this->config['path']) . DIRECTORY_SEPARATOR . $name;
                 $files = glob($path);
-                $list = array();
+                $list = [];
                 foreach ($files as $name) {
                     $basename = basename($name);
                     $match = sscanf($basename, '%4s%2s%2s-%2s%2s%2s-%d');
                     $gz = preg_match('/^\\d{8,8}-\\d{6,6}-\\d+\\.sql.gz$/', $basename);
-                    $list[$match[6]] = array($match[6], $name, $gz);
+                    $list[$match[6]] = [$match[6], $name, $gz];
                 }
                 $last = end($list);
                 if (count($list) === $last[0]) {

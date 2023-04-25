@@ -92,13 +92,13 @@ class UploadImg
         switch (strtolower($img_type[1])) {
             case 'jpeg':
             case 'jpg':
-                $img_suffix = "jpg";
+                $img_suffix = 'jpg';
                 break;
             case 'png':
-                $img_suffix = "png";
+                $img_suffix = 'png';
                 break;
             case 'gif':
-                $img_suffix = "gif";
+                $img_suffix = 'gif';
                 break;
             default:
                 throw new UploadException('图片类型错误', UploadException::ERROR_UPLOAD_NOT_IMG);

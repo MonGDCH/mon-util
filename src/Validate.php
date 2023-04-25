@@ -128,7 +128,7 @@ class Validate
 
 		foreach ($scopeRule as $dataItem => $rules) {
 			// 分割获取验证规则
-			$rule = is_array($rules) ? $rules : explode("|", $rules);
+			$rule = is_array($rules) ? $rules : explode('|', $rules);
 			// 存在节点，验证节点
 			if (isset($this->data[$dataItem])) {
 				$value = $this->data[$dataItem];
@@ -268,9 +268,9 @@ class Validate
 	protected function analysis($value, $rule, $dataItem)
 	{
 		$resule = true;
-		foreach ($rule as $key => $type) {
+		foreach ($rule as $type) {
 			// 分割获取规则参数，支持二维。例子：max:9
-			$item = explode(":", $type, 2);
+			$item = explode(':', $type, 2);
 			if (count($item) > 1) {
 				$status = $this->checkItem($dataItem, $value, $item[0], $item[1]);
 			} else {

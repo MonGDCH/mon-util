@@ -27,9 +27,9 @@
 * Lottery类，概率抽奖工具类
 * Nework类，网络客户端工具类
 * UploadSilce类，处理大文件分片上传
-* Pinyin类，中文转拼音
 * Migrate类，Mysql数据库备份迁移
 * Log类，日志处理
+* Nbed64类，Nbed64加密算法类
 
 
 ## 安装

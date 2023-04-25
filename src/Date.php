@@ -129,21 +129,21 @@ class Date
         // 时间戳
         $this->date     = $dateArray[0];
         // 秒
-        $this->second   = $dateArray["seconds"];
+        $this->second   = $dateArray['seconds'];
         // 分 
-        $this->minute   = $dateArray["minutes"];
+        $this->minute   = $dateArray['minutes'];
         // 时
-        $this->hour     = $dateArray["hours"];
+        $this->hour     = $dateArray['hours'];
         // 日
-        $this->day      = $dateArray["mday"];
+        $this->day      = $dateArray['mday'];
         // 月
-        $this->month    = $dateArray["mon"];
+        $this->month    = $dateArray['mon'];
         // 年 
-        $this->year     = $dateArray["year"];
+        $this->year     = $dateArray['year'];
         // 星期 0～6
-        $this->weekday  = $dateArray["wday"];
+        $this->weekday  = $dateArray['wday'];
         // 一年中的天数 0－365
-        $this->yDay     = $dateArray["yday"];
+        $this->yDay     = $dateArray['yday'];
 
         return $this;
     }
@@ -175,7 +175,7 @@ class Date
      * @param string $format  格式化参数
      * @return string
      */
-    public function format($format = "Y-m-d H:i:s")
+    public function format($format = 'Y-m-d H:i:s')
     {
         return date($format, $this->date);
     }
@@ -293,7 +293,7 @@ class Date
      * @param string $elaps  比较跨度
      * @return integer
      */
-    public function dateDiff($date, $elaps = "d")
+    public function dateDiff($date, $elaps = 'd')
     {
         $__DAYS_PER_WEEK__      = (7);
         $__DAYS_PER_MONTH__     = (30);
@@ -304,22 +304,22 @@ class Date
         //计算天数差
         $__DAYSELAPS = ($this->parse($date) - $this->date) / $__SECONDS_IN_A_DAY__;
         switch ($elaps) {
-            case "y": //转换成年
+            case 'y': //转换成年
                 $__DAYSELAPS =  $__DAYSELAPS / $__DAYS_PER_YEAR__;
                 break;
-            case "m": //转换成月
+            case 'm': //转换成月
                 $__DAYSELAPS =  $__DAYSELAPS / $__DAYS_PER_MONTH__;
                 break;
-            case "w": //转换成星期
+            case 'w': //转换成星期
                 $__DAYSELAPS =  $__DAYSELAPS / $__DAYS_PER_WEEK__;
                 break;
-            case "h": //转换成小时
+            case 'h': //转换成小时
                 $__DAYSELAPS =  $__DAYSELAPS * $__HOURS_IN_A_DAY__;
                 break;
-            case "i": //转换成分钟
+            case 'i': //转换成分钟
                 $__DAYSELAPS =  $__DAYSELAPS * $__MINUTES_IN_A_DAY__;
                 break;
-            case "s": //转换成秒
+            case 's': //转换成秒
                 $__DAYSELAPS =  $__DAYSELAPS * $__SECONDS_IN_A_DAY__;
                 break;
         }
@@ -457,7 +457,7 @@ class Date
      * @param string $interval  间隔类型
      * @return Date
      */
-    public function dateAdd($number = 0, $interval = "d")
+    public function dateAdd($number = 0, $interval = 'd')
     {
         $year       = $this->year;
         $month      = $this->month;
@@ -467,42 +467,42 @@ class Date
         $seconds    = $this->second;
 
         switch ($interval) {
-            case "y":
+            case 'y':
                 // 年
                 $year += $number;
                 break;
 
-            case "m":
+            case 'm':
                 // 月
                 $month += $number;
                 break;
 
-            case "d":
+            case 'd':
                 // 日
                 $day += $number;
                 break;
 
-            case "h":
+            case 'h':
                 // 时
                 $hours += $number;
                 break;
 
-            case "i":
+            case 'i':
                 // 分
                 $minutes += $number;
                 break;
 
-            case "s":
+            case 's':
                 // 秒
                 $seconds += $number;
                 break;
 
-            case "q":
+            case 'q':
                 // 季
                 $month += ($number * 3);
                 break;
 
-            case "w":
+            case 'w':
                 // 周
                 $day += ($number * 7);
                 break;
@@ -523,16 +523,16 @@ class Date
         $array  = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
         $str = '';
         if ($mday == 0) {
-            $str .= "十";
+            $str .= '十';
         }
         if ($mday < 10) {
             $str .= $array[$mday - 1];
         } elseif ($mday < 20) {
-            $str .= "十" . $array[$mday - 11];
+            $str .= '十' . $array[$mday - 11];
         } elseif ($mday  <  30) {
-            $str .= "二十" . $array[$mday - 21];
+            $str .= '二十' . $array[$mday - 21];
         } else {
-            $str .= "三十" . $array[$mday - 31];
+            $str .= '三十' . $array[$mday - 31];
         }
 
         return $str;
@@ -588,10 +588,10 @@ class Date
                 break;
 
             case 'GZ': //干支
-                $GZDict = array(
+                $GZDict = [
                     ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'],
                     ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']
-                );
+                ];
                 $i = $y - 1900 + 36;
                 $result = $GZDict[0][$i % 10] . $GZDict[1][$i % 12];
                 break;

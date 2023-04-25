@@ -126,56 +126,6 @@ class Common
     }
 
     /**
-     * 字符串加密方法
-     *
-     * @param  string $str  加密的字符串
-     * @param  string $salt 加密盐
-     * @return string
-     */
-    public function encryption($str, $salt)
-    {
-        $str = base64_encode($this->randString(4, 5) . "." . $str . "." . $this->randString(4, 5));
-        $key = base64_encode($salt);
-        $str = base64_encode($str);
-        $mix = mb_strlen($key) >= mb_strlen($str) ? ceil(mb_strlen($key) / mb_strlen($str)) : ceil(mb_strlen($str) / mb_strlen($key));
-        $temp = str_split($str);
-        $ftmp = str_split($key);
-        foreach ($ftmp as $k => $v) {
-            isset($temp[$k * $mix]) && $temp[$k * $mix] .= $v;
-        }
-        $str = str_replace(array("=", "+", "/"), array("i00i", "k00k", "z00z"), implode($temp));
-        return base64_encode($str);
-    }
-
-    /**
-     * 字符串解密方法
-     *
-     * @param  string $str  解密的字符串
-     * @param  string $salt 解密的盐
-     * @return string
-     */
-    public function decryption($str, $salt)
-    {
-        $str = base64_decode($str);
-        if (empty($str)) {
-            return '';
-        };
-        $key = base64_encode($salt);
-        $str = str_replace(array("i00i", "k00k", "z00z"), array("=", "+", "/"), $str);
-        $mix = mb_strlen($key) >= mb_strlen($str) ? ceil(mb_strlen($key) / mb_strlen($str)) : ceil(mb_strlen($str) / mb_strlen($key));
-        $temp = str_split($str);
-        for ($k = 0; $k < mb_strlen($key); $k++) {
-            if (!isset($temp[$k * $mix + 1])) {
-                break;
-            }
-            unset($temp[$k * $mix + 1]);
-        }
-        $str = base64_decode(base64_decode(implode($temp)));
-        $_arr = explode(".", $str);
-        return isset($_arr[1]) ? $_arr[1] : null;
-    }
-
-    /**
      * 判断是否为16进制，由于PHP没有相关的API，所以折中处理
      *
      * @param  string  $src 验证的字符串
@@ -320,7 +270,7 @@ class Common
     public function strToMap($str)
     {
         $str = trim($str);
-        $infoMap = array();
+        $infoMap = [];
         $strArr = explode("&", $str);
         for ($i = 0; $i < count($strArr); $i++) {
             $infoArr = explode("=", $strArr[$i]);
@@ -383,7 +333,7 @@ class Common
      */
     public function array_2D_value_unique(array $arr)
     {
-        $tmp = array();
+        $tmp = [];
         foreach ($arr as $k => $v) {
             // 搜索$v[$key]是否在$tmp数组中存在，若存在返回true
             if (in_array($v, $tmp)) {
@@ -724,7 +674,7 @@ class Common
     public function trimAll($str)
     {
         $str = str_replace(" ", '', $str);
-        $str = str_ireplace(array("\r", "\n", '\r', '\n'), '', $str);
+        $str = str_ireplace(["\r", "\n", '\r', '\n'], '', $str);
 
         return $str;
     }

@@ -328,15 +328,15 @@ class Tree
                 $selected = '';
                 if ($selectedids) {
                     $in = (is_array($selectedids)) ? $selectedids : explode(",", $selectedids);
-                    $selected = in_array($id, $in) ? "selected" : '';
+                    $selected = in_array($id, $in) ? 'selected' : '';
                 }
                 // 判断是否需要禁用
                 $disabled = '';
                 if ($disabledids) {
                     $in = (is_array($disabledids)) ? $disabledids : explode(",", $disabledids);
-                    $disabled = in_array($id, $in) ? "disabled" : '';
+                    $disabled = in_array($id, $in) ? 'disabled' : '';
                 }
-                $value = array_merge($value, array('selected' => $selected, 'disabled' => $disabled, 'spacer' => $spacer));
+                $value = array_merge($value, ['selected' => $selected, 'disabled' => $disabled, 'spacer' => $spacer]);
                 $value = array_combine(array_map(function ($k) {
                     return '@' . $k;
                 }, array_keys($value)), $value);
@@ -372,22 +372,22 @@ class Tree
                 $selected = '';
                 if ($selectedids) {
                     $in = (is_array($selectedids)) ? $selectedids : explode(",", $selectedids);
-                    $selected = in_array($id, $in) ? "selected" : '';
+                    $selected = in_array($id, $in) ? 'selected' : '';
                 }
                 // 判断是否需要禁用
                 $disabled = '';
                 if ($disabledids) {
                     $in = (is_array($disabledids)) ? $disabledids : explode(",", $disabledids);
-                    $disabled = in_array($id, $in) ? "disabled" : '';
+                    $disabled = in_array($id, $in) ? 'disabled' : '';
                 }
-                $value = array_merge($value, array('selected' => $selected, 'disabled' => $disabled));
+                $value = array_merge($value, ['selected' => $selected, 'disabled' => $disabled]);
                 $value = array_combine(array_map(function ($k) {
                     return '@' . $k;
                 }, array_keys($value)), $value);
                 $nstr = strtr($itemtpl, $value);
                 $childdata = $this->getTreeUl($id, $itemtpl, $selectedids, $disabledids, $wraptag, $wrapattr);
                 $childlist = $childdata ? "<{$wraptag} {$wrapattr}>" . $childdata . "</{$wraptag}>" : "";
-                $str .= strtr($nstr, array('@childlist' => $childlist));
+                $str .= strtr($nstr, ['@childlist' => $childlist]);
             }
         }
         return $str;
