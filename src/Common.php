@@ -264,14 +264,15 @@ class Common
     /**
      * URI字符串转数组
      *
-     * @param  string $str 入参，待转换的字符串
+     * @param  string $str 待转换的字符串
+     * @param  string $ds  分隔符
      * @return array 字符数组
      */
-    public function strToMap($str)
+    public function strToMap($str, $ds = '&')
     {
         $str = trim($str);
         $infoMap = [];
-        $strArr = explode("&", $str);
+        $strArr = explode($ds, $str);
         for ($i = 0; $i < count($strArr); $i++) {
             $infoArr = explode("=", $strArr[$i]);
             if (count($infoArr) != 2) {
@@ -285,12 +286,12 @@ class Common
     /**
      * 数组转字符串
      *
-     * @param  array $map 入参，待转换的数组
+     * @param  array $map 待转换的数组
+     * @param  string $ds 分隔符
      * @return string
      */
-    public function mapToStr(array $map)
+    public function mapToStr(array $map, $ds = '&')
     {
-        $ds = "&";
         $result = "";
         foreach ($map as $key => $value) {
             $result = $result . $ds . trim($key) . "=" . trim($value);
@@ -355,7 +356,7 @@ class Common
      * @param integer $sort 排序方式，默认值：SORT_DESC
      * @return array
      */
-    public function array_2D_Sort($array, $keys, $sort = SORT_DESC)
+    public function array_2D_sort($array, $keys, $sort = SORT_DESC)
     {
         $keysValue = [];
         foreach ($array as $k => $v) {

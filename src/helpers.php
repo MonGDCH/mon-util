@@ -8,6 +8,7 @@
 |
 */
 
+use mon\util\Collection;
 use mon\util\Tool;
 use mon\util\Common;
 use mon\util\IdCode;
@@ -62,6 +63,19 @@ if (!function_exists('dd')) {
     function dd($var, $echo = true, $label = null, $flags = ENT_SUBSTITUTE)
     {
         return Tool::instance()->dd($var, $echo, $label, $flags);
+    }
+}
+
+if (!function_exists('collection')) {
+    /**
+     * 数组集合
+     *
+     * @param array $data   操作数组
+     * @return Collection
+     */
+    function collection(array $data)
+    {
+        return new Collection($data);
     }
 }
 
@@ -152,20 +166,6 @@ if (!function_exists('randString')) {
     function randString($len = 6, $type = '', $addChars = '')
     {
         return Common::instance()->randString($len, $type, $addChars);
-    }
-}
-
-if (!function_exists('mod')) {
-    /**
-     * 获取余数
-     *
-     * @param  integer $bn 被除数
-     * @param  integer $sn 除数
-     * @return integer 余
-     */
-    function mod($bn, $sn)
-    {
-        return Common::instance()->mod($bn, $sn);
     }
 }
 
