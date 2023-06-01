@@ -365,7 +365,7 @@ class Migrate
         }
         for ($i = 0, $l = count($tables); $i < $l; $i++) {
             $table = $tables[$i];
-            $backup = Migrate::instance()->backup($table, 0, $bakData, ($i + 1 == $l));
+            $backup = $this->backup($table, 0, $bakData, ($i + 1 == $l));
             if ($backup === false) {
                 $error[] = $table;
             }
