@@ -605,6 +605,17 @@ class Validate
 	}
 
 	/**
+	 * 域名domain
+	 *
+	 * @param mixed $value	操作的数据
+	 * @return boolean
+	 */
+	public function domain($value)
+	{
+		return filter_var($value, FILTER_VALIDATE_DOMAIN) !== false;
+	}
+
+	/**
 	 * 浮点数
 	 *
 	 * @param  mixed $value 操作的数据
@@ -761,5 +772,37 @@ class Validate
 	public function money($value)
 	{
 		return $this->num($value) && $this->int($value * 100) && $value >= 0;
+	}
+
+	/**
+	 * 字符串列表验证
+	 * 
+	 * value: 1,2,4,5,6
+	 * scope: listCheck:requred,id
+	 *
+	 * @param mixed $value  验证值
+	 * @param string $rule  验证规则
+	 * @throws ValidateException
+	 * @return boolean
+	 */
+	public function listCheck($value, $rule)
+	{
+		if (!$this->required($value)) {
+			return true;
+		}
+		$rules = explode(',', $rule);
+		$values = explode(',', $value);
+		foreach ($rules as $call) {
+			if (!is_string($call) || empty($call) || !method_exists($this, $call)) {
+				throw new ValidateException('验证器验证方法不支持[' . $call . ']');
+			}
+			foreach ($values as $v) {
+				if (!call_user_func([$this, $call], $v)) {
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 }
