@@ -81,7 +81,7 @@ class Validate
 	 */
 	protected $regex = [
 		// 手机号
-		'moble'		=> '/^[1][3456789][0-9]{9}$/',
+		'mobile'	=> '/^[1][3456789][0-9]{9}$/',
 		// 电话号码
 		'tel'		=> '/^(0\d{2,3}-\d{7,8})(-\d{1,4})?$/',
 		// 中文
@@ -478,9 +478,9 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function moble($value)
+	public function mobile($value)
 	{
-		return preg_match($this->regex['moble'], $value) === 1;
+		return preg_match($this->regex['mobile'], $value) === 1;
 	}
 
 	/**
@@ -804,5 +804,44 @@ class Validate
 		}
 
 		return true;
+	}
+
+	/**
+	 * 字符串列表长度验证
+	 *
+	 * @param mixed $value	验证值
+	 * @param integer $count 长度
+	 * @return boolean
+	 */
+	public function listCount($value, $count)
+	{
+		$values = explode(',', $value);
+		return count($values) == $count;
+	}
+
+	/**
+	 * 字符串列表最大长度验证
+	 *
+	 * @param mixed $value	验证值
+	 * @param integer $count 长度
+	 * @return boolean
+	 */
+	public function listMaxCount($value, $count)
+	{
+		$values = explode(',', $value);
+		return count($values) <= $count;
+	}
+
+	/**
+	 * 字符串列表最小长度验证
+	 *
+	 * @param mixed $value	验证值
+	 * @param integer $count 长度
+	 * @return boolean
+	 */
+	public function listMinCount($value, $count)
+	{
+		$values = explode(',', $value);
+		return count($values) >= $count;
 	}
 }
