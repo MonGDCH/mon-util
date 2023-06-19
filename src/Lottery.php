@@ -13,13 +13,6 @@ use mon\util\exception\LotteryException;
 class Lottery
 {
     /**
-     * 初始化标志
-     *
-     * @var boolean
-     */
-    protected $init = false;
-
-    /**
      * 奖品列表
      *
      * @var array
@@ -48,7 +41,7 @@ class Lottery
     protected $scale = 4;
 
     /**
-     * 初始化
+     * 构造方法
      *
      * @param array $awards 奖品列表
      * @param string $probabilityKey 奖品概率索引
@@ -58,7 +51,7 @@ class Lottery
      * @throws LotteryException
      * @return Lottery
      */
-    public function init(array $awards, $probabilityKey = 'probability', $notWin = '抱歉，您未中奖', $scale = 4, $probabilityCount = 100)
+    public function __construct(array $awards, $probabilityKey = 'probability', $notWin = '抱歉，您未中奖', $scale = 4, $probabilityCount = 100)
     {
         $this->awards = $awards;
         $this->probabilityKey = $probabilityKey;
@@ -83,8 +76,6 @@ class Lottery
         $this->awards[] = $notAward;
         // 打乱顺序
         shuffle($this->awards);
-        $this->init = true;
-        return $this;
     }
 
     /**
@@ -95,9 +86,6 @@ class Lottery
      */
     public function getDraw()
     {
-        if (!$this->init) {
-            throw new LotteryException('未初始化抽奖配置', LotteryException::ERROR_NOT_INIT);
-        }
         $probabilityCount = $this->probabilityCount;
         $pow = pow(10, $this->scale);
         foreach ($this->awards as $item) {
