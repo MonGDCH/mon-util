@@ -143,6 +143,10 @@ class Validate
 				// 不存在节点，返回节点不存在
 				$errorItme = [$dataItem, 'required'];
 				break;
+			} else if (in_array('set', $rule)) {
+				// 不存在节点，返回节点不存在
+				$errorItme = [$dataItem, 'set'];
+				break;
 			}
 		}
 
@@ -338,6 +342,16 @@ class Validate
 	}
 
 	/**
+	 * 是否存在参数，固定返回 true
+	 *
+	 * @return boolean
+	 */
+	public function set()
+	{
+		return true;
+	}
+
+	/**
 	 * 最大值
 	 *
 	 * @param  mixed $value 操作的数据
@@ -416,7 +430,7 @@ class Validate
 	 */
 	public function timestamp($value)
 	{
-		return $this->int($value) && (strtotime(date('Y-m-d H:i:s', $value)) === $value);
+		return $this->int($value) && (strtotime(date('Y-m-d H:i:s', $value)) == $value);
 	}
 
 	/**
