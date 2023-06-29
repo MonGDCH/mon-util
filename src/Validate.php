@@ -143,9 +143,9 @@ class Validate
 				// 不存在节点，返回节点不存在
 				$errorItme = [$dataItem, 'required'];
 				break;
-			} else if (in_array('set', $rule)) {
+			} else if (in_array('isset', $rule)) {
 				// 不存在节点，返回节点不存在
-				$errorItme = [$dataItem, 'set'];
+				$errorItme = [$dataItem, 'isset'];
 				break;
 			}
 		}
@@ -302,10 +302,18 @@ class Validate
 	 */
 	protected function checkItem($field, $value, $rule, $rule_data = null)
 	{
-		if (!is_null($rule_data)) {
-			$resule = call_user_func_array([$this, $rule], [$value, $rule_data, $field]);
-		} else {
-			$resule = call_user_func_array([$this, $rule], [$value, $field]);
+		// 过滤不需要验证的规则
+		if (in_array($rule, ['isset'])) {
+			return true;
+		}
+
+		$resule = false;
+		if (method_exists($this, $rule)) {
+			if (!is_null($rule_data)) {
+				$resule = call_user_func_array([$this, $rule], [$value, $rule_data, $field]);
+			} else {
+				$resule = call_user_func_array([$this, $rule], [$value, $field]);
+			}
 		}
 
 		return $resule;
@@ -339,16 +347,6 @@ class Validate
 	public function required($value)
 	{
 		return !empty($value) || '0' == $value;
-	}
-
-	/**
-	 * 是否存在参数，固定返回 true
-	 *
-	 * @return boolean
-	 */
-	public function set()
-	{
-		return true;
 	}
 
 	/**
@@ -484,6 +482,17 @@ class Validate
 	public function ip($value)
 	{
 		return filter_var($value, FILTER_VALIDATE_IP) !== false;
+	}
+
+	/**
+	 * 内网IP地址
+	 *
+	 * @param mixed $value
+	 * @return boolean
+	 */
+	public function intranet($value)
+	{
+		return !filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
 	}
 
 	/**
