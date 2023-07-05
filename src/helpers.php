@@ -8,11 +8,10 @@
 |
 */
 
-use mon\util\Collection;
 use mon\util\Tool;
 use mon\util\Common;
-use mon\util\IdCode;
 use mon\util\Validate;
+use mon\util\Collection;
 
 if (!function_exists('buildURL')) {
     /**
@@ -76,32 +75,6 @@ if (!function_exists('collection')) {
     function collection(array $data)
     {
         return new Collection($data);
-    }
-}
-
-if (!function_exists('id2code')) {
-    /**
-     * id转code字符串
-     * 
-     * @param integer $id 要加密的id值
-     * @return string
-     */
-    function id2code($id)
-    {
-        return IdCode::instance()->id2code($id);
-    }
-}
-
-if (!function_exists('code2id')) {
-    /**
-     * code转ID
-     *
-     * @param string $code 加密生成的code
-     * @return integer
-     */
-    function code2id($code)
-    {
-        return IdCode::instance()->code2id($code);
     }
 }
 
