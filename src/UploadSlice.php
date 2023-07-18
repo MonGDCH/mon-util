@@ -245,19 +245,19 @@ class UploadSlice
     {
         switch ($errorNo) {
             case 1:
-                return '上传的文件超过了 php.ini 中 upload_max_filesize 选项限制的值！';
+                return '上传的文件超过了 php.ini 中 upload_max_filesize 选项限制的值';
             case 2:
-                return '上传文件的大小超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值！';
+                return '上传文件的大小超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值';
             case 3:
-                return '文件只有部分被上传！';
+                return '文件只有部分被上传';
             case 4:
-                return '没有文件被上传！';
+                return '没有文件被上传';
             case 6:
-                return '找不到临时文件夹！';
+                return '找不到临时文件夹';
             case 7:
-                return '文件写入失败！';
+                return '文件写入失败';
             default:
-                return '未知上传错误！';
+                return '未知上传错误';
         }
     }
 }

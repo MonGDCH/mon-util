@@ -295,12 +295,12 @@ class Date
      */
     public function dateDiff($date, $elaps = 'd')
     {
-        $__DAYS_PER_WEEK__      = (7);
-        $__DAYS_PER_MONTH__     = (30);
-        $__DAYS_PER_YEAR__      = (365);
-        $__HOURS_IN_A_DAY__     = (24);
-        $__MINUTES_IN_A_DAY__   = (1440);
-        $__SECONDS_IN_A_DAY__   = (86400);
+        $__DAYS_PER_WEEK__      = 7;
+        $__DAYS_PER_MONTH__     = 30;
+        $__DAYS_PER_YEAR__      = 365;
+        $__HOURS_IN_A_DAY__     = 24;
+        $__MINUTES_IN_A_DAY__   = 1440;
+        $__SECONDS_IN_A_DAY__   = 86400;
         //计算天数差
         $__DAYSELAPS = ($this->parse($date) - $this->date) / $__SECONDS_IN_A_DAY__;
         switch ($elaps) {
@@ -357,6 +357,19 @@ class Date
         }
 
         return $since . '前';
+    }
+
+    /**
+     * 比对月份查，只比较月份
+     *
+     * @param mixed $date  对比的日期
+     * @return integer
+     */
+    public function monthDiff($date)
+    {
+        $start = explode('-', $this->format('Y-m'), 2);
+        $end = explode('-', date('Y-m', $this->parse($date)), 2);
+        return abs($start[0] - $end[0]) * 12 + abs($start[1] - $end[1]);
     }
 
     /**
