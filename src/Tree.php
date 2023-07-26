@@ -243,30 +243,34 @@ class Tree
     /**
      * 组成树结构
      *
-     * @param  string $mark 子级标志位
+     * @param  string $childName    子级标志位
+     * @param  boolean $mark    是否显示mark标志符号
      * @return array
      */
-    public function getTree($mark = 'child')
+    public function getTree($childName = 'child', $mark = false)
     {
         // 创建Tree
         $tree = [];
         // 创建基于主键的数组引用
         $refer = [];
         foreach ($this->data as $key => $data) {
+            $this->data[$key][$childName] = [];
             $refer[$data[$this->config['id']]] = &$this->data[$key];
         }
         foreach ($this->data as $key => $data) {
             // 判断是否存在parent
             $parentId =  $data[$this->config['pid']];
             if ($this->config['root'] == $parentId) {
-                $this->data[$key]['haschild'] = 1;
                 $tree[] = &$this->data[$key];
             } elseif (isset($refer[$parentId])) {
                 $parent = &$refer[$parentId];
-                $this->data[$key]['_mark_'] = $this->config['icon'][2];
-                $parent[$mark][] = &$this->data[$key];
+                if ($mark) {
+                    $this->data[$key]['_mark_'] = $this->config['icon'][2];
+                }
+                $parent[$childName][] = &$this->data[$key];
             }
         }
+
         return $tree;
     }
 
