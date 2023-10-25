@@ -356,7 +356,7 @@ class Common
      * @param integer $sort 排序方式，默认值：SORT_DESC
      * @return array
      */
-    public function array_2D_sort($array, $keys, $sort = SORT_DESC)
+    public function array_2D_sort($array, $keys, $sort = \SORT_DESC)
     {
         $keysValue = [];
         foreach ($array as $k => $v) {
