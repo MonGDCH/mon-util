@@ -97,7 +97,12 @@ class Validate
 		// 大写字母
 		'upper'		=> '/^[A-Z]+$/',
 		// 营业执照
-		'license'	=> '/[^_IOZSVa-z\W]{2}\d{6}[^_IOZSVa-z\W]{10}/'
+		'license'	=> '/[^_IOZSVa-z\W]{2}\d{6}[^_IOZSVa-z\W]{10}/',
+		// 银行卡号
+		'pay_card'	=> '/^[1-9]\d{9,29}$/',
+		// 车牌号
+		'car_num'	=> '/^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领][A-HJ-NP-Z][A-HJ-NP-Z0-9]{4,5}[A-HJ-NP-Z0-9挂学警港澳]$/',
+
 	];
 
 	/**
@@ -606,6 +611,28 @@ class Validate
 	}
 
 	/**
+	 * 验证银行卡号
+	 *
+	 * @param mixed $value
+	 * @return boolean
+	 */
+	public function payCard($value)
+	{
+		return preg_match($this->regex['pay_card'], $value) === 1;
+	}
+
+	/**
+	 * 验证车牌号
+	 *
+	 * @param mixed $value
+	 * @return boolean
+	 */
+	public function carNum($value)
+	{
+		return preg_match($this->regex['car_num'], $value) === 1;
+	}
+
+	/**
 	 * 大于0的正整数
 	 *
 	 * @param  mixed $value 操作的数据
@@ -657,7 +684,7 @@ class Validate
 	 */
 	public function int($value)
 	{
-		return (is_numeric($value) && is_int($value + 0));
+		return filter_var($value, FILTER_VALIDATE_INT) !== false;
 	}
 
 	/**
