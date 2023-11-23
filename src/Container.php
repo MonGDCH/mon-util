@@ -265,7 +265,7 @@ class Container implements ContainerInterface
             foreach ($params as $param) {
                 // 变量名
                 $name  = $param->getName();
-                // 变量类型
+                /** @var \ReflectionNamedType $class 变量类型 */
                 $class = $param->getType();
                 // 绑定参数
                 if ($class && !in_array($class->getName(), $adapters)) {
