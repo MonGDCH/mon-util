@@ -275,6 +275,105 @@ class Tool
     }
 
     /**
+     * 导出Excel，支持图片URL地址导出
+     *
+     * @param string $filename  文件名
+     * @param array $data       表格数据
+     * @param array $head       表格头
+     * @param boolean $border   是否带边框
+     * @param string $sheetName sheet名称
+     * @param boolean $output   是否直接输出
+     * @return mixed
+     */
+    public function exportExcel($filename, array $data, array $head = [], $border = true, $sheetName = 'sheet1', $output = true)
+    {
+        $thead = '';
+        $tbody = '';
+        // 处理表头
+        if (!empty($head)) {
+            $ths = [];
+            foreach ($head as $th) {
+                if (is_array($th) && Common::instance()->isAssoc($th)) {
+                    // 关联数组，支持style样式设置
+                    $style = isset($th['style']) ? $th['style'] : '';
+                    $rowspan = isset($th['rowspan']) ? $th['rowspan'] : '';
+                    $colspan = isset($th['colspan']) ? $th['colspan'] : '';
+                    $ths[] = '<th style="' . $style . '" rowspan="' . $rowspan . '" colspan="' . $colspan . '">' . $th['title'] . '</th>';
+                } elseif (is_string($th) || is_numeric($th)) {
+                    $ths[] = '<th>' . $th . '</th>';
+                } else {
+                    throw new RuntimeException('Excel表头数据参数错误，只支持字符串或数组类型');
+                }
+            }
+            $thead = '<thead><tr>' . implode('', $ths) . '</tr></thead>';
+        }
+        // 处理表格内容
+        $trs = [];
+        foreach ($data as $line) {
+            if (is_string($line) || is_numeric(($line))) {
+                $trs[] = $line;
+            } elseif (is_array($line)) {
+                $tds = [];
+                foreach ($line as $td) {
+                    if (is_array($td) && Common::instance()->isAssoc($td)) {
+                        if (!isset($td['title']) && !isset($td['img']) && (isset($td['img']) && !is_array($td['img']))) {
+                            throw new RuntimeException('Excel表格【单元格】参数错误');
+                        }
+                        // 关联数组，支持style样式设置
+                        $style = isset($td['style']) ? $td['style'] : '';
+                        $rowspan = isset($td['rowspan']) ? $td['rowspan'] : '';
+                        $colspan = isset($td['colspan']) ? $td['colspan'] : '';
+                        if (isset($td['img']) && is_array($td['img'])) {
+                            $title = '<img width="' . $td['img']['width'] . '" height="' . $td['img']['height'] . '" src="' . $td['img']['url'] . '">';
+                        } else {
+                            $title = $td['title'];
+                        }
+
+                        $tds[] = '<td style="' . $style . '" rowspan="' . $rowspan . '" colspan="' . $colspan . '">' . $title . '</td>';
+                    } elseif (is_string($td) || is_numeric($td)) {
+                        $tds[] = '<td>' . $td . '</td>';
+                    }
+                }
+                $trs[] = '<tr>' . implode('', $tds) . '</tr>';
+            } else {
+                throw new RuntimeException('Excel表格行内容参数错误，只支持字符串或数组类型');
+            }
+        }
+        $tbody = implode('', $trs);
+
+        $showBorder = $border ? 1 : 0;
+        $table = '<table border="' . $showBorder . '" cellpadding="4" cellspacing="0">' . $thead . $tbody . '</table>';
+
+        $xls = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                    <head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>' . $sheetName . '</x:Name>
+                    <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
+                    <body>' . $table . '</body></html>';
+
+        // 响应头信息
+        $headers = [
+            'Content-type:application/vnd.ms-excel',
+            'Content-Disposition:attachment;filename=' . $filename . '.xls',
+            'Cache-Control:must-revalidate,post-check=0,pre-check=0',
+            'Expires:0',
+            'Pragma:public',
+            'Content-Length: ' . mb_strlen($xls),
+            'Content-Transfer-Encoding: binary'
+        ];
+
+        if ($output) {
+            // 输出头信息
+            foreach ($headers as $header) {
+                header($header);
+            }
+            // 输出文件
+            echo $xls;
+            return;
+        }
+
+        return ['table' => $table, 'xls' => $xls, 'headers' => $headers];
+    }
+
+    /**
      * 导出XML
      *
      * @param  array   $data     输出的数据

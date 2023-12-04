@@ -180,10 +180,11 @@ class Network
      * @param string  $cmd      请求命令套接字
      * @param integer $timeOut  超时时间
      * @param boolean $toJson   是否转换JSON数组为数组
+     * @param integer $readLen  最大能够读取的字节数，默认102400
      * @param boolean $close    是否关闭链接
      * @return mixed 结果集
      */
-    public function sendTCP($ip, $port, $cmd, $timeOut = 2, $toJson = false, $close = true)
+    public function sendTCP($ip, $port, $cmd, $timeOut = 2, $toJson = false, $readLen = 102400, $close = true)
     {
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (!$socket) {
@@ -201,15 +202,18 @@ class Network
             throw new NetWorkException('发送TCP套接字数据失败');
         }
         // 读取返回数据
-        $data = socket_read($socket, 1024);
+        $data = socket_read($socket, $readLen);
         // 是否转换Json格式
         $result = $toJson ? json_decode($data, true) : $data;
         // 是否关闭链接
         if ($close) {
+            // 关闭链接，返回结果集
             socket_close($socket);
+            return $result;
         }
-        // 返回结果集
-        return $result;
+
+        // 不关闭链接，返回链接对象及结果集
+        return ['socket' => $socket, 'result' => $result];
     }
 
     /**
@@ -220,10 +224,11 @@ class Network
      * @param string  $cmd      请求命令套接字
      * @param integer $timeOut  超时时间
      * @param boolean $toJson   是否转换JSON数组为数组
+     * @param integer $readLen  最大能够读取的字节数，默认102400
      * @param boolean $close    是否关闭链接
      * @return mixed 结果集
      */
-    public function sendUDP($ip, $port, $cmd, $timeOut = 2, $toJson = false, $close = true)
+    public function sendUDP($ip, $port, $cmd, $timeOut = 2, $toJson = false, $readLen = 102400, $close = true)
     {
         $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
         if (!$socket) {
@@ -242,16 +247,18 @@ class Network
             throw new NetWorkException('发送UDP套接字数据失败');
         }
         // 读取返回数据
-        $data = socket_read($socket, 1024);
+        $data = socket_read($socket, $readLen);
         // 是否转换Json格式
         $result = $toJson ? json_decode($data, true) : $data;
         // 是否关闭链接
         if ($close) {
+            // 关闭链接，返回结果集
             socket_close($socket);
+            return $result;
         }
 
-        // 执行返回结果集
-        return $result;
+        // 不关闭链接，返回链接对象及结果集
+        return ['socket' => $socket, 'result' => $result];
     }
 
     /**
@@ -311,7 +318,15 @@ class Network
         // 设置请求头
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         if (!empty($header)) {
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+            // 优化关联数组请求头处理
+            $headers = $header;
+            if (Common::instance()->isAssoc($header)) {
+                $headers = [];
+                foreach ($header as $k => $v) {
+                    $headers[] = "{$k}: {$v}";
+                }
+            }
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         }
         if ($ssl) {
             // 跳过证书检查
