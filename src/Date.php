@@ -101,7 +101,7 @@ class Date
             // 为空默认取得当前时间戳
             $tmpdate = time();
         } elseif (is_string($date)) {
-            if (($date == '') || strtotime($date) == -1) {
+            if (($date == '') || strtotime($date) == false) {
                 // 为空默认取得当前时间戳
                 $tmpdate = time();
             } else {
@@ -149,7 +149,17 @@ class Date
     }
 
     /**
-     * 获取当前周几, 0-6
+     * 获取时间戳
+     *
+     * @return integer
+     */
+    public function getTime()
+    {
+        return $this->date;
+    }
+
+    /**
+     * 获取当前周几, 0-6，0为周天
      *
      * @return integer
      */
@@ -251,15 +261,14 @@ class Date
     /**
      * 根据指定日期和1~7来获取周一至周日对应的日期
      *
-     * @param string $date 指定日期，为空则默认为当前天
      * @param integer $weekday 指定返回周几的日期（1~7），默认为返回周一对应的日期
+     * @param string $date 指定日期，为空则默认为当前对象时间
      * @param string $format 指定返回日期的格式
      * @return  string
      */
     public function getWeekDay($weekday = 1, $date = '', $format = 'Y-m-d')
     {
-        $time = strtotime($date);
-        $time = ($time == '') ? $this->date : $time;
+        $time = $date ? strtotime($date) : $this->date;
 
         return date($format, $time - 86400 * (date('N', $time) - $weekday));
     }
@@ -295,36 +304,36 @@ class Date
      */
     public function dateDiff($date, $elaps = 'd')
     {
-        $__DAYS_PER_WEEK__      = 7;
-        $__DAYS_PER_MONTH__     = 30;
-        $__DAYS_PER_YEAR__      = 365;
-        $__HOURS_IN_A_DAY__     = 24;
-        $__MINUTES_IN_A_DAY__   = 1440;
-        $__SECONDS_IN_A_DAY__   = 86400;
+        $days_per_week  = 7;
+        $days_per_month = 30;
+        $days_per_year  = 365;
+        $hours_in_day   = 24;
+        $minutes_in_day = 1440;
+        $seconds_in_day = 86400;
         //计算天数差
-        $__DAYSELAPS = ($this->parse($date) - $this->date) / $__SECONDS_IN_A_DAY__;
+        $dayselaps = ($this->parse($date) - $this->date) / $seconds_in_day;
         switch ($elaps) {
             case 'y': //转换成年
-                $__DAYSELAPS =  $__DAYSELAPS / $__DAYS_PER_YEAR__;
+                $dayselaps =  $dayselaps / $days_per_year;
                 break;
             case 'm': //转换成月
-                $__DAYSELAPS =  $__DAYSELAPS / $__DAYS_PER_MONTH__;
+                $dayselaps =  $dayselaps / $days_per_month;
                 break;
             case 'w': //转换成星期
-                $__DAYSELAPS =  $__DAYSELAPS / $__DAYS_PER_WEEK__;
+                $dayselaps =  $dayselaps / $days_per_week;
                 break;
             case 'h': //转换成小时
-                $__DAYSELAPS =  $__DAYSELAPS * $__HOURS_IN_A_DAY__;
+                $dayselaps =  $dayselaps * $hours_in_day;
                 break;
             case 'i': //转换成分钟
-                $__DAYSELAPS =  $__DAYSELAPS * $__MINUTES_IN_A_DAY__;
+                $dayselaps =  $dayselaps * $minutes_in_day;
                 break;
             case 's': //转换成秒
-                $__DAYSELAPS =  $__DAYSELAPS * $__SECONDS_IN_A_DAY__;
+                $dayselaps =  $dayselaps * $seconds_in_day;
                 break;
         }
 
-        return $__DAYSELAPS;
+        return $dayselaps;
     }
 
     /**
@@ -484,37 +493,30 @@ class Date
                 // 年
                 $year += $number;
                 break;
-
             case 'm':
                 // 月
                 $month += $number;
                 break;
-
             case 'd':
                 // 日
                 $day += $number;
                 break;
-
             case 'h':
                 // 时
                 $hours += $number;
                 break;
-
             case 'i':
                 // 分
                 $minutes += $number;
                 break;
-
             case 's':
                 // 秒
                 $seconds += $number;
                 break;
-
             case 'q':
                 // 季
                 $month += ($number * 3);
                 break;
-
             case 'w':
                 // 周
                 $day += ($number * 7);

@@ -294,7 +294,7 @@ class Common
     {
         $result = "";
         foreach ($map as $key => $value) {
-            $result = $result . $ds . trim($key) . "=" . trim($value);
+            $result = $result . $ds . trim((string)$key) . "=" . trim((string)$value);
         }
 
         return $result;

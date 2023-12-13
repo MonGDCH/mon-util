@@ -97,7 +97,7 @@ class Validate
 		// 大写字母
 		'upper'		=> '/^[A-Z]+$/',
 		// 营业执照
-		'license'	=> '/[^_IOZSVa-z\W]{2}\d{6}[^_IOZSVa-z\W]{10}/',
+		'license'	=> '/^[a-zA-Z0-9]{10,20}$/',
 		// 银行卡号
 		'pay_card'	=> '/^[1-9]\d{9,29}$/',
 		// 车牌号

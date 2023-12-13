@@ -478,6 +478,48 @@ class Tool
     }
 
     /**
+     * 获取本机mac地址
+     *
+     * @return string
+     */
+    public function mac_address()
+    {
+        $data = [];
+        switch (strtolower(PHP_OS)) {
+            case "darwin":
+            case "linux":
+                @exec("ifconfig -a", $data);
+                break;
+            case "unix":
+            case "aix":
+            case "solaris":
+                break;
+            default:
+                @exec("ipconfig /all", $data);
+                if (!$data) {
+                    $ipconfig = $_SERVER["WINDIR"] . "\system32\ipconfig.exe";
+                    if (is_file($ipconfig)) {
+                        @exec($ipconfig . " /all", $data);
+                    } else {
+                        @exec($_SERVER["WINDIR"] . "\system\ipconfig.exe /all", $data);
+                    }
+                }
+                break;
+        }
+
+        $mac = '';
+        $tmp = [];
+        foreach ($data as $value) {
+            if (preg_match("/[0-9a-f][0-9a-f][:-]" . "[0-9a-f][0-9a-f][:-]" . "[0-9a-f][0-9a-f][:-]" . "[0-9a-f][0-9a-f][:-]" . "[0-9a-f][0-9a-f][:-]" . "[0-9a-f][0-9a-f]/i", $value, $tmp)) {
+                $mac = $tmp[0];
+                break;
+            }
+        }
+        unset($tmp);
+        return $mac;
+    }
+
+    /**
      * 获取两坐标距离
      *
      * @param float $lng1 经度1
