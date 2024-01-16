@@ -141,31 +141,3 @@ if (!function_exists('randString')) {
         return Common::instance()->randString($len, $type, $addChars);
     }
 }
-
-if (!function_exists('require_cache')) {
-    /**
-     * require_once 优化版本
-     *
-     * @param string $file  文件地址
-     * @throws InvalidArgumentException
-     * @return mixed
-     */
-    function require_cache($file)
-    {
-        return Tool::instance()->require_cache($file);
-    }
-}
-
-if (!function_exists('include_cache')) {
-    /**
-     * include_once 优化版本
-     *
-     * @param string $file  文件地址
-     * @throws InvalidArgumentException
-     * @return mixed
-     */
-    function include_cache($file)
-    {
-        return Tool::instance()->include_cache($file);
-    }
-}

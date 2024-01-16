@@ -220,50 +220,55 @@ class Tool
      * 导出CSV格式文件
      *
      * @param  string  $filename  导出文件名
-     * @param  array   $title     表格标题列表(生成："序号,姓名,性别,年龄\n")
-     * @param  array   $titleKey  表格标题列表对应键名(注意：对应title排序)
      * @param  array   $data      导出数据
+     * @param  array   $title     表格标题列表，key=>value，value为列标题，key为列名对应data中的索引
      * @param  boolean $output    是否输出
      * @return mixed
      */
-    public function exportCsv($filename, $title, $titleKey = [], $data = [], $output = true)
+    public function exportCsv($filename, array $data, array $title = [], $output = true)
     {
-        // 清空之前的输出
-        ob_get_contents() && ob_end_clean();
+        $str = '';
+        if (!empty($title)) {
+            // 处理标题
+            $values = array_values($title);
+            $str = @iconv('utf-8', 'gbk', implode(",", $values)) . "\n";
+        }
 
-        // 获取标题
-        $title  = implode(",", $title) . "\n";
-        $str    = @iconv('utf-8', 'gbk', $title); // 中文转码GBK
-        $len    = count($titleKey);
-
-        // 遍历二维数组获取需要生成的数据
-        foreach ($data as $key => $value) {
+        // 遍历获取生成的数据
+        $keys = array_keys($title);
+        foreach ($data as $value) {
+            $line = '';
             // 遍历键列表获取对应数据中的键值
-            for ($i = 0; $i < $len; $i++) {
-                $val = @iconv('utf-8', 'gbk', $value[$titleKey[$i]]);
-                // 判断是否为最后一列数据
-                if ($i == ($len - 1)) {
-                    $str .= $val . "\n";
-                } else {
-                    $str .= $val . ",";
+            if (!empty($keys)) {
+                foreach ($keys as $k) {
+                    $line .= $value[$k] . ',';
+                }
+            } else {
+                foreach ($value as $v) {
+                    $line .= $v . ',';
                 }
             }
+
+            $str .= @iconv('utf-8', 'gbk', trim($line, ',')) . "\n";
         }
 
         // 响应头信息
         $headers = [
-            'Content-type:text/csv',
-            'Content-Disposition:attachment;filename=' . $filename . '.csv',
-            'Cache-Control:must-revalidate,post-check=0,pre-check=0',
-            'Expires:0',
-            'Pragma:public',
-            'Content-Length: ' . mb_strlen($str),
-            'Content-Transfer-Encoding: binary'
+            'Content-type' => 'text/csv',
+            'Content-Disposition' => 'attachment;filename=' . $filename . '.csv',
+            'Cache-Control' => 'must-revalidate,post-check=0,pre-check=0',
+            'Expires' => 0,
+            'Pragma' => 'public',
+            'Content-Length' => strlen($str),
+            'Content-Transfer-Encoding' => 'binary'
         ];
 
         if ($output) {
+            // 清空之前的输出
+            ob_get_contents() && ob_end_clean();
             // 输出头信息
-            foreach ($headers as $header) {
+            foreach ($headers as $k => $v) {
+                $header = $k . ':' . $v;
                 header($header);
             }
             // 输出文件
@@ -279,26 +284,26 @@ class Tool
      *
      * @param string $filename  文件名
      * @param array $data       表格数据
-     * @param array $head       表格头
+     * @param array $title      表格头
      * @param boolean $border   是否带边框
      * @param string $sheetName sheet名称
      * @param boolean $output   是否直接输出
      * @return mixed
      */
-    public function exportExcel($filename, array $data, array $head = [], $border = true, $sheetName = 'sheet1', $output = true)
+    public function exportExcel($filename, array $data, array $title = [], $border = true, $sheetName = 'sheet1', $output = true)
     {
         $thead = '';
         $tbody = '';
         // 处理表头
-        if (!empty($head)) {
+        if (!empty($title)) {
             $ths = [];
-            foreach ($head as $th) {
+            foreach ($title as $th) {
                 if (is_array($th) && Common::instance()->isAssoc($th)) {
                     // 关联数组，支持style样式设置
                     $style = isset($th['style']) ? $th['style'] : '';
                     $rowspan = isset($th['rowspan']) ? $th['rowspan'] : '';
                     $colspan = isset($th['colspan']) ? $th['colspan'] : '';
-                    $ths[] = '<th style="' . $style . '" rowspan="' . $rowspan . '" colspan="' . $colspan . '">' . $th['title'] . '</th>';
+                    $ths[] = '<th style="' . $style . '" rowspan="' . $rowspan . '" colspan="' . $colspan . '">' . $th['text'] . '</th>';
                 } elseif (is_string($th) || is_numeric($th)) {
                     $ths[] = '<th>' . $th . '</th>';
                 } else {
@@ -307,42 +312,38 @@ class Tool
             }
             $thead = '<thead><tr>' . implode('', $ths) . '</tr></thead>';
         }
+
         // 处理表格内容
         $trs = [];
+        $td_keys = array_keys($title);
         foreach ($data as $line) {
             if (is_string($line) || is_numeric(($line))) {
+                // 非数组，直接添加行
                 $trs[] = $line;
             } elseif (is_array($line)) {
                 $tds = [];
-                foreach ($line as $td) {
-                    if (is_array($td) && Common::instance()->isAssoc($td)) {
-                        if (!isset($td['title']) && !isset($td['img']) && (isset($td['img']) && !is_array($td['img']))) {
-                            throw new RuntimeException('Excel表格【单元格】参数错误');
-                        }
-                        // 关联数组，支持style样式设置
-                        $style = isset($td['style']) ? $td['style'] : '';
-                        $rowspan = isset($td['rowspan']) ? $td['rowspan'] : '';
-                        $colspan = isset($td['colspan']) ? $td['colspan'] : '';
-                        if (isset($td['img']) && is_array($td['img'])) {
-                            $title = '<img width="' . $td['img']['width'] . '" height="' . $td['img']['height'] . '" src="' . $td['img']['url'] . '">';
-                        } else {
-                            $title = $td['title'];
-                        }
-
-                        $tds[] = '<td style="' . $style . '" rowspan="' . $rowspan . '" colspan="' . $colspan . '">' . $title . '</td>';
-                    } elseif (is_string($td) || is_numeric($td)) {
-                        $tds[] = '<td>' . $td . '</td>';
+                if (!empty($td_keys)) {
+                    // 指定了key值
+                    foreach ($td_keys as $key) {
+                        $td = $line[$key];
+                        $tds[] = $this->getExcelTD($td);
+                    }
+                } else {
+                    // 未指定标题对应key值，直接按数据源排序
+                    foreach ($line as $td) {
+                        $tds[] = $this->getExcelTD($td);
                     }
                 }
+
                 $trs[] = '<tr>' . implode('', $tds) . '</tr>';
             } else {
                 throw new RuntimeException('Excel表格行内容参数错误，只支持字符串或数组类型');
             }
         }
-        $tbody = implode('', $trs);
 
+        $tbody = implode('', $trs);
         $showBorder = $border ? 1 : 0;
-        $table = '<table border="' . $showBorder . '" cellpadding="4" cellspacing="0">' . $thead . $tbody . '</table>';
+        $table = '<table border="' . $showBorder . '" cellpadding="10" cellspacing="0">' . $thead . $tbody . '</table>';
 
         $xls = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
                     <head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>' . $sheetName . '</x:Name>
@@ -351,18 +352,21 @@ class Tool
 
         // 响应头信息
         $headers = [
-            'Content-type:application/vnd.ms-excel',
-            'Content-Disposition:attachment;filename=' . $filename . '.xls',
-            'Cache-Control:must-revalidate,post-check=0,pre-check=0',
-            'Expires:0',
-            'Pragma:public',
-            'Content-Length: ' . mb_strlen($xls),
-            'Content-Transfer-Encoding: binary'
+            'Content-type' => 'application/vnd.ms-excel;',
+            'Content-Disposition' => 'attachment;filename=' . $filename . '.xls',
+            'Cache-Control' => 'must-revalidate,post-check=0,pre-check=0',
+            'Expires' => 0,
+            'Pragma' => 'public',
+            'Content-Length' => strlen($xls),
+            'Content-Transfer-Encoding' => 'binary'
         ];
 
         if ($output) {
+            // 清空之前的输出
+            ob_get_contents() && ob_end_clean();
             // 输出头信息
-            foreach ($headers as $header) {
+            foreach ($headers as $k => $v) {
+                $header = $k . ':' . $v;
                 header($header);
             }
             // 输出文件
@@ -370,7 +374,38 @@ class Tool
             return;
         }
 
-        return ['table' => $table, 'xls' => $xls, 'headers' => $headers];
+        return ['header' => $headers, 'content' => $xls, 'table' => $table];
+    }
+
+    /**
+     * 解析Excel表格单元格数据
+     *
+     * @param mixed $td
+     * @return string
+     */
+    protected function getExcelTD($td)
+    {
+        $ret = '';
+        if (is_array($td) && Common::instance()->isAssoc($td)) {
+            if (!isset($td['text']) && !isset($td['img']) && (isset($td['img']) && !is_array($td['img']))) {
+                throw new RuntimeException('Excel表格【单元格】参数错误');
+            }
+            // 关联数组，支持style样式设置
+            $style = isset($td['style']) ? $td['style'] : '';
+            $rowspan = isset($td['rowspan']) ? $td['rowspan'] : '';
+            $colspan = isset($td['colspan']) ? $td['colspan'] : '';
+            if (isset($td['img']) && is_array($td['img'])) {
+                $text = '<img width="' . $td['img']['width'] . '" height="' . $td['img']['height'] . '" src="' . $td['img']['url'] . '">';
+            } else {
+                $text = $td['text'];
+            }
+
+            $ret = '<td style="' . $style . '" rowspan="' . $rowspan . '" colspan="' . $colspan . '">' . $text . '</td>';
+        } elseif (is_string($td) || is_numeric($td)) {
+            $ret = '<td>' . $td . '</td>';
+        }
+
+        return $ret;
     }
 
     /**
@@ -384,17 +419,18 @@ class Tool
      */
     public function exportXML(array $data, $root = 'mon', $encoding = 'UTF-8', $output = true)
     {
-        // 清空之前的输出
-        ob_get_contents() && ob_end_clean();
         $xml  = "<?xml version=\"1.0\" encoding=\"{$encoding}\"?>";
         $xml .= "<{$root}>";
         $xml .= Common::instance()->arrToXML($data);
         $xml .= "</{$root}>";
 
-        $headers = ['Content-type:text/xml'];
+        $headers = ['Content-type' => 'text/xml'];
         if ($output) {
+            // 清空之前的输出
+            ob_get_contents() && ob_end_clean();
             // 输出头信息
-            foreach ($headers as $header) {
+            foreach ($headers as $k => $v) {
+                $header = $k . ':' . $v;
                 header($header);
             }
             // 输出
@@ -408,33 +444,33 @@ class Tool
     /**
      * 隐藏银行卡号
      *
-     * @param  string $id 银行卡号
+     * @param  string $card 银行卡号
      * @return string
      */
-    public function hideBankcard($id)
+    public function hideBankcard($card)
     {
-        if (empty($id)) {
+        if (empty($card)) {
             return '';
         }
         //截取银行卡号前4位
-        $prefix = mb_substr($id, 0, 4);
+        $prefix = mb_substr($card, 0, 4);
         //截取银行卡号后4位
-        $suffix = mb_substr($id, -4, 4);
+        $suffix = mb_substr($card, -4, 4);
         return $prefix . " **** **** **** " . $suffix;
     }
 
     /**
      * 隐藏手机号
      *
-     * @param  string $id 手机号
+     * @param  string $mobile 手机号
      * @return string
      */
-    public function hideMoble($id)
+    public function hideMoble($mobile)
     {
-        if (empty($id)) {
+        if (empty($mobile)) {
             return '';
         }
-        return substr_replace($id, '****', 3, 4);
+        return substr_replace($mobile, '****', 3, 4);
     }
 
     /**
@@ -443,7 +479,7 @@ class Tool
      * @param array $header 头信息，默认 $_SERVER
      * @return string
      */
-    public function ip($header = [])
+    public function ip(array $header = [])
     {
         $header = $header ?: $_SERVER;
         foreach (['X_FORWARDED_FOR', 'HTTP_X_FORWARDED_FOR', 'CLIENT_IP', 'HTTP_CLIENT_IP', 'REMOTE_ADDR'] as $key) {
@@ -900,7 +936,7 @@ class Tool
     public function hex2rgb($hex_color)
     {
         $color = str_replace('#', '', $hex_color);
-        if (mb_strlen($color) > 3) {
+        if (strlen($color) > 3) {
             $rgb = [
                 'r' => hexdec(mb_substr($color, 0, 2)),
                 'g' => hexdec(mb_substr($color, 2, 2)),
