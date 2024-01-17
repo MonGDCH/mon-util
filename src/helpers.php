@@ -82,11 +82,12 @@ if (!function_exists('is_wx')) {
     /**
      * 判断是否为微信浏览器发起的请求
      *
+     * @param string $ua    请求user-agent
      * @return boolean
      */
-    function is_wx()
+    function is_wx($ua = '')
     {
-        return Tool::instance()->is_wx();
+        return Tool::instance()->is_wx($ua);
     }
 }
 
@@ -94,11 +95,12 @@ if (!function_exists('is_android')) {
     /**
      * 判断是否为安卓发起的请求
      *
+     * @param string $ua    请求user-agent
      * @return boolean
      */
-    function is_android()
+    function is_android($ua = '')
     {
-        return Tool::instance()->is_android();
+        return Tool::instance()->is_android($ua);
     }
 }
 
@@ -106,11 +108,12 @@ if (!function_exists('is_ios')) {
     /**
      * 判断是否为苹果发起的请求
      *
+     * @param string $ua    请求user-agent
      * @return boolean
      */
-    function is_ios()
+    function is_ios($ua = '')
     {
-        return Tool::instance()->is_ios();
+        return Tool::instance()->is_ios($ua);
     }
 }
 
@@ -118,11 +121,12 @@ if (!function_exists('ip')) {
     /**
      * 获取客户端的IP地址
      *
+     * @param array $header 头信息，默认 $_SERVER
      * @return string
      */
-    function ip()
+    function ip(array $header = [])
     {
-        return Tool::instance()->ip();
+        return Tool::instance()->ip($header);
     }
 }
 

@@ -831,16 +831,27 @@ class Tool
      * 二维码图片
      *
      * @param string  $text 生成二维码的内容
-     * @param boolean|string $outfile 保存文件, false则不保存，字符串路径则表示保存路径
      * @param integer $level 压缩错误级别
-     * @param integer $size 图片尺寸 0-3
+     * @param integer $size 图片尺寸
      * @param integer $margin 图片边距
-     * @param boolean $saveandprint 是否输出图片及保存文件
-     * @return void
+     * @param boolean $output 是否输出文件
+     * @param string  $outfile 保存文件, 空则不保存，字符串路径则表示保存路径
+     * @return mixed
      */
-    public function qrcode($text, $outfile = false, $level = 0, $size = 8, $margin = 1, $saveandprint = false)
+    public function qrcode($text, $level = 0, $size = 8, $margin = 1, $output = false, $outfile = '')
     {
-        return QRcode::png($text, $outfile, $level, $size, $margin, $saveandprint);
+        $img = QRcode::png($text, $level, $size, $margin);
+        if ($output) {
+            ob_clean();
+            header("Content-type: image/png");
+            echo $img;
+        }
+
+        if (!empty($outfile)) {
+            File::instance()->createFile($img, $outfile, false);
+        }
+
+        return $img;
     }
 
     /**

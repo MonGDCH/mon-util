@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace mon\util;
 
 use Countable;
@@ -40,7 +38,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return array
      */
-    public function getData(): array
+    public function getData()
     {
         return $this->data;
     }
@@ -50,7 +48,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return string
      */
-    public function getJson(): string
+    public function getJson()
     {
         return json_encode($this->data, JSON_UNESCAPED_UNICODE);
     }
@@ -62,7 +60,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param string $charset   字符集编码
      * @return string
      */
-    public function getFullXML(string $root = 'mon', string $charset = 'utf-8'): string
+    public function getFullXML($root = 'mon',  $charset = 'utf-8')
     {
         $data  = "<?xml version=\"1.0\" encoding=\"{$charset}\"?>";
         $data .= "<{$root}>";
@@ -76,7 +74,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return string
      */
-    public function getXML(): string
+    public function getXML()
     {
         return Common::instance()->arrToXML($this->data);
     }
@@ -87,7 +85,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param array $data   最终实现的笛卡尔积组合,可不传
      * @return Collection
      */
-    public function getSpecCartesian(array $data = []): Collection
+    public function getSpecCartesian(array $data = [])
     {
         $result = Common::instance()->specCartesian($this->data, $data);
         return new self($result);
@@ -100,7 +98,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param bool $startDS 起始是否携带分隔符
      * @return string
      */
-    public function serialize(string $ds = "&", bool $startDS = false): string
+    public function serialize(string $ds = "&", bool $startDS = false)
     {
         $data = Common::instance()->mapToStr($this->data, $ds);
         return $startDS ? $data : ltrim($data, $ds);
@@ -112,7 +110,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param string $ds  拼接符
      * @return string
      */
-    public function join(string $ds = ','): string
+    public function join(string $ds = ',')
     {
         return implode($ds, $this->data);
     }
@@ -122,7 +120,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return boolean
      */
-    public function isEmpty(): bool
+    public function isEmpty()
     {
         return empty($this->data);
     }
@@ -133,7 +131,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param integer $flag
      * @return Collection
      */
-    public function unique(int $flag = SORT_STRING): Collection
+    public function unique(int $flag = \SORT_STRING)
     {
         return new self(array_unique($this->data, $flag));
     }
@@ -143,7 +141,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return Collection
      */
-    public function unique2D(): Collection
+    public function unique2D()
     {
         $data = Common::instance()->array_2D_unique($this->data);
         return new self($data);
@@ -154,7 +152,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return Collection
      */
-    public function valueUnique2D(): Collection
+    public function valueUnique2D()
     {
         $data = Common::instance()->array_2D_value_unique($this->data);
         return new self($data);
@@ -165,7 +163,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return Collection
      */
-    public function keys(): Collection
+    public function keys()
     {
         return new self(array_keys($this->data));
     }
@@ -175,7 +173,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return Collection
      */
-    public function values(): Collection
+    public function values()
     {
         return new self(array_values($this->data));
     }
@@ -187,7 +185,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param mixed $value  补充值
      * @return Collection
      */
-    public function pad(int $size, $value): Collection
+    public function pad(int $size, $value)
     {
         return new self(array_pad($this->data, $size, $value));
     }
@@ -195,13 +193,13 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
     /**
      * 排序
      *
-     * @param  $callback
+     * @param callable $callback
      * @return Collection
      */
-    public function sort(callable $callback = null): Collection
+    public function sort($callback = null)
     {
         $items = $this->data;
-        $callback && is_callable($callback) ? uasort($items, $callback) : asort($items, $callback ?? SORT_REGULAR);
+        $callback && is_callable($callback) ? uasort($items, $callback) : asort($items, $callback ?? \SORT_REGULAR);
 
         return new self($items);
     }
@@ -213,7 +211,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param integer $sort 排序方式，默认值：SORT_DESC
      * @return Collection
      */
-    public function sort2D(string $keys, $sort = SORT_DESC): Collection
+    public function sort2D($keys, $sort = \SORT_DESC)
     {
         $data = Common::instance()->array_2D_sort($this->data, $keys, $sort);
         return new self($data);
@@ -225,7 +223,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param string $key   列名
      * @return Collection
      */
-    public function value2D(string $key): Collection
+    public function value2D($key)
     {
         $data = [];
         foreach ($this->data as $item) {
@@ -243,7 +241,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param boolean $index    是否获取的是索引
      * @return mixed
      */
-    public function find(callable $callback, bool $index = false)
+    public function find($callback, $index = false)
     {
         foreach ($this->data as $key => $item) {
             if ($callback($item, $key, $this)) {
@@ -261,7 +259,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param mixed $default    默认值
      * @return mixed
      */
-    public function reduce(callable $callback, $default = null)
+    public function reduce($callback, $default = null)
     {
         $result = $default;
         foreach ($this->data as $key => $value) {
@@ -277,7 +275,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param string $key  二维数组键名
      * @return integer|float
      */
-    public function sum(string $key = '')
+    public function sum($key = '')
     {
         return $this->reduce(function ($result, $item) use ($key) {
             $value = empty($key) ? $item : (isset($item[$key]) ? $item[$key] : 0);
@@ -291,7 +289,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param string $key  二维数组键名
      * @return integer|float
      */
-    public function svg(string $key = '')
+    public function svg($key = '')
     {
         return $this->sum($key) / $this->count();
     }
@@ -302,7 +300,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param string $key  二维数组键名
      * @return integer|float
      */
-    public function min(string $key = '')
+    public function min($key = '')
     {
         return $this->reduce(function ($result, $item) use ($key) {
             $value = empty($key) ? $item : (isset($item[$key]) ? $item[$key] : null);
@@ -316,7 +314,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param string $key  二维数组键名
      * @return integer|float
      */
-    public function max(string $key = '')
+    public function max($key = '')
     {
         return $this->reduce(function ($result, $item) use ($key) {
             $value = empty($key) ? $item : (isset($item[$key]) ? $item[$key] : null);
@@ -330,7 +328,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param integer $count pop个数
      * @return mixed
      */
-    public function pop(int $count = 1)
+    public function pop($count = 1)
     {
         if ($this->isEmpty()) {
             return null;
@@ -353,7 +351,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param mixed $values   插入数据
      * @return Collection
      */
-    public function push(...$values): Collection
+    public function push(...$values)
     {
         foreach ($values as $item) {
             $this->data[] = $item;
@@ -368,7 +366,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param mixed ...$values  插入数据
      * @return Collection
      */
-    public function unshift(...$values): Collection
+    public function unshift(...$values)
     {
         array_unshift($this->data, ...$values);
         return $this;
@@ -377,10 +375,10 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
     /**
      * 遍历 foreach
      *
-     * @param mixed $callback 回调方法
+     * @param callable $callback 回调方法
      * @return Collection 当前对象
      */
-    public function each(callable $callback): Collection
+    public function each($callback)
     {
         foreach ($this->data as $key => $value) {
             $break = $callback($value, $key, $this);
@@ -398,7 +396,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param callable $callback    回调方法
      * @return Collection 新对象
      */
-    public function map(callable $callback): Collection
+    public function map($callback)
     {
         $data = [];
         foreach ($this->data as $key => $value) {
@@ -414,9 +412,9 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param callable $callback    回调方法
      * @return Collection   新对象
      */
-    public function filter(callable $callback): Collection
+    public function filter($callback)
     {
-        return new self(array_filter($this->data, $callback, ARRAY_FILTER_USE_BOTH));
+        return new self(array_filter($this->data, $callback, \ARRAY_FILTER_USE_BOTH));
     }
 
     /**
@@ -425,7 +423,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param array $data 合并数据
      * @return Collection
      */
-    public function merge(array $data): Collection
+    public function merge(array $data)
     {
         return new self(array_merge($this->data, $data));
     }
@@ -436,7 +434,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param array $data   拼接数据
      * @return Collection
      */
-    public function concat(array $data): Collection
+    public function concat(array $data)
     {
         $result = new self($this->data);
         foreach ($data as $item) {
@@ -451,7 +449,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param  integer  $size
      * @return Collection
      */
-    public function chunk(int $size): Collection
+    public function chunk($size)
     {
         if ($size <= 0) {
             return new self;
@@ -470,7 +468,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return Collection
      */
-    public function shuffle(): Collection
+    public function shuffle()
     {
         shuffle($this->data);
         return $this;
@@ -482,7 +480,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param callable $callback
      * @return mixed
      */
-    public function pipe(callable $callback)
+    public function pipe($callback)
     {
         return $callback($this);
     }
@@ -492,7 +490,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return string
      */
-    public function __toString(): string
+    public function __toString()
     {
         return $this->getJson();
     }
@@ -503,7 +501,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param string $offset
      * @return boolean
      */
-    public function offsetExists($offset): bool
+    public function offsetExists($offset)
     {
         return array_key_exists($offset, $this->data);
     }
@@ -526,7 +524,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param mixed $value
      * @return void
      */
-    public function offsetSet($offset, $value): void
+    public function offsetSet($offset, $value)
     {
         if (is_null($offset)) {
             $this->data[] = $value;
@@ -541,7 +539,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      * @param mixed $offset
      * @return void
      */
-    public function offsetUnset($offset): void
+    public function offsetUnset($offset)
     {
         unset($this->data[$offset]);
     }
@@ -551,7 +549,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return integer
      */
-    public function count(): int
+    public function count()
     {
         return count($this->data);
     }
@@ -561,7 +559,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return ArrayIterator
      */
-    public function getIterator(): ArrayIterator
+    public function getIterator()
     {
         return new ArrayIterator($this->data);
     }

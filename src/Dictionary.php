@@ -106,7 +106,7 @@ class Dictionary
         $result = $this->query('SHOW TABLES');
 
         // 取得所有的表名
-        foreach ($result as $index => $tableName) {
+        foreach ($result as $tableName) {
             $table[]['TABLE_NAME'] = $tableName[0];
         }
         return $table;

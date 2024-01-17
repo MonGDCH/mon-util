@@ -13,7 +13,6 @@ use Psr\Container\ContainerInterface;
 /**
  * 服务容器类
  *
- * @see 注意：该类由[mongdch/mon-container]包迁移，后续将不再维护[mongdch/mon-container]包。
  * @author Mon <985558837@qq.com>
  * @version 1.3.3   优化参数绑定 2022-09-19
  * @version 1.3.4   优化PHP7支持 2022-10-25
