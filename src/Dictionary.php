@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 use PDO;
@@ -77,7 +79,7 @@ class Dictionary
      * @param array $config DB配置信息
      * @return Dictionary
      */
-    public function setConfig(array $config)
+    public function setConfig(array $config): Dictionary
     {
         $this->config = array_merge($this->config, $config);
         return $this;
@@ -89,7 +91,7 @@ class Dictionary
      * @param string $mark  视图前缀标志
      * @return Dictionary
      */
-    public function setViewMark($mark)
+    public function setViewMark($mark): Dictionary
     {
         $this->viewMark = $mark;
         return $this;
@@ -100,7 +102,7 @@ class Dictionary
      *
      * @return array
      */
-    public function getTable()
+    public function getTable(): array
     {
         $table = [];
         $result = $this->query('SHOW TABLES');
@@ -117,7 +119,7 @@ class Dictionary
      *
      * @return array
      */
-    public function getTableInfo()
+    public function getTableInfo(): array
     {
         $tables = $this->getTable();
         foreach ($tables as $k => $v) {
@@ -151,7 +153,7 @@ class Dictionary
      * @param boolean $menu 是否需要菜单
      * @return string
      */
-    public function getContent($menu = true)
+    public function getContent(bool $menu = true): string
     {
         // 获取所有表信息
         $tables = $this->getTableInfo();
@@ -241,7 +243,7 @@ class Dictionary
      *
      * @return string
      */
-    public function getHTML()
+    public function getHTML(): string
     {
         $content = $this->getContent();
         $html = "<!doctype html>
@@ -300,7 +302,7 @@ class Dictionary
      * @throws PDOException
      * @return PDO
      */
-    protected function getDB()
+    protected function getDB(): PDO
     {
         if (!$this->db) {
             // 生成mysql连接dsn
@@ -338,7 +340,7 @@ class Dictionary
      * @param string $sql  SQL语句
      * @return array
      */
-    protected function query($sql)
+    protected function query($sql): array
     {
         $query = $this->getDB()->prepare($sql);
         $query->execute();

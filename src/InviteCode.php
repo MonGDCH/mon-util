@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 /**
@@ -38,9 +40,9 @@ class InviteCode
      *
      * @param string $key   转义key值
      * @param integer $mixins   用户ID混淆
-     * @return IdCode
+     * @return InviteCode
      */
-    public function init($key, $mixins = 3060)
+    public function init(string $key, int $mixins = 3060): InviteCode
     {
         $this->key = $key;
         $this->mixins = $mixins;
@@ -54,7 +56,7 @@ class InviteCode
      * @param integer $uid  用户ID
      * @return string
      */
-    public function encode($uid)
+    public function encode(int $uid): string
     {
         $uid = $uid + $this->mixins;
         $code = '';
@@ -67,7 +69,7 @@ class InviteCode
         }
 
         // 不足用0补充
-        $code = str_pad($code, 4, '0', STR_PAD_LEFT);
+        $code = str_pad($code, 4, '0', \STR_PAD_LEFT);
         return $code;
     }
 
@@ -77,7 +79,7 @@ class InviteCode
      * @param string $code  邀请码
      * @return integer
      */
-    public function decode($code)
+    public function decode(string $code): int
     {
         if (strrpos($code, '0') !== false) {
             $code = substr($code, strrpos($code, '0') + 1);

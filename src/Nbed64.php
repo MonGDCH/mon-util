@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 /**
@@ -29,7 +31,7 @@ class Nbed64
      * @param integer $maskNumber   掩码的数量。缺省为：32，范围：32 - 65535。当值小于32时为32，大于65535时为65535。
      * @return string   加密结果，Base64格式的字符串
      */
-    public function stringEncryptEx($str, $key, $isUtf8 = true, $maskNumber = 32)
+    public function stringEncryptEx(string $str, string $key, bool $isUtf8 = true, int $maskNumber = 32): string
     {
         $byteArr = $isUtf8 ? $this->_Utf8DirectToByteArray($str) : $this->_strUtf8ToUtf16ToByteArray($str);
         return $this->binaryEncryptEx($byteArr, $key, $maskNumber);
@@ -44,7 +46,7 @@ class Nbed64
      * @param boolean $isUtf8   是否采用UTF-8编码格式。本参数请保持与加密时的设置完全一致。（注意：这里指的是加密前的编码，并非解密后的编码）
      * @return string   解密结果
      */
-    public function stringDecryptEx($base64str, $key, $isUtf8 = true)
+    public function stringDecryptEx(string $base64str, string  $key, bool $isUtf8 = true): string
     {
         $retArr = $this->binaryDecryptEx($base64str, $key);
         $dataStr = $isUtf8 ? $this->_byteArrayDirectToUtf8($retArr) : $this->_byteArrayToUtf16ToUtf8($retArr);
@@ -62,7 +64,7 @@ class Nbed64
      * @param boolean $isRFC4648    是否采用RFC4648编码映射规范，默认为：true。采用RFC4648规范编码的Base64符合URL安全，可用于HTTP协议与Ajax请求。
      * @return string   加密结果，Base64格式的字符串
      */
-    public function stringEncrypt($str, $key, $isUtf8 = true, $isRFC4648 = true)
+    public function stringEncrypt(string $str, string $key, bool $isUtf8 = true, bool $isRFC4648 = true): string
     {
         $byteArr = $isUtf8 ? $this->_Utf8DirectToByteArray($str) : $this->_strUtf8ToUtf16ToByteArray($str);
         return $this->binaryEncrypt($byteArr, $key, $isRFC4648);
@@ -77,7 +79,7 @@ class Nbed64
      * @param boolean $isUtf8   是否采用UTF-8编码格式。本参数请保持与加密时的设置完全一致。（注意：这里指的是加密前的编码，并非解密后的编码）
      * @return string   解密结果
      */
-    public function stringDecrypt($base64str, $key, $isUtf8 = true)
+    public function stringDecrypt(string $base64str, string $key, bool $isUtf8 = true): string
     {
         $retArr = $this->binaryDecrypt($base64str, $key);
         $dataStr = $isUtf8 ? $this->_byteArrayDirectToUtf8($retArr) : $this->_byteArrayToUtf16ToUtf8($retArr);
@@ -93,7 +95,7 @@ class Nbed64
      * @param boolean $isRFC4648    是否采用RFC4648编码映射规范，默认为：true。采用RFC4648规范编码的Base64符合URL安全，可用于HTTP协议与Ajax请求
      * @return string
      */
-    public function stringEncode($str, $isUtf8 = true, $isRFC4648 = true)
+    public function stringEncode(string $str, bool $isUtf8 = true, bool $isRFC4648 = true): string
     {
         $byteArr = $isUtf8 ? $this->_Utf8DirectToByteArray($str) : $this->_strUtf8ToUtf16ToByteArray($str);
         return $this->binaryEncode($byteArr, $isRFC4648);
@@ -107,7 +109,7 @@ class Nbed64
      * @param boolean $isUtf8   是否采用UTF-8编码格式。本参数请保持与编码时的设置完全一致。
      * @return string 解码结果
      */
-    public function stringDecode($base64str, $isUtf8 = true)
+    public function stringDecode(string $base64str, bool $isUtf8 = true): string
     {
         $retArr = $this->binaryDecode($base64str);
         $dataStr = $isUtf8 ? $this->_byteArrayDirectToUtf8($retArr) : $this->_byteArrayToUtf16ToUtf8($retArr);
@@ -122,7 +124,7 @@ class Nbed64
      * @param integer $maskNumber   掩码的数量。缺省为：32，范围：32 - 65535。当值小于32时为32，大于65535时为65535。
      * @return string   加密结果，Base64格式的字符串
      */
-    public function binaryEncryptEx($byteArr, $key, $maskNumber = 32)
+    public function binaryEncryptEx(array $byteArr, string $key, int $maskNumber = 32): string
     {
         $maskArr = $this->_maskToByteArray($maskNumber);
         $mapArr = $this->_mapToByteArray(true);
@@ -189,7 +191,7 @@ class Nbed64
      * @param string $key   密钥。本参数请保持与加密时的设置完全一致。
      * @return array    解密结果，为字节数组（也就是二进制数据流）
      */
-    public function binaryDecryptEx($base64str, $key)
+    public function binaryDecryptEx(string $base64str, string $key): array
     {
         $topArr = $this->binaryDecrypt(substr($base64str, 0, 4), $key);
         $maskLen = (int)$this->_byteArrayGetShort($topArr);
@@ -287,7 +289,7 @@ class Nbed64
      * @param boolean $isRFC4648    是否采用isRFC4648编码映射规范，默认为：true。采用isRFC4648规范编码的Base64符合URL安全，可用于HTTP协议与Ajax请求。
      * @return string   加密结果，Base64格式的字符串
      */
-    public function binaryEncrypt($byteArr, $key, $isRFC4648 = true)
+    public function binaryEncrypt(array $byteArr, string $key, bool $isRFC4648 = true): string
     {
         $mapArr = $this->_mapToByteArray($isRFC4648);
         $keyArr = $this->_keyToByteArray($key);
@@ -347,7 +349,7 @@ class Nbed64
      * @param string $key   密钥。本参数请保持与加密时的设置完全一致。
      * @return array    解密结果，为字节数组（也就是二进制数据流）
      */
-    public function binaryDecrypt($base64str, $key)
+    public function binaryDecrypt(string $base64str, string $key): array
     {
         $bl = strlen($base64str);
         $kl = strlen($key);
@@ -426,7 +428,7 @@ class Nbed64
      * @param boolean $isRFC4648    是否采用RFC4648编码映射规范，默认为：true。采用RFC4648规范编码的Base64符合URL安全，可用于HTTP协议与Ajax请求。
      * @return string   编码结果，标准Base64格式的字符串
      */
-    public function binaryEncode($byteArr, $isRFC4648 = true)
+    public function binaryEncode(array $byteArr, bool $isRFC4648 = true): string
     {
         $mapArr = $this->_mapToByteArray($isRFC4648);
         $bl = sizeof($byteArr);
@@ -476,7 +478,7 @@ class Nbed64
      * @param string $base64str base64格式编码的字符串
      * @return array    解码结果，为字节数组（也就是二进制数据流）
      */
-    public function binaryDecode($base64str)
+    public function binaryDecode(string $base64str): array
     {
         $bl = strlen($base64str);
         $num = $bl % 4;
@@ -546,7 +548,7 @@ class Nbed64
      * @param string $str   原字符串
      * @return array    转换结果为字节数组（也就是二进制数据流）
      */
-    private function _strUtf8ToUtf16ToByteArray($str)
+    private function _strUtf8ToUtf16ToByteArray(string $str): array
     {
         $i = 0;
         $k = 0;
@@ -597,7 +599,7 @@ class Nbed64
      * @param string $str   原字符串
      * @return array    转换结果为字节数组（也就是二进制数据流）
      */
-    private function _Utf8DirectToByteArray($str)
+    private function _Utf8DirectToByteArray(string $str): array
     {
         $i = 0;
         $byteArr = [];
@@ -621,7 +623,7 @@ class Nbed64
      * @param array $byteArr 原字符串数组
      * @return string 转换结果为字符串
      */
-    private function _byteArrayToUtf16(array $byteArr)
+    private function _byteArrayToUtf16(array $byteArr): string
     {
         $i = 0;
         $utf16Str = '';
@@ -639,7 +641,7 @@ class Nbed64
      * @param array $byteArr    原字符串数组
      * @return string   转换结果
      */
-    private function _byteArrayToUtf16ToUtf8(array $byteArr)
+    private function _byteArrayToUtf16ToUtf8(array $byteArr): string
     {
         $utf16Str = '';
         $strLen = count($byteArr);
@@ -683,7 +685,7 @@ class Nbed64
      * @param array $byteArr   原字符串数组
      * @return string   转换结果为字符串
      */
-    private function _byteArrayDirectToUtf8(array $byteArr)
+    private function _byteArrayDirectToUtf8(array $byteArr): string
     {
         $i = 0;
         $utf16Str = '';
@@ -725,7 +727,7 @@ class Nbed64
      * @param string $base64str base64格式的字符串
      * @return array 转换结果为字节数组（也就是二进制数据流）
      */
-    private function _base64strToByteArray($base64str)
+    private function _base64strToByteArray(string $base64str): array
     {
         $realLen = strlen($base64str);
         $byteArr = [];
@@ -741,7 +743,7 @@ class Nbed64
      * @param string key {string} 密钥
      * @return array 转换结果为字节数组（也就是二进制数据流） {ByteArray} 
      */
-    private function _keyToByteArray($key)
+    private function _keyToByteArray(string $key): array
     {
         $byteArr = [];
         for ($i = 0; $i < strlen($key); $i++) {
@@ -756,7 +758,7 @@ class Nbed64
      * @param integer $twoByte  短整数。
      * @return array 转换结果为字节数组（也就是二进制数据流）
      */
-    private function _shortToByteArray($twoByte)
+    private function _shortToByteArray(int $twoByte): array
     {
         $byteArr = [];
         $byteArr[0] = $twoByte & 0xFF;;
@@ -782,7 +784,7 @@ class Nbed64
      * @param integer $maskNumber   掩码的数量。缺省为：32，范围：32 - 65535。当值小于32时为32，大于65535时为65535。
      * @return array    转换结果为字节数组（也就是二进制数据流） {ByteArray} 
      */
-    private function _maskToByteArray($maskNumber)
+    private function _maskToByteArray(int $maskNumber): array
     {
         $maskNumber = $maskNumber < 32 ? 32 : $maskNumber;
         $maskNumber = $maskNumber > 65535 ? 65535 : $maskNumber;
@@ -799,7 +801,7 @@ class Nbed64
      * @param boolean $rfc4648 是否使用RFC4648映射标准，默认为：false
      * @return array
      */
-    private function _mapToByteArray($rfc4648 = false)
+    private function _mapToByteArray(bool $rfc4648 = false): array
     {
         $map = '';
         if ($rfc4648) {

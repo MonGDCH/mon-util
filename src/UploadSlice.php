@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 use mon\util\exception\UploadException;
@@ -50,7 +52,7 @@ class UploadSlice
      *
      * @return array
      */
-    public function getConfig()
+    public function getConfig(): array
     {
         return $this->config;
     }
@@ -62,7 +64,7 @@ class UploadSlice
      * @param mixed $value 值
      * @return UploadSlice
      */
-    public function setConifg($config, $value = null)
+    public function setConifg($config, $value = null): UploadSlice
     {
         if (is_array($config)) {
             $this->config = array_merge($this->config, $config);
@@ -78,7 +80,7 @@ class UploadSlice
      *
      * @return array
      */
-    public function getErrorChunk()
+    public function getErrorChunk(): array
     {
         return $this->error_chunk;
     }
@@ -91,9 +93,9 @@ class UploadSlice
      * @param array $files 文件流，默认 $_FILES
      * @param string $name 文件流索引，默认 file
      * @throws UploadException
-     * @return false|array 文件保存路径
+     * @return array 文件保存路径
      */
-    public function upload($fileID, $chunk = 0, $name = 'file', $files = null)
+    public function upload(string $fileID, int $chunk = 0, string $name = 'file', ?array $files = null): array
     {
         if (is_null($files)) {
             $files = $_FILES;
@@ -102,15 +104,13 @@ class UploadSlice
             throw new UploadException('未上传文件', UploadException::ERROR_UPLOAD_FAILD);
         }
         // 检测上传保存路径
-        if (!$this->checkPath()) {
-            return false;
-        }
+        $this->checkPath();
+
         // 文件信息
         $file = $files[$name];
         // 校验文件
-        if (!$this->checkFile($file)) {
-            return false;
-        }
+        $this->checkFile($file);
+
         // 保存临时文件
         $fileName = md5($fileID) . '_' . $chunk;
         $tmpPath = $this->config['rootPath'] . DIRECTORY_SEPARATOR . $this->config['tmpPath'] . DIRECTORY_SEPARATOR . $fileID;
@@ -135,7 +135,7 @@ class UploadSlice
      * @throws UploadException
      * @return array 文件保存路径
      */
-    public function merge($fileID, $chunkLength, $fileName, $saveDir = '')
+    public function merge(string $fileID, int $chunkLength, string $fileName, string $saveDir = ''): array
     {
         // 分片临时文件存储目录
         $tmpPath = $this->config['rootPath'] . DIRECTORY_SEPARATOR . $this->config['tmpPath'] . DIRECTORY_SEPARATOR . $fileID;
@@ -194,12 +194,13 @@ class UploadSlice
      * 校验文件
      *
      * @param array $file 文件信息
+     * @throws UploadException
      * @return boolean
      */
-    protected function checkFile($file)
+    protected function checkFile(array $file): bool
     {
         if ($file['error']) {
-            throw new UploadException($this->uploadErrorMsg($file['error']), UploadException::ERROR_UPLOAD_CHECK_FAILD);
+            throw new UploadException($this->uploadErrorMsg((int)$file['error']), UploadException::ERROR_UPLOAD_CHECK_FAILD);
         }
         // 无效上传
         if (empty($file['name'])) {
@@ -222,7 +223,7 @@ class UploadSlice
      * @throws UploadException
      * @return boolean
      */
-    protected function checkPath()
+    protected function checkPath(): bool
     {
         $rootPath = $this->config['rootPath'];
         if ((!is_dir($rootPath) && !File::instance()->createDir($rootPath)) || (is_dir($rootPath) && !is_writable($rootPath))) {
@@ -241,7 +242,7 @@ class UploadSlice
      * @param integer $errorNo  错误号
      * @return string
      */
-    protected function uploadErrorMsg($errorNo)
+    protected function uploadErrorMsg(int $errorNo): string
     {
         switch ($errorNo) {
             case 1:

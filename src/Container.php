@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 use Closure;
@@ -43,6 +45,21 @@ class Container implements ContainerInterface
     }
 
     /**
+     * get方法别名，重新获取实例
+     *
+     * @param  string  $id  对象名称或标识
+     * @param  array   $val 入参
+     * @param  boolean $new 是否获取新的实例
+     * @throws ReflectionException
+     * @throws InvalidArgumentException
+     * @return mixed
+     */
+    public function make($id, array $val = [], bool $new = true)
+    {
+        return $this->get($id, $val, $new);
+    }
+
+    /**
      * 创建获取对象的实例
      *
      * @param  string  $id  类名称或标识符
@@ -52,7 +69,7 @@ class Container implements ContainerInterface
      * @throws InvalidArgumentException
      * @return mixed
      */
-    public function get($id, array $val = [], $new = false)
+    public function get($id, array $val = [], bool $new = false)
     {
         if (isset($this->service[$id]) && !$new) {
             $object = $this->service[$id];
@@ -92,7 +109,7 @@ class Container implements ContainerInterface
      * @param  mixed  $server   要绑定的实例
      * @return Container
      */
-    public function set($id, $server = null)
+    public function set($id, $server = null): Container
     {
         // 传入数组，批量注册
         if (is_array($id)) {
@@ -112,30 +129,15 @@ class Container implements ContainerInterface
      * @param string $id 类名称或标识符
      * @return boolean
      */
-    public function has($id)
+    public function has($id): bool
     {
         return isset($this->bind[$id]) || isset($this->service[$id]);
     }
 
     /**
-     * get方法别名，重新获取实例
-     *
-     * @param  string  $id  对象名称或标识
-     * @param  array   $val 入参
-     * @param  boolean $new 是否获取新的实例
-     * @throws ReflectionException
-     * @throws InvalidArgumentException
-     * @return mixed
-     */
-    public function make($id, array $val = [], $new = true)
-    {
-        return $this->get($id, $val, $new);
-    }
-
-    /**
      * 绑定参数，执行函数或者闭包
      *
-     * @param  Closure $function 函数或者闭包
+     * @param  Closure|string $function 函数或者闭包
      * @param  array $vars     绑定参数
      * @throws ReflectionException
      * @return mixed
@@ -177,7 +179,7 @@ class Container implements ContainerInterface
     /**
      * 反射执行对象实例化，支持构造方法依赖注入
      *
-     * @param  string $class 对象名称
+     * @param  object|string $class 对象名称
      * @param  array  $vars  绑定构造方法参数
      * @throws ReflectionException
      * @return mixed
@@ -201,7 +203,7 @@ class Container implements ContainerInterface
     /**
      * 反射执行回调方法
      *
-     * @param  mixed  $callback 回调方法
+     * @param  Closure|string|array  $callback 回调方法
      * @param  array  $vars     参数
      * @throws ReflectionException
      * @return mixed
@@ -224,7 +226,7 @@ class Container implements ContainerInterface
      * @param mixed  $server   要绑定的实例
      * @return Container
      */
-    protected function bindServer($name, $server)
+    protected function bindServer(string $name, $server): Container
     {
         if ($server instanceof Closure) {
             // 闭包，绑定闭包
@@ -248,7 +250,7 @@ class Container implements ContainerInterface
      * @throws InvalidArgumentException
      * @return array
      */
-    protected function bindParams($reflact, array $vars = [])
+    protected function bindParams($reflact, array $vars = []): array
     {
         // PHP内置常规类型
         $adapters = ['int', 'float', 'string', 'bool', 'array', 'object', 'mixed', 'resource'];

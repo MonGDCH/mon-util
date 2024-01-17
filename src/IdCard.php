@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 use RuntimeException;
@@ -56,7 +58,7 @@ class IdCard
      * @param string $idcard 身份证号码
      * @return boolean
      */
-    public function check($idcard)
+    public function check(string $idcard): bool
     {
         // 校验位数
         if (!preg_match($this->regx, $idcard)) {
@@ -92,7 +94,7 @@ class IdCard
      * @param string $idcard 身份证号码
      * @return string
      */
-    public function getProvinces($idcard)
+    public function getProvinces(string $idcard): string
     {
         $code = mb_substr($idcard, 0, 2);
         return isset($this->provinces[$code]) ? $this->provinces[$code] : '';
@@ -105,7 +107,7 @@ class IdCard
      * @throws RuntimeException
      * @return string
      */
-    public function getCity($idcard)
+    public function getCity(string $idcard): string
     {
         if (is_null($this->location)) {
             $this->location = include($this->dataFile);
@@ -125,7 +127,7 @@ class IdCard
      * @throws RuntimeException
      * @return string
      */
-    public function getLocation($idcard)
+    public function getLocation(string $idcard): string
     {
         if (is_null($this->location)) {
             $this->location = include($this->dataFile);
@@ -144,7 +146,7 @@ class IdCard
      * @param string $idcard 身份证号
      * @return string
      */
-    public function getBirthday($idcard)
+    public function getBirthday(string $idcard): string
     {
         $idcard = preg_replace('/[xX]$/i', 'a', $idcard);
         $vLength = mb_strlen($idcard);
@@ -162,7 +164,7 @@ class IdCard
      * @param string $idcard 身份证号码
      * @return integer 1男 2女
      */
-    public function getSex($idcard)
+    public function getSex(string $idcard): int
     {
         // 转18位身份证号码
         $idcard = $this->fifteen2Eighteen($idcard);
@@ -175,7 +177,7 @@ class IdCard
      * @param string $idcard 身份证号码
      * @return integer
      */
-    public function getAge($idcard)
+    public function getAge(string $idcard): int
     {
         $birthday = $this->getBirthday($idcard) . '000000';
         $birthday_ts = strtotime($birthday);
@@ -192,7 +194,7 @@ class IdCard
      * @param string $idcard 身份证号
      * @return string
      */
-    public function fifteen2Eighteen($idcard)
+    public function fifteen2Eighteen(string $idcard): string
     {
         if (mb_strlen($idcard) != 15) {
             return $idcard;
@@ -210,7 +212,7 @@ class IdCard
      * @throws InvalidArgumentException
      * @return string
      */
-    protected function getCode($idCardBase)
+    protected function getCode(string $idCardBase): string
     {
         $length = 17;
         if (mb_strlen($idCardBase) < $length) {

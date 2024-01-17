@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 use mon\util\GIF;
@@ -40,7 +42,7 @@ class Image
      * @throws ImgException
      * @param string $img 图片地址
      */
-    public function __construct($img = null)
+    public function __construct(?string $img = null)
     {
         if (!extension_loaded('gd')) {
             throw new ImgException('未启用GD扩展');
@@ -57,7 +59,7 @@ class Image
      * @throws ImgException
      * @return Image
      */
-    public function open($imgname)
+    public function open(string $imgname): Image
     {
         // 检测图像文件
         if (!is_file($imgname)) {
@@ -104,7 +106,7 @@ class Image
      * @throws ImgException
      * @return boolean
      */
-    public function save($imgname, $type = null, $interlace = true)
+    public function save(string $imgname, ?string $type = null, bool $interlace = true): bool
     {
         if (empty($this->img)) {
             throw new ImgException('没有可以被保存的图像资源', ImgException::ERROR_IMG_SAVE);
@@ -137,11 +139,13 @@ class Image
     /**
      * 输出图片
      *
-     * @param boolean $echo 是否直接输出
+     * @param boolean $echo      是否直接输出
+     * @param string  $type      图像类型
+     * @param boolean $interlace 是否对JPEG类型图像设置隔行扫描
      * @throws ImgException
      * @return mixed
      */
-    public function output($type = null, $interlace = true, $echo = true)
+    public function output($echo = true, ?string $type = null, $interlace = true)
     {
         if (empty($this->img)) {
             throw new ImgException('没有可以被保存的图像资源', ImgException::ERROR_IMG_SAVE);
@@ -180,7 +184,7 @@ class Image
      * @throws ImgException
      * @return integer 图像宽度
      */
-    public function width()
+    public function width(): int
     {
         if (empty($this->img)) {
             throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
@@ -195,7 +199,7 @@ class Image
      * @throws ImgException
      * @return integer 图像高度
      */
-    public function height()
+    public function height(): int
     {
         if (empty($this->img)) {
             throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
@@ -210,7 +214,7 @@ class Image
      * @throws ImgException
      * @return string 图像类型
      */
-    public function type()
+    public function type(): string
     {
         if (empty($this->img)) {
             throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
@@ -225,7 +229,7 @@ class Image
      * @throws ImgException
      * @return string 图像MIME类型
      */
-    public function mime()
+    public function mime(): string
     {
         if (empty($this->img)) {
             throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
@@ -240,7 +244,7 @@ class Image
      * @throws ImgException
      * @return array 图像尺寸
      */
-    public function size()
+    public function size(): array
     {
         if (empty($this->img)) {
             throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
@@ -264,7 +268,7 @@ class Image
      * @throws ImgException
      * @return Image
      */
-    public function crop($w, $h, $x = 0, $y = 0, $width = null, $height = null)
+    public function crop(int $w, int $h, int $x = 0, int $y = 0, ?int $width = null, ?int $height = null): Image
     {
         if (empty($this->img)) {
             throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
@@ -302,7 +306,7 @@ class Image
      * @throws ImgException
      * @return Image
      */
-    public function thumb($width, $height, $type = 1)
+    public function thumb(int $width, int $height, int $type = 1): Image
     {
         if (empty($this->img)) {
             throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
@@ -316,7 +320,7 @@ class Image
             case 1:
                 // 等比例缩放 原图尺寸小于缩略图尺寸则不进行缩略
                 if ($w < $width && $h < $height) {
-                    return;
+                    break;
                 };
                 // 计算缩放比例
                 $scale = min($width / $w, $height / $h);
@@ -325,7 +329,6 @@ class Image
                 $width  = $w * $scale;
                 $height = $h * $scale;
                 break;
-
             case 2:
                 // 居中裁剪
                 $scale = max($width / $w, $height / $h);
@@ -400,7 +403,7 @@ class Image
      * @throws ImgException
      * @return Image
      */
-    public function water($source, $locate = 3)
+    public function water(string $source, int $locate = 3): Image
     {
         if (empty($this->img)) {
             throw new ImgException('没有指定图像资源', ImgException::ERROR_IMG_NOT_SPECIFIED);
@@ -506,7 +509,7 @@ class Image
      * @throws ImgException
      * @return Image
      */
-    public function text($text, $font, $size, $color = '#00000000', $locate = 3, $offset = 0, $angle = 0)
+    public function text(string $text, string $font, int $size = 10, $color = '#00000000', int $locate = 3, int $offset = 0, int $angle = 0): Image
     {
         // 资源检测
         if (empty($this->img)) {
@@ -616,7 +619,7 @@ class Image
     protected function gifNext()
     {
         ob_start();
-        ob_implicit_flush(0);
+        ob_implicit_flush(false);
         imagegif($this->img);
         $img = ob_get_clean();
         $this->gif->image($img);

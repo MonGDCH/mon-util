@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 /**
@@ -18,7 +20,7 @@ class Sql
      * @param string $file  sql文件路径
      * @return array
      */
-    public function parseFile($file)
+    public function parseFile(string $file): array
     {
         $content = File::instance()->read($file);
         return $this->parseSql($content);
@@ -30,7 +32,7 @@ class Sql
      * @param string $content sql内容
      * @return array
      */
-    public function parseSql($content)
+    public function parseSql(string $content): array
     {
         if (empty($content)) {
             return [];

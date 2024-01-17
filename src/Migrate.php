@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 use PDO;
@@ -109,7 +111,7 @@ class Migrate
      * @param array $config 配置信息
      * @return Migrate
      */
-    public function setConfig(array $config)
+    public function setConfig(array $config): Migrate
     {
         $this->config = array_merge($this->config, $config);
         return $this;
@@ -121,7 +123,7 @@ class Migrate
      * @param string $name
      * @return mixed
      */
-    public function getConfig($name = null)
+    public function getConfig(?string $name = null)
     {
         return is_null($name) ? $this->config : $this->config[$name];
     }
@@ -133,7 +135,7 @@ class Migrate
      * @demo setFile(['name' => '20220713', 'part' => 1])
      * @return Migrate
      */
-    public function setFile($file = null)
+    public function setFile(?array $file = null): Migrate
     {
         if (is_null($file)) {
             $this->file = ['name' => date('Ymd-His'), 'part' => 1];
@@ -147,9 +149,9 @@ class Migrate
     /**
      * 获取文件信息
      *
-     * @return void
+     * @return array
      */
-    public function getFile()
+    public function getFile(): array
     {
         return $this->file;
     }
@@ -159,7 +161,7 @@ class Migrate
      *
      * @return array
      */
-    public function tableList()
+    public function tableList(): array
     {
         $list = $this->query("SHOW TABLE STATUS");
         return array_map('array_change_key_case', (array) $list);
@@ -171,7 +173,7 @@ class Migrate
      * @param string $table
      * @return array
      */
-    public function tableStruct($table)
+    public function tableStruct(string $table): array
     {
         $sql = "SELECT * FROM `information_schema`.`columns` WHERE `TABLE_NAME` = '{$table}' AND `TABLE_SCHEMA` = '{$this->config['db']['database']}'";
         $data = $this->query($sql);
@@ -184,7 +186,7 @@ class Migrate
      * @throws MigrateException
      * @return array
      */
-    public function fileList()
+    public function fileList(): array
     {
         // 检查文件是否可写
         if (!File::instance()->createDir($this->config['path'])) {
@@ -225,11 +227,8 @@ class Migrate
      * @throws MigrateException
      * @return array|false|string
      */
-    public function fileInfo($type = '', $time = 0)
+    public function fileInfo(string $type = '', int $time = 0)
     {
-        if (!is_numeric($time)) {
-            throw new MigrateException("Time [{$time}] illegal data type");
-        }
         switch ($type) {
             case 'time':
                 $name = date('Ymd-His', $time) . '-*.sql*';
@@ -274,9 +273,9 @@ class Migrate
      *
      * @param integer $time 时间戳
      * @throws MigrateException
-     * @return mixed
+     * @return boolean
      */
-    public function del($time)
+    public function remove(int $time): bool
     {
         if (!$time) {
             throw new MigrateException("{$time} Time parameter is incorrect");
@@ -285,9 +284,9 @@ class Migrate
         array_map("unlink", $filePathArr);
         if (count($this->fileInfo('time', $time))) {
             throw new MigrateException("File {$time} deleted failed");
-        } else {
-            return $time;
         }
+
+        return true;
     }
 
     /**
@@ -297,9 +296,9 @@ class Migrate
      * @param integer $part
      * @throws MigrateException
      * @throws InvalidArgumentException
-     * @return void
+     * @return array
      */
-    public function export($time, $part = 0)
+    public function export($time, $part = 0): array
     {
         $file = $this->fileInfo('time', $time);
         if (!isset($file[$part])) {
@@ -322,7 +321,7 @@ class Migrate
      * @throws SqlException
      * @return true
      */
-    public function import($time, $part = 0)
+    public function import(int $time, int $part = 0): bool
     {
         $file = $this->fileInfo('time', $time);
         if (!isset($file[$part])) {
@@ -338,7 +337,6 @@ class Migrate
             $content = $this->read($fileName);
             $sqls = Sql::instance()->parseSql($content);
         } else {
-
             $sqls = Sql::instance()->parseFile($fileName);
         }
         // 执行sql
@@ -356,7 +354,7 @@ class Migrate
      * @param boolean $bakData  是否备份数据
      * @return array    备份失败的表名，空则表示成功
      */
-    public function migrate(array $tables = [], $bakData = true)
+    public function migrate(array $tables = [], bool $bakData = true): array
     {
         $error = [];
         if (empty($tables)) {
@@ -383,7 +381,7 @@ class Migrate
      * @param boolean $closeFp 是否关闭文件句柄
      * @return boolean
      */
-    public function backup($table, $start = 0, $bakData = true, $closeFp = true)
+    public function backup(string $table, int $start = 0, bool $bakData = true, bool $closeFp = true): bool
     {
         // 查询表结构
         $result = $this->query("SHOW CREATE TABLE `{$table}`");
@@ -464,7 +462,7 @@ class Migrate
      * @param string $sql  SQL语句
      * @return array
      */
-    public function query($sql)
+    public function query(string $sql): array
     {
         $query = $this->getDB()->prepare($sql);
         $query->execute();
@@ -477,7 +475,7 @@ class Migrate
      * @param string $sql
      * @return integer
      */
-    public function execute($sql)
+    public function execute(string $sql): int
     {
         $query = $this->getDB()->prepare($sql);
         $query->execute();
@@ -489,7 +487,7 @@ class Migrate
      *
      * @return PDO
      */
-    public function getDB()
+    public function getDB(): PDO
     {
         if (!$this->db) {
             // 生成mysql连接dsn
@@ -529,7 +527,7 @@ class Migrate
      * @param string $file 文件路径
      * @return string
      */
-    protected function read($file)
+    protected function read(string $file): string
     {
         // 一次读取4kb的内容
         $buffer_size = 4096;
@@ -549,14 +547,15 @@ class Migrate
      * @param string $sql 要写入的SQL语句
      * @return boolean    true - 写入成功，false - 写入失败！
      */
-    protected function write($sql)
+    protected function write(string $sql): bool
     {
         $size = strlen($sql);
         // 由于压缩原因，无法计算出压缩后的长度，这里假设压缩率为50%，
         // 一般情况压缩率都会高于50%；
         $size = $this->config['compress'] ? $size / 2 : $size;
         $this->open($size);
-        return $this->config['compress'] ? gzwrite($this->fp, $sql) : fwrite($this->fp, $sql);
+        $ret = $this->config['compress'] ? gzwrite($this->fp, $sql) : fwrite($this->fp, $sql);
+        return boolval($ret);
     }
 
     /**
@@ -565,7 +564,7 @@ class Migrate
      * @param integer $size 写入数据的大小
      * @return void
      */
-    protected function open($size)
+    protected function open(int $size)
     {
         if ($this->fp) {
             $this->size += $size;
@@ -606,7 +605,7 @@ class Migrate
      *
      * @return boolean true - 写入成功，false - 写入失败
      */
-    protected function backupInit()
+    protected function backupInit(): bool
     {
         $sql = "-- -----------------------------\n";
         $sql .= "-- Mon MySQL Data Migrate\n";

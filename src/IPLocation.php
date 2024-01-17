@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 use mon\util\exception\IPLocationException;
@@ -79,7 +81,7 @@ class IPLocation
      *
      * @param string $db IP库文件路径
      */
-    public function __construct($db = '')
+    public function __construct(string $db = '')
     {
         if (!empty($db)) {
             $this->init($db);
@@ -103,7 +105,7 @@ class IPLocation
      * @param string $db IP库文件路径
      * @return IPLocation
      */
-    public function init($db)
+    public function init(string $db): IPLocation
     {
         if (!file_exists($db)) {
             throw new IPLocationException('IP数据文件未找到', IPLocationException::ERROR_DATA_NOT_FOUND);
@@ -139,7 +141,7 @@ class IPLocation
      * @throws IPLocationException
      * @return array
      */
-    public function getLocation($ip)
+    public function getLocation(string $ip): array
     {
         if (!$this->init) {
             throw new IPLocationException('未初始化实例', IPLocationException::ERROR_NOT_INIT);
@@ -195,7 +197,7 @@ class IPLocation
                 }
             } else {
                 // 处理如内蒙古等不带省份类型的和直辖市
-                foreach ($this->dict_province as $key => $value) {
+                foreach ($this->dict_province as $value) {
                     if (false !== mb_strpos($location['country'], $value)) {
                         $is_china = true;
                         // 存在直辖市
@@ -280,11 +282,11 @@ class IPLocation
      * @param string $ip IP地址
      * @return array
      */
-    private function getLocationFromIP($ip)
+    private function getLocationFromIP(string $ip): array
     {
         // 如果数据文件没有被正确打开，则直接返回空
         if (!$this->fp) {
-            return null;
+            throw new IPLocationException('数据文件未初始化', IPLocationException::ERROR_NOT_INIT);
         }
         $location['ip'] = $ip;
         // 将输入的IP地址转化为可比较的IP地址，不合法的IP地址会被转化为255.255.255.255
@@ -381,7 +383,7 @@ class IPLocation
      *
      * @return integer
      */
-    private function getlong()
+    private function getlong(): int
     {
         // 将读取的little-endian编码的4个字节转化为长整型数
         $result = unpack('Vlong', fread($this->fp, 4));
@@ -394,7 +396,7 @@ class IPLocation
      *
      * @return integer
      */
-    private function getlong3()
+    private function getlong3(): int
     {
         // 将读取的little-endian编码的3个字节转化为长整型数
         $result = unpack('Vlong', fread($this->fp, 3) . chr(0));
@@ -408,7 +410,7 @@ class IPLocation
      * @param string $ip IP地址
      * @return boolean
      */
-    private function isValidIpV4($ip)
+    private function isValidIpV4(string $ip): bool
     {
         return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false;
     }
@@ -419,7 +421,7 @@ class IPLocation
      * @param string $ip IP地址
      * @return string
      */
-    private function packip($ip)
+    private function packip(string $ip): string
     {
         // 将IP地址转化为长整型数，如果在PHP5中，IP地址错误，则返回False，
         // 这时intval将Flase转化为整数-1，之后压缩成big-endian编码的字符串
@@ -432,7 +434,7 @@ class IPLocation
      * @param string $data
      * @return string
      */
-    private function getstring($data = '')
+    private function getstring(string $data = ''): string
     {
         $char = fread($this->fp, 1);
         while (ord($char) > 0) {
@@ -450,7 +452,7 @@ class IPLocation
      *
      * @return string
      */
-    private function getarea()
+    private function getarea(): string
     {
         // 标志字节
         $byte = fread($this->fp, 1);
@@ -477,10 +479,10 @@ class IPLocation
     /**
      * 获取运营商信息
      * 
-     * @param $str
+     * @param string $str
      * @return string
      */
-    private function getIsp($str)
+    private function getIsp(string $str): string
     {
         $ret = '';
         foreach ($this->dict_isp as $k => $v) {

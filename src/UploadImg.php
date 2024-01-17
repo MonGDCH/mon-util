@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 use mon\util\exception\UploadException;
@@ -32,7 +34,7 @@ class UploadImg
      * @param  string $path 保存的文件路径
      * @return UploadImg
      */
-    public function setPath($path)
+    public function setPath(string $path): UploadImg
     {
         $this->path = $path;
         return $this;
@@ -43,7 +45,7 @@ class UploadImg
      *
      * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         return $this->path;
     }
@@ -54,7 +56,7 @@ class UploadImg
      * @param string $name 保存的文件名称
      * @return UploadImg
      */
-    public function setName($name)
+    public function setName(string $name): UploadImg
     {
         $this->name = $name;
         return $this;
@@ -65,7 +67,7 @@ class UploadImg
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -76,11 +78,11 @@ class UploadImg
      * @param string $data      图片base64
      * @param string $path      保存路径
      * @param string $name      保存名称
-     * @param string $maxSize   图片最大尺寸, 0或空则不验证
+     * @param integer $maxSize  图片最大尺寸, 0或空则不验证
      * @throws UploadException
      * @return string
      */
-    public function upload($data, $path = '', $name = '', $maxSize = '2048000')
+    public function upload(string $data, string $path = '', string $name = '', int $maxSize = 0): string
     {
         $img_base64 = explode('base64,', $data);
         if (!$img_base64) {
@@ -104,7 +106,7 @@ class UploadImg
                 throw new UploadException('图片类型错误', UploadException::ERROR_UPLOAD_NOT_IMG);
         }
 
-        if (!empty($maxSize) && mb_strlen($data) > $maxSize) {
+        if ($maxSize > 0 && strlen($data) > $maxSize) {
             throw new UploadException('文件大小超出', UploadException::ERROR_UPLOAD_SIZE_FAILD);
         }
 
@@ -121,7 +123,7 @@ class UploadImg
      * @throws UploadException
      * @return string
      */
-    protected function saveImg($img, $suffix, $path, $name)
+    protected function saveImg(string $img, string $suffix, string $path, string $name): string
     {
         $path = empty($path) ? $this->path : $path;
         $name = empty($name) ? $this->name : $name;
@@ -146,8 +148,8 @@ class UploadImg
      * @param string $name  文件名
      * @return string
      */
-    protected function buildName($name)
+    protected function buildName(string $name): string
     {
-        return empty($name) ? uniqid(mt_rand()) : $name;
+        return empty($name) ? uniqid('f' . mt_rand()) : $name;
     }
 }

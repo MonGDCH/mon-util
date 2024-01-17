@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 use mon\util\exception\UploadException;
@@ -51,7 +53,7 @@ class UploadFile
      * @param  string $name 配置名称
      * @return mixed 配置值
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         return $this->config[$name];
     }
@@ -63,7 +65,7 @@ class UploadFile
      * @param mixed $value 配置值
      * @return void
      */
-    public function __set($name, $value)
+    public function __set(string $name, $value)
     {
         if (isset($this->config[$name])) {
             $this->config[$name] = $value;
@@ -75,7 +77,7 @@ class UploadFile
      *
      * @return array
      */
-    public function getConfig()
+    public function getConfig(): array
     {
         return $this->config;
     }
@@ -83,9 +85,9 @@ class UploadFile
     /**
      * 获取上传文件信息
      *
-     * @return mixed
+     * @return array
      */
-    public function getFile()
+    public function getFile(): array
     {
         return $this->file;
     }
@@ -94,11 +96,11 @@ class UploadFile
      * 文件上传
      *
      * @param string $name  文件流索引
-     * @param string $files 文件流，默认 $_FILES
+     * @param array $files 文件流，默认 $_FILES
      * @throws UploadException
      * @return UploadFile
      */
-    public function upload($name = 'file', $files = null)
+    public function upload(string $name = 'file', ?array $files = null): UploadFile
     {
         if (is_null($files)) {
             $files = $_FILES;
@@ -107,18 +109,17 @@ class UploadFile
             throw new UploadException('未上传文件', UploadException::ERROR_UPLOAD_FAILD);
         }
         // 检测上传保存路径
-        if (!$this->checkRootPath()) {
-            return false;
-        }
+        $this->checkRootPath();
+
         $file = $files[$name];
         // 安全过滤文件名
         $file['name'] = strip_tags($file['name']);
         // 获取上传文件后缀，允许上传无后缀文件
-        $file['ext'] = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $file['ext'] = pathinfo($file['name'], \PATHINFO_EXTENSION);
         // 检测文件
-        if (!$this->checkFile($file) || !$this->checkImg($file)) {
-            return false;
-        }
+        $this->checkFile($file);
+        $this->checkImg($file);
+
         // 文件md5
         $file['md5'] = md5_file($file['tmp_name']);
         // 文件sha1
@@ -137,7 +138,7 @@ class UploadFile
      * @throws UploadException
      * @return UploadFile
      */
-    public function save($fileName = '', $saveDir = '', $replace = true)
+    public function save(string $fileName = '', string $saveDir = '', bool $replace = true): UploadFile
     {
         if (empty($this->file)) {
             throw new UploadException('未获取上传的文件', UploadException::ERROR_UPLOAD_NOT_FOUND);
@@ -149,7 +150,7 @@ class UploadFile
                 throw new UploadException('创建文件存储目录失败', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
             }
         }
-        $fileName = empty($fileName) ? uniqid(mt_rand()) . '.' . $this->file['ext'] : $fileName;
+        $fileName = empty($fileName) ? uniqid('a' . mt_rand()) . '.' . $this->file['ext'] : $fileName;
         $saveName = $savePath . $fileName;
         if (!$replace && is_file($saveName)) {
             throw new UploadException('文件已存在', UploadException::ERROR_UPLOAD_EXISTS);
@@ -169,7 +170,7 @@ class UploadFile
      * @throws UploadException
      * @return boolean
      */
-    protected function checkRootPath()
+    protected function checkRootPath(): bool
     {
         if (!(is_dir($this->config['rootPath']) && is_writable($this->config['rootPath']))) {
             throw new UploadException('上传目录不存在或不可写入！请尝试手动创建:' . $this->config['rootPath'], UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
@@ -184,10 +185,10 @@ class UploadFile
      * @throws UploadException
      * @return boolean
      */
-    protected function checkFile($file)
+    protected function checkFile(string $file): bool
     {
         if ($file['error']) {
-            throw new UploadException($this->uploadErrorMsg($file['error']), UploadException::ERROR_UPLOAD_CHECK_FAILD);
+            throw new UploadException($this->uploadErrorMsg((int)$file['error']), UploadException::ERROR_UPLOAD_CHECK_FAILD);
         }
         // 无效上传
         if (empty($file['name'])) {
@@ -198,7 +199,7 @@ class UploadFile
             throw new UploadException('非法上传文件', UploadException::ERROR_UPLOAD_ILLEGAL);
         }
         // 检查文件大小
-        if (!$this->checkSize($file['size'])) {
+        if (!$this->checkSize((int)$file['size'])) {
             throw new UploadException('上传文件大小不符', UploadException::ERROR_UPLOAD_SIZE_FAILD);
         }
         // 检查文件Mime类型
@@ -220,7 +221,7 @@ class UploadFile
      * @throws UploadException
      * @return boolean
      */
-    protected function checkImg($file)
+    protected function checkImg(string $file): bool
     {
         $ext = strtolower($file['ext']);
         if (in_array($ext, ['gif', 'jpg', 'jpeg', 'bmp', 'png', 'swf'])) {
@@ -239,7 +240,7 @@ class UploadFile
      * @param integer $size  文件大小
      * @return boolean
      */
-    protected function checkSize($size)
+    protected function checkSize(int $size): bool
     {
         return !($size > $this->config['maxSize']) || (0 == $this->config['maxSize']);
     }
@@ -250,7 +251,7 @@ class UploadFile
      * @param string $mime  文件类型
      * @return boolean
      */
-    protected function checkMime($mime)
+    protected function checkMime(string $mime): bool
     {
         return empty($this->config['mimes']) ? true : in_array(strtolower($mime), $this->config['mimes']);
     }
@@ -261,7 +262,7 @@ class UploadFile
      * @param string $ext   文件后缀
      * @return boolean
      */
-    private function checkExt($ext)
+    private function checkExt(string $ext): bool
     {
         return empty($this->config['exts']) ? true : in_array(strtolower($ext), $this->config['exts']);
     }
@@ -272,7 +273,7 @@ class UploadFile
      * @param integer $errorNo  错误号
      * @return string
      */
-    protected function uploadErrorMsg($errorNo)
+    protected function uploadErrorMsg(int $errorNo): string
     {
         switch ($errorNo) {
             case 1:

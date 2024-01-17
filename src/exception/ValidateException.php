@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util\exception;
 
 use Exception;
@@ -14,7 +16,7 @@ class ValidateException extends Exception
      *
      * @return array
      */
-    public function getData()
+    public function getData(): array
     {
         return [
             'code' => $this->getCode(),

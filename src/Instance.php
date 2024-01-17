@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 use InvalidArgumentException;
@@ -41,7 +43,7 @@ trait Instance
      * @param  array  $params 参数
      * @return mixed
      */
-    public static function __callStatic($method, $params)
+    public static function __callStatic(string $method, $params)
     {
         if (is_null(static::$instance)) {
             static::$instance = new static();

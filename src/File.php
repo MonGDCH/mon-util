@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 use DirectoryIterator;
@@ -24,9 +26,9 @@ class File
      * @param integer $size 大小
      * @param integer $dec 精准度，小数位数
      * @param boolean $toString 输出字符串
-     * @return array|string
+     * @return array
      */
-    public function formatByte($size, $dec = 0, $toString = true)
+    public function formatByte(int $size, int $dec = 0): array
     {
         $type = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
         $pos = 0;
@@ -34,11 +36,10 @@ class File
             $size /= 1024;
             $pos++;
         }
-        $result = [
+        return [
             'size'  => round($size, $dec),
             'type'  => $type[$pos]
         ];
-        return $toString ? ($result['size'] . ' ' . $result['type']) : $result;
     }
 
     /**
@@ -50,7 +51,7 @@ class File
      * @throws InvalidArgumentException
      * @return boolean
      */
-    public function changeAuth($file, $type, $ch_info)
+    public function changeAuth(string $file, string $type, $ch_info): bool
     {
         switch ($type) {
             case 'group':
@@ -73,7 +74,7 @@ class File
      * @param  string $dirPath 目录路径
      * @return boolean
      */
-    public function createDir($dirPath)
+    public function createDir(string $dirPath): bool
     {
         if (is_dir($dirPath)) {
             return true;
@@ -89,7 +90,7 @@ class File
      * @param boolean $overwrite   文件是否覆盖，默认不覆盖
      * @return void
      */
-    public function copydir($source, $dest, $overwrite = false)
+    public function copydir(string $source, string $dest, bool $overwrite = false)
     {
         $this->createDir($dest);
         $dir_iterator = new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS);
@@ -118,7 +119,7 @@ class File
      * @param  boolean $all     是否删除所有
      * @return boolean
      */
-    public function removeDir($dirPath, $all = false)
+    public function removeDir(string $dirPath, bool $all = false): bool
     {
         $dirName = $this->pathReplace($dirPath);
         $handle = @opendir($dirName);
@@ -144,9 +145,9 @@ class File
      * @param  string $dir  目录路径
      * @return array
      */
-    public function getDirInfo($dir)
+    public function getDirInfo(string $dir): array
     {
-        $handle = @opendir($dir); //打开指定目录
+        $handle = @opendir($dir);
         $directory_count = 0;
         $total_size = 0;
         $file_cout = 0;
@@ -165,7 +166,7 @@ class File
                 }
             }
         }
-        closedir($handle); //关闭指定目录
+        closedir($handle);
         $result_value['size'] = $total_size;
         $result_value['filecount'] = $file_cout;
         $result_value['dircount'] = $directory_count;
@@ -179,7 +180,7 @@ class File
      * @throws InvalidArgumentException
      * @return array
      */
-    public function getDirContent($dir)
+    public function getDirContent(string $dir): array
     {
         if (!is_dir($dir)) {
             throw new InvalidArgumentException('dir path is not dir!');
@@ -228,7 +229,7 @@ class File
      * @param  boolean $append  存在文件是否继续写入
      * @return boolean|integer
      */
-    public function createFile($content, $path, $append = true)
+    public function createFile(string $content, string $path, bool $append = true)
     {
         $dirPath = dirname($path);
         is_dir($dirPath) || $this->createDir($dirPath);
@@ -247,7 +248,7 @@ class File
      * @param  string $path 文件路径
      * @return boolean
      */
-    public function removeFile($path)
+    public function removeFile(string $path): bool
     {
         $path = $this->pathReplace($path);
         if (file_exists($path)) {
@@ -265,7 +266,7 @@ class File
      * @param boolean $overwrite   文件是否覆盖，默认不覆盖
      * @return boolean
      */
-    public function copyFile($source, $dest, $overwrite = false)
+    public function copyFile(string $source, string $dest, bool $overwrite = false): bool
     {
         // 源文件不存在
         if (!file_exists($source)) {
@@ -288,7 +289,7 @@ class File
      * @param  string $path 目录路径
      * @return string
      */
-    public function getBaseName($path)
+    public function getBaseName(string $path): string
     {
         return basename(str_replace('\\', '/', $this->pathReplace($path)));
     }
@@ -299,7 +300,7 @@ class File
      * @param  string $path 文件路径
      * @return string
      */
-    public function getExt($path)
+    public function getExt(string $path): string
     {
         return pathinfo($this->pathReplace($path), PATHINFO_EXTENSION);
     }
@@ -311,7 +312,7 @@ class File
      * @param  string $newFileNmae 新名称
      * @return boolean
      */
-    public function rename($oldFileName, $newFileNmae)
+    public function rename(string $oldFileName, string $newFileNmae): bool
     {
         if (($oldFileName != $newFileNmae) && is_writable($oldFileName)) {
             return rename($oldFileName, $newFileNmae);
@@ -327,10 +328,10 @@ class File
      * @throws InvalidArgumentException
      * @return string
      */
-    public function read($file)
+    public function read(string $file): string
     {
         if (!file_exists($file)) {
-            throw new InvalidArgumentException('file not found[' . $file . ']');
+            throw new InvalidArgumentException('File not found[' . $file . ']');
         }
         return file_get_contents($file);
     }
@@ -341,7 +342,7 @@ class File
      * @param  string $file 文件路径
      * @return array
      */
-    public function getFileInfo($file)
+    public function getFileInfo(string $file): array
     {
         $info = [];
         // 返回路径中的文件名部分
@@ -394,7 +395,7 @@ class File
      * @param string $default  默认文件mimetype
      * @return string
      */
-    public function getMimeType($file, $default = 'application/octet-stream')
+    public function getMimeType(string $file, string $default = 'application/octet-stream'): string
     {
         // 默认类型
         $mimeType = $default;
@@ -452,7 +453,7 @@ class File
      * @param boolean $tree  输出树结构还是数组
      * @return array
      */
-    public function getFoldersContent($path, $tree = false)
+    public function getFoldersContent(string $path, bool $tree = false): array
     {
         if ((!file_exists($path) || !is_dir($path))) {
             return [];
@@ -468,7 +469,7 @@ class File
      * @param DirectoryIterator $dir
      * @return array
      */
-    protected function directoryIteratorToArray(DirectoryIterator $dir)
+    protected function directoryIteratorToArray(DirectoryIterator $dir): array
     {
         $result = [];
         foreach ($dir as $key => $child) {
@@ -492,7 +493,7 @@ class File
      * @param DirectoryIterator $dir
      * @return array
      */
-    protected function directoryIteratorToTree(DirectoryIterator $dir)
+    protected function directoryIteratorToTree(DirectoryIterator $dir): array
     {
         $result = [];
         foreach ($dir as $key => $child) {
@@ -524,7 +525,7 @@ class File
      * @param string $path 路径
      * @return string
      */
-    protected function pathReplace($path)
+    protected function pathReplace(string $path): string
     {
         return str_replace('//', '/', str_replace('\\', '/', $path));
     }

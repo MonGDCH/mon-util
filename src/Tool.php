@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
+use ZipArchive;
 use RuntimeException;
 use mon\util\Instance;
 use InvalidArgumentException;
@@ -20,12 +23,12 @@ class Tool
      * 调试方法(浏览器友好处理)
      *
      * @param mixed     $var    变量
-     * @param boolean   $echo   是否输出 默认为True 如果为false 则返回输出字符串
+     * @param boolean   $echo   是否输出 默认为true 如果为false 则返回输出字符串
      * @param string    $label  标签 默认为空
-     * @param boolean   $strict 是否严谨 默认为true
+     * @param integer   $flags  HTML过滤flag
      * @return void|string
      */
-    public function dd($var, $echo = true, $label = null, $flags = ENT_SUBSTITUTE)
+    public function dd($var, bool $echo = true, ?string $label = null, int $flags = \ENT_SUBSTITUTE)
     {
         $label = (null === $label) ? '' : rtrim($label) . ':';
         ob_start();
@@ -56,7 +59,7 @@ class Tool
      * @param array $vars 传参
      * @return string
      */
-    public function buildURL($url, array $vars = [])
+    public function buildURL(string $url, array $vars = []): string
     {
         // 判断是否包含域名,解析URL和传参
         if (strpos($url, '://') === false && strpos($url, '/') !== 0) {
@@ -120,7 +123,7 @@ class Tool
      * @param string $ua    请求user-agent
      * @return boolean
      */
-    public function is_wx($ua = '')
+    public function is_wx(string $ua = ''): bool
     {
         $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
 
@@ -133,7 +136,7 @@ class Tool
      * @param string $ua    请求user-agent
      * @return boolean
      */
-    public function is_android($ua = '')
+    public function is_android(string $ua = ''): bool
     {
         $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
 
@@ -146,7 +149,7 @@ class Tool
      * @param string $ua    请求user-agent
      * @return boolean 
      */
-    public function is_ios($ua = '')
+    public function is_ios(string $ua = ''): bool
     {
         $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
 
@@ -163,7 +166,7 @@ class Tool
      * @param string  $tokenTimeName  cookie创建token创建时间的名称
      * @return array
      */
-    public function createTicket($ticket, $salt = 'mon-util', $expire = 3600, $tokenName = '_token_', $tokenTimeName = '_tokenTime_')
+    public function createTicket(string $ticket, string $salt = 'mon-util', int $expire = 3600, string $tokenName = '_token_', string $tokenTimeName = '_tokenTime_'): array
     {
         $now = time();
         $token = md5($salt . $now . $ticket);
@@ -189,7 +192,7 @@ class Tool
      * @param string  $tokenTimeName  Cookie创建token创建时间的名称
      * @return boolean
      */
-    public function checkTicket($ticket, $token = null, $tokenTime = null, $salt = 'mon-util', $destroy = true, $expire = 3600, $tokenName = '_token_', $tokenTimeName = '_tokenTime_')
+    public function checkTicket(string $ticket, ?string $token = null, ?int $tokenTime = null, string $salt = 'mon-util', bool $destroy = true, int $expire = 3600, string $tokenName = '_token_', string $tokenTimeName = '_tokenTime_'): bool
     {
         $token = empty($token) ? (isset($_COOKIE[$tokenName]) ? $_COOKIE[$tokenName] : '') : $token;
         $tokenTime = empty($tokenTime) ? (isset($_COOKIE[$tokenTimeName]) ? $_COOKIE[$tokenTimeName] : 0) : $tokenTime;
@@ -223,9 +226,9 @@ class Tool
      * @param  array   $data      导出数据
      * @param  array   $title     表格标题列表，key=>value，value为列标题，key为列名对应data中的索引
      * @param  boolean $output    是否输出
-     * @return mixed
+     * @return array
      */
-    public function exportCsv($filename, array $data, array $title = [], $output = true)
+    public function exportCsv(string $filename, array $data, array $title = [], bool $output = true): array
     {
         $str = '';
         if (!empty($title)) {
@@ -273,7 +276,6 @@ class Tool
             }
             // 输出文件
             echo $str;
-            return;
         }
 
         return ['header' => $headers, 'content' => $str];
@@ -288,9 +290,9 @@ class Tool
      * @param boolean $border   是否带边框
      * @param string $sheetName sheet名称
      * @param boolean $output   是否直接输出
-     * @return mixed
+     * @return array
      */
-    public function exportExcel($filename, array $data, array $title = [], $border = true, $sheetName = 'sheet1', $output = true)
+    public function exportExcel(string $filename, array $data, array $title = [], bool $border = true, string $sheetName = 'sheet1', bool $output = true): array
     {
         $thead = '';
         $tbody = '';
@@ -371,7 +373,6 @@ class Tool
             }
             // 输出文件
             echo $xls;
-            return;
         }
 
         return ['header' => $headers, 'content' => $xls, 'table' => $table];
@@ -383,7 +384,7 @@ class Tool
      * @param mixed $td
      * @return string
      */
-    protected function getExcelTD($td)
+    protected function getExcelTD($td): string
     {
         $ret = '';
         if (is_array($td) && Common::instance()->isAssoc($td)) {
@@ -399,7 +400,6 @@ class Tool
             } else {
                 $text = $td['text'];
             }
-
             $ret = '<td style="' . $style . '" rowspan="' . $rowspan . '" colspan="' . $colspan . '">' . $text . '</td>';
         } elseif (is_string($td) || is_numeric($td)) {
             $ret = '<td>' . $td . '</td>';
@@ -415,9 +415,9 @@ class Tool
      * @param  string  $root     根节点
      * @param  string  $encoding 编码
      * @param  boolean $output   是否输出
-     * @return mixed
+     * @return array
      */
-    public function exportXML(array $data, $root = 'mon', $encoding = 'UTF-8', $output = true)
+    public function exportXML(array $data, string $root = 'mon', string $encoding = 'UTF-8', bool $output = true): array
     {
         $xml  = "<?xml version=\"1.0\" encoding=\"{$encoding}\"?>";
         $xml .= "<{$root}>";
@@ -435,7 +435,6 @@ class Tool
             }
             // 输出
             echo $xml;
-            return;
         }
 
         return ['header' => $headers, 'content' => $xml];
@@ -447,7 +446,7 @@ class Tool
      * @param  string $card 银行卡号
      * @return string
      */
-    public function hideBankcard($card)
+    public function hideBankcard(string $card): string
     {
         if (empty($card)) {
             return '';
@@ -465,7 +464,7 @@ class Tool
      * @param  string $mobile 手机号
      * @return string
      */
-    public function hideMoble($mobile)
+    public function hideMoble(string $mobile): string
     {
         if (empty($mobile)) {
             return '';
@@ -479,7 +478,7 @@ class Tool
      * @param array $header 头信息，默认 $_SERVER
      * @return string
      */
-    public function ip(array $header = [])
+    public function ip(array $header = []): string
     {
         $header = $header ?: $_SERVER;
         foreach (['X_FORWARDED_FOR', 'HTTP_X_FORWARDED_FOR', 'CLIENT_IP', 'HTTP_CLIENT_IP', 'REMOTE_ADDR'] as $key) {
@@ -498,7 +497,7 @@ class Tool
      * @param array $ips  白名单IP或者黑名单IP，例如白名单IP：['192.168.1.13', '123.23.23.44', '193.134.*.*']
      * @return boolean true 在白名单或者黑名单中，否则不在
      */
-    public function safe_ip($ip, array $ips)
+    public function safe_ip($ip, array $ips): bool
     {
         if (in_array($ip, $ips)) {
             return true;
@@ -518,26 +517,26 @@ class Tool
      *
      * @return string
      */
-    public function mac_address()
+    public function mac_address(): string
     {
         $data = [];
         switch (strtolower(PHP_OS)) {
-            case "darwin":
-            case "linux":
-                @exec("ifconfig -a", $data);
+            case 'darwin':
+            case 'linux':
+                @exec('ifconfig -a', $data);
                 break;
-            case "unix":
-            case "aix":
-            case "solaris":
+            case 'unix':
+            case 'aix':
+            case 'solaris':
                 break;
             default:
-                @exec("ipconfig /all", $data);
+                @exec('ipconfig /all', $data);
                 if (!$data) {
-                    $ipconfig = $_SERVER["WINDIR"] . "\system32\ipconfig.exe";
+                    $ipconfig = $_SERVER['WINDIR'] . '\system32\ipconfig.exe';
                     if (is_file($ipconfig)) {
-                        @exec($ipconfig . " /all", $data);
+                        @exec($ipconfig . ' /all', $data);
                     } else {
-                        @exec($_SERVER["WINDIR"] . "\system\ipconfig.exe /all", $data);
+                        @exec($_SERVER['WINDIR'] . '\system\ipconfig.exe /all', $data);
                     }
                 }
                 break;
@@ -546,7 +545,7 @@ class Tool
         $mac = '';
         $tmp = [];
         foreach ($data as $value) {
-            if (preg_match("/[0-9a-f][0-9a-f][:-]" . "[0-9a-f][0-9a-f][:-]" . "[0-9a-f][0-9a-f][:-]" . "[0-9a-f][0-9a-f][:-]" . "[0-9a-f][0-9a-f][:-]" . "[0-9a-f][0-9a-f]/i", $value, $tmp)) {
+            if (preg_match('/[0-9a-f][0-9a-f][:-]' . '[0-9a-f][0-9a-f][:-]' . '[0-9a-f][0-9a-f][:-]' . '[0-9a-f][0-9a-f][:-]' . '[0-9a-f][0-9a-f][:-]' . '[0-9a-f][0-9a-f]/i', $value, $tmp)) {
                 $mac = $tmp[0];
                 break;
             }
@@ -566,10 +565,10 @@ class Tool
      */
     public function getDistance($lng1, $lat1, $lng2, $lat2)
     {
-        $radLat1 = deg2rad($lat1);
-        $radLat2 = deg2rad($lat2);
-        $radLng1 = deg2rad($lng1);
-        $radLng2 = deg2rad($lng2);
+        $radLat1 = deg2rad((float)$lat1);
+        $radLat2 = deg2rad((float)$lat2);
+        $radLng1 = deg2rad((float)$lng1);
+        $radLng2 = deg2rad((float)$lng2);
         $a = $radLat1 - $radLat2;
         $b = $radLng1 - $radLng2;
 
@@ -590,7 +589,7 @@ class Tool
      * @param float $distance 该点所在圆的半径，该圆与此正方形内切，默认值为0.5千米
      * @return array 正方形的四个点的经纬度坐标
      */
-    public function getSquarePoint($lng, $lat, $distance = 0.5)
+    public function getSquarePoint($lng, $lat, $distance = 0.5): array
     {
         if (empty($lng) || empty($lat)) {
             return [];
@@ -619,14 +618,14 @@ class Tool
      * @param string    $fileName       下载文件名，默认为打包后的文件名
      * @param boolean   $output         是否输出
      * @throws RuntimeException
-     * @return mixed
+     * @return array
      */
-    public function exportZip($downloadZip, array $list, $fileName = null, $output = true)
+    public function exportZip(string $downloadZip, array $list, ?string $fileName = null, bool $output = true): array
     {
         // 初始化Zip并打开
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         // 初始化
-        $bool = $zip->open($downloadZip, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        $bool = $zip->open($downloadZip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
         // 打开文件
         if ($bool !== true) {
             throw new RuntimeException('PHP-ZipArchive扩展打开文件失败, Code：' . $bool);
@@ -642,12 +641,12 @@ class Tool
         $fileName = $fileName ?: basename($downloadZip);
         // 响应头
         $headers = [
-            'Cache-Control: max-age=0',
-            'Content-Description: File Transfer',
-            'Content-disposition: attachment; filename=' . $fileName,
-            'Content-Type: application/zip',
-            'Content-Transfer-Encoding: binary',
-            'Content-Length: ' . filesize($downloadZip)
+            'Cache-Control' => 'max-age=0',
+            'Content-Description' => 'File Transfer',
+            'Content-disposition' => 'attachment; filename=' . $fileName,
+            'Content-Type' => 'application/zip',
+            'Content-Transfer-Encoding' => 'binary',
+            'Content-Length' => filesize($downloadZip)
         ];
 
         if ($output) {
@@ -655,12 +654,13 @@ class Tool
             ob_clean();
             flush();
             // 输出头信息
-            foreach ($headers as $header) {
+            foreach ($headers as $k => $v) {
+                $header = $k . ':' . $v;
                 header($header);
             }
             // 输出文件
             readfile($downloadZip);
-            return;
+            return [];
         }
 
         return ['header' => $headers, 'content' => file_get_contents($downloadZip)];
@@ -674,17 +674,17 @@ class Tool
      * @param string    $fileName       下载文件名，默认为打包后的文件名
      * @param boolean   $output         是否输出
      * @throws InvalidArgumentException
-     * @return void
+     * @return array
      */
-    public function exportZipForDir($downloadZip, $dirPath, $fileName = null, $output = true)
+    public function exportZipForDir(string $downloadZip, string $dirPath, ?string $fileName = null, bool $output = true): array
     {
         if (!is_dir($dirPath)) {
             throw new InvalidArgumentException('打包目录不存在!');
         }
         // 初始化Zip并打开
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         // 初始化
-        $bool = $zip->open($downloadZip, \ZIPARCHIVE::CREATE | \ZipArchive::OVERWRITE);
+        $bool = $zip->open($downloadZip, ZIPARCHIVE::CREATE | ZipArchive::OVERWRITE);
         if ($bool !== true) {
             throw new RuntimeException('PHP-ZipArchive扩展打开文件失败, Code：' . $bool);
         }
@@ -696,12 +696,12 @@ class Tool
         $fileName = $fileName ? $fileName : basename($downloadZip);
         // 响应头
         $headers = [
-            'Cache-Control: max-age=0',
-            'Content-Description: File Transfer',
-            'Content-disposition: attachment; filename=' . $fileName,
-            'Content-Type: application/zip',
-            'Content-Transfer-Encoding: binary',
-            'Content-Length: ' . filesize($downloadZip)
+            'Cache-Control' => 'max-age=0',
+            'Content-Description' => 'File Transfer',
+            'Content-disposition' => 'attachment; filename=' . $fileName,
+            'Content-Type' => 'application/zip',
+            'Content-Transfer-Encoding' => 'binary',
+            'Content-Length' => filesize($downloadZip)
         ];
 
         if ($output) {
@@ -709,12 +709,13 @@ class Tool
             ob_clean();
             flush();
             // 输出头信息
-            foreach ($headers as $header) {
+            foreach ($headers as $k => $v) {
+                $header = $k . ':' . $v;
                 header($header);
             }
             // 输出文件
             readfile($downloadZip);
-            return;
+            return [];
         }
 
         return ['header' => $headers, 'content' => file_get_contents($downloadZip)];
@@ -723,13 +724,13 @@ class Tool
     /**
      * 压缩添加目录文件到zip压缩包中
      *
-     * @param \ZipArchive $zip zip句柄
+     * @param ZipArchive $zip zip句柄
      * @param mixed $fileResource 文件列表句柄
      * @param string $sourcePath 资源路径
      * @param string $compressPath 添加zip句柄中的文件路径
      * @return void
      */
-    protected function compressZip($zip, $fileResource, $sourcePath, $compressPath = '')
+    protected function compressZip(ZipArchive $zip, $fileResource, string $sourcePath, string $compressPath = '')
     {
         while (($file = readdir($fileResource)) != false) {
             if ($file == "." || $file == "..") {
@@ -755,7 +756,7 @@ class Tool
      * @param string $dest 解压到指定目录
      * @return boolean
      */
-    public function unZip($zipName, $dest)
+    public function unZip(string $zipName, string $dest): bool
     {
         // 检测要解压压缩包是否存在
         if (!is_file($zipName)) {
@@ -766,7 +767,7 @@ class Tool
             mkdir($dest, 0777, true);
         }
         // 初始化Zip并打开
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         // 打开并解压
         if ($zip->open($zipName)) {
             $zip->extractTo($dest);
@@ -786,9 +787,9 @@ class Tool
      * @param integer $expire  下载内容浏览器缓存时间
      * @param boolean $output  是否输出
      * @throws InvalidArgumentException
-     * @return void
+     * @return array
      */
-    public function exportFile($filename, $showname = '', $expire = 3600, $output = true)
+    public function exportFile(string $filename, string $showname = '', int $expire = 3600, bool $output = true): array
     {
         if (!file_exists($filename)) {
             throw new InvalidArgumentException('[' . $filename . ']下载文件不存在!');
@@ -821,7 +822,7 @@ class Tool
             }
             // 输出文件
             readfile($filename);
-            return;
+            return [];
         }
 
         return ['header' => $headers, 'content' => file_get_contents($filename)];
@@ -836,9 +837,9 @@ class Tool
      * @param integer $margin 图片边距
      * @param boolean $output 是否输出文件
      * @param string  $outfile 保存文件, 空则不保存，字符串路径则表示保存路径
-     * @return mixed
+     * @return string
      */
-    public function qrcode($text, $level = 0, $size = 8, $margin = 1, $output = false, $outfile = '')
+    public function qrcode(string $text, int $level = 0, int  $size = 8, int $margin = 1, bool $output = false, string $outfile = ''): string
     {
         $img = QRcode::png($text, $level, $size, $margin);
         if ($output) {
@@ -864,7 +865,7 @@ class Tool
      * @throws RuntimeException|InvalidArgumentException
      * @return string
      */
-    public function download($url, $savePath, $filename = '', $createDir = true)
+    public function download(string $url, string $savePath, string $filename = '', bool $createDir = true): string
     {
         $path = $createDir ? ($savePath . '/' . date('Ym') . '/') : ($savePath . '/');
         if (!is_dir($path)) {
@@ -904,7 +905,7 @@ class Tool
      * @param string|array $reg reg颜色值
      * @return string
      */
-    public function rgb2hex($rgb)
+    public function rgb2hex($rgb): string
     {
         if (is_array($rgb)) {
             $match = $rgb;
@@ -942,9 +943,9 @@ class Tool
      * 十六进制转RGB颜色
      * 
      * @param string $hex_color 十六进制颜色值
-     * @return string
+     * @return array
      */
-    public function hex2rgb($hex_color)
+    public function hex2rgb(string $hex_color): array
     {
         $color = str_replace('#', '', $hex_color);
         if (strlen($color) > 3) {
@@ -972,13 +973,13 @@ class Tool
      *
      * @param string $base64 图片base64
      * @param string $path 保存路径
-     * @return boolean|integer
+     * @return boolean
      */
-    public function base64_img($base64, $path)
+    public function base64_img(string $base64, string $path): bool
     {
         $base64Info = explode(',', $base64);
         $content = base64_decode($base64Info[1]);
-        return File::instance()->createFile($content, $path, false);
+        return (bool)File::instance()->createFile($content, $path, false);
     }
 
     /**
@@ -987,7 +988,7 @@ class Tool
      * @param string $path 图片路径
      * @return string
      */
-    public function img_base64($path)
+    public function img_base64(string $path): string
     {
         $img = getimagesize($path);
         $content = chunk_split(base64_encode(file_get_contents($path)));
@@ -1002,7 +1003,7 @@ class Tool
      * @throws InvalidArgumentException
      * @return mixed
      */
-    public function require_cache($file)
+    public function require_cache(string $file)
     {
         static $import_files = [];
         if (!isset($import_files[$file])) {
@@ -1023,7 +1024,7 @@ class Tool
      * @throws InvalidArgumentException
      * @return mixed
      */
-    public function include_cache($file)
+    public function include_cache(string $file)
     {
         static $import_files = [];
         if (!isset($import_files[$file])) {

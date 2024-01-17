@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util\exception;
 
 use Exception;
+use Throwable;
 
 /**
  * 客服端操作异常
@@ -24,7 +27,7 @@ class NetWorkException extends Exception
      * @param \Throwable $previous
      * @param mixed $ch
      */
-    public function __construct($message, $code =  0, $previous = null, $ch = null)
+    public function __construct(string $message, int $code =  0, $previous = null, $ch = null)
     {
         parent::__construct($message, $code, $previous);
         $this->ch = $ch;

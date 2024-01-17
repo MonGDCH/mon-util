@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 use mon\util\exception\ValidateException;
@@ -52,6 +54,13 @@ class Validate
 	 * @var array
 	 */
 	public $message  = [];
+
+	/**
+	 * 当前验证错误信息数据
+	 *
+	 * @var array
+	 */
+	public $checkMessage = [];
 
 	/**
 	 * 验证的场景
@@ -111,14 +120,16 @@ class Validate
 	 * @param array $data	验证的数据
 	 * @return boolean
 	 */
-	public function check(array $data = [])
+	public function check(array $data = []): bool
 	{
-		if (!empty($data) && is_array($data)) {
-			$this->data = array_merge($this->data, $data);
-		}
-		// 解析验证规则
+		// 错误节点
 		$errorItme = null;
+		// 验证数据
+		$checkData = array_merge($this->data, $data);
+		// 解析验证规则
 		$checkRule = empty($this->checkRule) ? $this->rule : $this->checkRule;
+		// 验证错误信息
+		$checkMessage = empty($this->checkMessage) ? $this->message : $this->checkMessage;
 		// 判断是否存在验证场景，获取验证字段
 		if (!empty($this->checkScope) && is_array($this->checkScope)) {
 			foreach ($this->checkScope as $v) {
@@ -126,17 +137,17 @@ class Validate
 					$scopeRule[$v] = $checkRule[$v];
 				}
 			}
-			$this->checkScope = null;
 		} else {
 			$scopeRule = $checkRule;
 		}
 
+		// 验证数据
 		foreach ($scopeRule as $dataItem => $rules) {
 			// 分割获取验证规则
 			$rule = is_array($rules) ? $rules : explode('|', $rules);
 			// 存在节点，验证节点
-			if (isset($this->data[$dataItem])) {
-				$value = $this->data[$dataItem];
+			if (isset($checkData[$dataItem])) {
+				$value = $checkData[$dataItem];
 				// 解析规则
 				$status = $this->analysis($value, $rule, $dataItem);
 				if ($status !== true) {
@@ -155,19 +166,25 @@ class Validate
 			}
 		}
 
+		// 重置数据
+		$this->data = [];
+		$this->checkRule = [];
+		$this->checkMessage = [];
+		$this->checkScope = null;
+
 		// 不存在错误节点，验证通过
 		if (empty($errorItme)) {
 			return true;
 		}
 		// 存在错误提示信息, 返回错误提示信息
-		if (isset($this->message[$errorItme[0]])) {
-			if (is_string($this->message[$errorItme[0]])) {
+		if (isset($checkMessage[$errorItme[0]])) {
+			if (is_string($checkMessage[$errorItme[0]])) {
 				// 字符串，直接返回提示
-				$this->error = $this->message[$errorItme[0]];
+				$this->error = $checkMessage[$errorItme[0]];
 				return false;
-			} elseif (isset($this->message[$errorItme[0]][$errorItme[1]])) {
+			} elseif (isset($checkMessage[$errorItme[0]][$errorItme[1]])) {
 				// 数组，返回对应节点提示
-				$this->error = $this->message[$errorItme[0]][$errorItme[1]];
+				$this->error = $checkMessage[$errorItme[0]][$errorItme[1]];
 				return false;
 			} else {
 				// 返回默认提示
@@ -187,27 +204,14 @@ class Validate
 	 * @throws ValidateException
 	 * @return true
 	 */
-	public function checked(array $data = [])
+	public function checked(array $data = []): bool
 	{
 		$check = $this->check($data);
-		if ($check !== true) {
+		if (!$check) {
 			throw new ValidateException($this->getError(), 500);
 		}
 
 		return true;
-	}
-
-	/**
-	 * 设置本次数据的验证规则
-	 *
-	 * @param array $rule	验证规则
-	 * @return Validate
-	 */
-	public function rule(array $rule = [])
-	{
-		$this->checkRule = $rule;
-
-		return $this;
 	}
 
 	/**
@@ -216,9 +220,22 @@ class Validate
 	 * @param array $data	验证的数据
 	 * @return Validate
 	 */
-	public function data(array $data = [])
+	public function data(array $data = []): Validate
 	{
 		$this->data = $data;
+
+		return $this;
+	}
+
+	/**
+	 * 设置本次数据的验证规则
+	 *
+	 * @param array $rule	验证规则
+	 * @return Validate
+	 */
+	public function rule(array $rule = []): Validate
+	{
+		$this->checkRule = $rule;
 
 		return $this;
 	}
@@ -229,9 +246,9 @@ class Validate
 	 * @param array $message 错误信息
 	 * @return Validate
 	 */
-	public function message($message = [])
+	public function message(array $message = []): Validate
 	{
-		$this->message = $message;
+		$this->checkMessage = $message;
 
 		return $this;
 	}
@@ -242,7 +259,7 @@ class Validate
 	 * @param string|array $item 查询场景名称
 	 * @return Validate
 	 */
-	public function scope($item)
+	public function scope($item): Validate
 	{
 		if (is_array($item)) {
 			$this->checkScope = $item;
@@ -261,7 +278,9 @@ class Validate
 	 */
 	public function getError()
 	{
-		return $this->error;
+		$error = $this->error;
+		$this->error = null;
+		return $error;
 	}
 
 	###############################  辅助方法  ###################################
@@ -270,11 +289,11 @@ class Validate
 	 * 解析规则
 	 *
 	 * @param mixed $value	验证的值
-	 * @param mixed $rule	对应的验证规则
+	 * @param array $rule	对应的验证规则
 	 * @param string $dataItem 验证的字段名
 	 * @return true|string 成功返回true,失败返回验证失败的规则名称
 	 */
-	protected function analysis($value, $rule, $dataItem)
+	protected function analysis($value, array $rule, string $dataItem)
 	{
 		$resule = true;
 		foreach ($rule as $type) {
@@ -305,7 +324,7 @@ class Validate
 	 * @param mixed $rule_data	规则参数
 	 * @return boolean
 	 */
-	protected function checkItem($field, $value, $rule, $rule_data = null)
+	protected function checkItem(string $field, $value, string $rule, $rule_data = null): bool
 	{
 		// 过滤不需要验证的规则
 		if (in_array($rule, ['isset'])) {
@@ -314,11 +333,8 @@ class Validate
 
 		$resule = false;
 		if (method_exists($this, $rule)) {
-			if (!is_null($rule_data)) {
-				$resule = call_user_func_array([$this, $rule], [$value, $rule_data, $field]);
-			} else {
-				$resule = call_user_func_array([$this, $rule], [$value, $field]);
-			}
+			$options = is_null($rule_data) ? [$value, $field] : [$value, $rule_data, $field];
+			$resule = call_user_func_array([$this, $rule], $options);
 		}
 
 		return $resule;
@@ -330,7 +346,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return integer
 	 */
-	protected function getLength($value)
+	protected function getLength($value): int
 	{
 		if (is_array($value)) {
 			$length = count($value);
@@ -349,7 +365,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function required($value)
+	public function required($value): bool
 	{
 		return !empty($value) || '0' == $value;
 	}
@@ -361,7 +377,7 @@ class Validate
 	 * @param  mixed $max   验证的数据
 	 * @return boolean
 	 */
-	public function max($value, $max)
+	public function max($value, $max): bool
 	{
 		return $this->num($value) && $value <= $max;
 	}
@@ -373,7 +389,7 @@ class Validate
 	 * @param  mixed $min   验证的数据
 	 * @return boolean
 	 */
-	public function min($value, $min)
+	public function min($value, $min): bool
 	{
 		return $this->num($value) && $value >= $min;
 	}
@@ -385,7 +401,7 @@ class Validate
 	 * @param  mixed $length 验证的数据
 	 * @return boolean
 	 */
-	public function length($value, $length)
+	public function length($value, $length): bool
 	{
 		return $this->getLength($value) == $length;
 	}
@@ -397,7 +413,7 @@ class Validate
 	 * @param  mixed $maxLength	验证的数据
 	 * @return boolean
 	 */
-	public function maxLength($value, $maxLength)
+	public function maxLength($value, $maxLength): bool
 	{
 		return $this->getLength($value) <= $maxLength;
 	}
@@ -409,7 +425,7 @@ class Validate
 	 * @param  mixed $minLength 验证的数据
 	 * @return boolean
 	 */
-	public function minLength($value, $minLength)
+	public function minLength($value, $minLength): bool
 	{
 		return $this->getLength($value) >= $minLength;
 	}
@@ -420,7 +436,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function date($value)
+	public function date($value): bool
 	{
 		return strtotime($value) !== false;
 	}
@@ -431,7 +447,7 @@ class Validate
 	 * @param mixed $value	操作的数据
 	 * @return boolean
 	 */
-	public function timestamp($value)
+	public function timestamp($value): bool
 	{
 		return $this->int($value) && (strtotime(date('Y-m-d H:i:s', $value)) == $value);
 	}
@@ -443,7 +459,7 @@ class Validate
 	 * @param  mixed $date  验证的数据
 	 * @return boolean
 	 */
-	public function afterDate($value, $date)
+	public function afterDate($value, $date): bool
 	{
 		return ($this->date($value) && strtotime($value) >= strtotime($date));
 	}
@@ -455,7 +471,7 @@ class Validate
 	 * @param  mixed $date  验证的数据
 	 * @return boolean
 	 */
-	public function beforeDate($value, $date)
+	public function beforeDate($value, $date): bool
 	{
 		return ($this->date($value) && strtotime($value) <= strtotime($date));
 	}
@@ -467,7 +483,7 @@ class Validate
 	 * @param  mixed $regexp 验证的数据
 	 * @return boolean
 	 */
-	public function regexp($value, $regexp)
+	public function regexp($value, $regexp): bool
 	{
 		// 判断是否存在'/'，不存在则补上
 		if (mb_strpos($regexp, '/') !== 0) {
@@ -484,7 +500,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function ip($value)
+	public function ip($value): bool
 	{
 		return filter_var($value, FILTER_VALIDATE_IP) !== false;
 	}
@@ -495,7 +511,7 @@ class Validate
 	 * @param mixed $value
 	 * @return boolean
 	 */
-	public function intranet($value)
+	public function intranet($value): bool
 	{
 		return !filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
 	}
@@ -506,7 +522,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function mobile($value)
+	public function mobile($value): bool
 	{
 		return preg_match($this->regex['mobile'], $value) === 1;
 	}
@@ -517,7 +533,7 @@ class Validate
 	 * @param mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function tel($value)
+	public function tel($value): bool
 	{
 		return preg_match($this->regex['tel'], $value) === 1;
 	}
@@ -528,7 +544,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function email($value)
+	public function email($value): bool
 	{
 		return filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
 	}
@@ -539,7 +555,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function china($value)
+	public function china($value): bool
 	{
 		return preg_match($this->regex['china'], $value) === 1;
 	}
@@ -550,7 +566,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function language($value)
+	public function language($value): bool
 	{
 		return preg_match($this->regex['language'], $value) === 1;
 	}
@@ -561,7 +577,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function alpha($value)
+	public function alpha($value): bool
 	{
 		return preg_match($this->regex['alpha'], $value) === 1;
 	}
@@ -572,7 +588,7 @@ class Validate
 	 * @param mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function lower($value)
+	public function lower($value): bool
 	{
 		return preg_match($this->regex['lower'], $value) === 1;
 	}
@@ -583,7 +599,7 @@ class Validate
 	 * @param mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function upper($value)
+	public function upper($value): bool
 	{
 		return preg_match($this->regex['upper'], $value) === 1;
 	}
@@ -594,7 +610,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function account($value)
+	public function account($value): bool
 	{
 		return preg_match($this->regex['account'], $value) === 1;
 	}
@@ -605,7 +621,7 @@ class Validate
 	 * @param mixed $value
 	 * @return boolean
 	 */
-	public function license($value)
+	public function license($value): bool
 	{
 		return preg_match($this->regex['license'], $value) === 1;
 	}
@@ -616,7 +632,7 @@ class Validate
 	 * @param mixed $value
 	 * @return boolean
 	 */
-	public function payCard($value)
+	public function pay_card($value): bool
 	{
 		return preg_match($this->regex['pay_card'], $value) === 1;
 	}
@@ -627,7 +643,7 @@ class Validate
 	 * @param mixed $value
 	 * @return boolean
 	 */
-	public function carNum($value)
+	public function car_num($value): bool
 	{
 		return preg_match($this->regex['car_num'], $value) === 1;
 	}
@@ -638,7 +654,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function id($value)
+	public function id($value): bool
 	{
 		return $this->int($value) && ($value > 0);
 	}
@@ -649,7 +665,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function url($value)
+	public function url($value): bool
 	{
 		return filter_var($value, FILTER_VALIDATE_URL) !== false;
 	}
@@ -660,7 +676,7 @@ class Validate
 	 * @param mixed $value	操作的数据
 	 * @return boolean
 	 */
-	public function domain($value)
+	public function domain($value): bool
 	{
 		return filter_var($value, FILTER_VALIDATE_DOMAIN) !== false;
 	}
@@ -671,7 +687,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function float($value)
+	public function float($value): bool
 	{
 		return filter_var($value, FILTER_VALIDATE_FLOAT) !== false;
 	}
@@ -682,7 +698,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function int($value)
+	public function int($value): bool
 	{
 		return filter_var($value, FILTER_VALIDATE_INT) !== false;
 	}
@@ -693,7 +709,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function num($value)
+	public function num($value): bool
 	{
 		return is_numeric($value);
 	}
@@ -704,7 +720,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function str($value)
+	public function str($value): bool
 	{
 		return is_string($value);
 	}
@@ -715,7 +731,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function arr($value)
+	public function arr($value): bool
 	{
 		return is_array($value);
 	}
@@ -726,7 +742,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function json($value)
+	public function json($value): bool
 	{
 		return $this->str($value) && !is_null(json_decode($value));
 	}
@@ -737,7 +753,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function xml($value)
+	public function xml($value): bool
 	{
 		$xmlParser = xml_parser_create();
 		if (!$this->str($value) || !xml_parse($xmlParser, $value, true)) {
@@ -755,7 +771,7 @@ class Validate
 	 * @param  string|array $in    验证的数据
 	 * @return boolean
 	 */
-	public function in($value, $in)
+	public function in($value, $in): bool
 	{
 		$in = is_string($in) ? explode(',', $in) : $in;
 		return in_array($value, $in);
@@ -768,7 +784,7 @@ class Validate
 	 * @param  string|array $notin 验证的数据
 	 * @return boolean
 	 */
-	public function notIn($value, $notin)
+	public function notIn($value, $notin): bool
 	{
 		$notin = is_string($notin) ? explode(',', $notin) : $notin;
 		return !in_array($value, $notin);
@@ -780,7 +796,7 @@ class Validate
 	 * @param string $idcard 身份证号
 	 * @return boolean
 	 */
-	public function idCard($idcard)
+	public function idcard($idcard): bool
 	{
 		return IdCard::instance()->check($idcard);
 	}
@@ -794,8 +810,9 @@ class Validate
 	 * @param array $data	用于比较的数据集，默认为$this->data
 	 * @return boolean
 	 */
-	public function confirm($value, $rule, $field = null, $data = [])
+	public function confirm($value, $rule, $field = null, $data = []): bool
 	{
+		// TODO 这里有问题，等明天验证下
 		$data = empty($data) ? $this->data : $data;
 
 		return !(!isset($data[$rule]) || $value != $data[$rule]);
@@ -808,7 +825,7 @@ class Validate
 	 * @param mixed $rule	比较的值2
 	 * @return boolean
 	 */
-	public function eq($value, $rule)
+	public function eq($value, $rule): bool
 	{
 		return $value == $rule;
 	}
@@ -819,7 +836,7 @@ class Validate
 	 * @param mixed $value	操作的数据
 	 * @return boolean
 	 */
-	public function money($value)
+	public function money($value): bool
 	{
 		return $this->num($value) && $this->int($value * 100) && $value >= 0;
 	}
@@ -835,7 +852,7 @@ class Validate
 	 * @throws ValidateException
 	 * @return boolean
 	 */
-	public function listCheck($value, $rule)
+	public function listCheck($value, $rule): bool
 	{
 		if (!$this->required($value)) {
 			return true;
@@ -863,7 +880,7 @@ class Validate
 	 * @param integer $count 长度
 	 * @return boolean
 	 */
-	public function listCount($value, $count)
+	public function listCount($value, $count): bool
 	{
 		$values = explode(',', $value);
 		return count($values) == $count;
@@ -876,7 +893,7 @@ class Validate
 	 * @param integer $count 长度
 	 * @return boolean
 	 */
-	public function listMaxCount($value, $count)
+	public function listMaxCount($value, $count): bool
 	{
 		$values = explode(',', $value);
 		return count($values) <= $count;
@@ -889,7 +906,7 @@ class Validate
 	 * @param integer $count 长度
 	 * @return boolean
 	 */
-	public function listMinCount($value, $count)
+	public function listMinCount($value, $count): bool
 	{
 		$values = explode(',', $value);
 		return count($values) >= $count;

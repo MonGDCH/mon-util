@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 use Closure;
@@ -43,7 +45,7 @@ class Event
      * @param array $tags 事件标识
      * @return Event
      */
-    public function register(array $tags)
+    public function register(array $tags): Event
     {
         $this->tags = array_merge($this->tags, $tags);
         return $this;
@@ -55,7 +57,7 @@ class Event
      * @param  string $tag 事件名称
      * @return array
      */
-    public function get($tag = '')
+    public function get(string $tag = ''): array
     {
         if (empty($tag)) {
             // 获取全部的插件信息
@@ -71,7 +73,7 @@ class Event
      * @param string $tag
      * @return boolean
      */
-    public function has($tag)
+    public function has(string $tag): bool
     {
         return !empty($this->get($tag));
     }
@@ -82,7 +84,7 @@ class Event
      * @param string $name 回调方法名
      * @return string
      */
-    public function handler($name = '')
+    public function handler(string $name = ''): string
     {
         if (!empty($name)) {
             $this->handler = $name;
@@ -98,7 +100,7 @@ class Event
      * @param mixed $callbak 事件回调
      * @return Event
      */
-    public function listen($tag, $callbak)
+    public function listen(string $tag, $callbak): Event
     {
         isset($this->tags[$tag]) || $this->tags[$tag] = [];
         $this->tags[$tag][] = $callbak;
@@ -113,7 +115,7 @@ class Event
      * @param array ...$args 可变参数
      * @return array
      */
-    public function trigger($tag, ...$args)
+    public function trigger(string $tag, ...$args): array
     {
         $tags = $this->get($tag);
         $results = [];
@@ -134,7 +136,7 @@ class Event
      * @param string|array $tag
      * @return Event
      */
-    public function remove($tag)
+    public function remove($tag): Event
     {
         if (is_array($tag)) {
             foreach ($tag as $name) {
@@ -152,7 +154,7 @@ class Event
      *
      * @return Event
      */
-    public function clear()
+    public function clear(): Event
     {
         $this->tags = [];
         return $this;

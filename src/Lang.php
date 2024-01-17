@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 use mon\util\Instance;
@@ -41,7 +43,7 @@ class Lang
      * @param  string $range 语言类型
      * @return string
      */
-    public function range($range = '')
+    public function range(string $range = ''): string
     {
         if ($range) {
             $this->range = $range;
@@ -56,8 +58,9 @@ class Lang
      * @param string|array  $name  键名
      * @param string        $value 值
      * @param string        $range 语言作用域
+     * @return Lang
      */
-    public function set($name, $value = '', $range = '')
+    public function set($name, string $value = '', string $range = ''): Lang
     {
         $range = $range ?: $this->range;
 
@@ -66,10 +69,12 @@ class Lang
         }
 
         if (is_array($name)) {
-            return $this->lang[$range] = array_change_key_case((array) $name) + $this->lang[$range];
+            $this->lang[$range] = array_change_key_case((array) $name) + $this->lang[$range];
+        } else {
+            $this->lang[$range][strtolower($name)] = $value;
         }
 
-        return $this->lang[$range][strtolower($name)] = $value;
+        return $this;
     }
 
     /**
@@ -77,9 +82,9 @@ class Lang
      *
      * @param  array|string $file 语言文件
      * @param  string $range      语言作用域
-     * @return mixed
+     * @return Lang
      */
-    public function load($file, $range = '')
+    public function load($file, string $range = '')
     {
         $range = $range ?: $this->range;
 
@@ -99,7 +104,19 @@ class Lang
             $this->lang[$range] = $lang + $this->lang[$range];
         }
 
-        return $this->lang[$range];
+        return $this;
+    }
+
+    /**
+     * 获取语言报
+     *
+     * @param string $range 语言类型
+     * @return array
+     */
+    public function getLand(string $range = ''): array
+    {
+        $range = $range ?: $this->range;
+        return $this->lang[$range] ?? [];
     }
 
     /**
@@ -109,7 +126,7 @@ class Lang
      * @param  string  $range 语言作用域
      * @return boolean
      */
-    public function has($name, $range = '')
+    public function has(string $name, string $range = ''): bool
     {
         $range = $range ?: $this->range;
 
@@ -124,7 +141,7 @@ class Lang
      * @param  string $range 语言类型
      * @return mixed
      */
-    public function get($name, $vars = [], $range = '')
+    public function get(string $name, array $vars = [], string $range = '')
     {
         $range = $range ?: $this->range;
 
@@ -163,9 +180,9 @@ class Lang
     /**
      * 检测设置获取当前语言
      *
-     * @return mixed
+     * @return string
      */
-    public function detect()
+    public function detect(): string
     {
         if (isset($_COOKIE[$this->lang_var])) {
             $this->range = strtolower($_COOKIE[$this->lang_var]);

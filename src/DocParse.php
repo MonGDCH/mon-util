@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace mon\util;
 
 use ReflectionClass;
 use ReflectionMethod;
+use RuntimeException;
 
 /**
  * PHP文档解析
@@ -20,9 +23,10 @@ class DocParse
      *
      * @param string $class 对象名称
      * @param integer $type ReflectionMethod对应的方法访问类型，默认Public
-     * @return mixed
+     * @throws RuntimeException
+     * @return array
      */
-    public function parseClass($class, $type = ReflectionMethod::IS_PUBLIC)
+    public function parseClass(string $class, $type = ReflectionMethod::IS_PUBLIC): array
     {
         if (class_exists($class)) {
             $result = [];
@@ -38,7 +42,7 @@ class DocParse
             return $result;
         }
 
-        return false;
+        throw new RuntimeException('Class ' . $class . ' not exists');
     }
 
     /**
@@ -47,7 +51,7 @@ class DocParse
      * @param string $doc 注解文档内容
      * @return array
      */
-    public function parse($doc)
+    public function parse(string $doc): array
     {
         // 解析注解文本块，获取文档内容
         if (preg_match('#^/\*\*(.*)\*/#s', $doc, $comment) === false) {
@@ -69,7 +73,7 @@ class DocParse
      * @param array $lines  注解内容
      * @return array
      */
-    protected function parseLines($lines)
+    protected function parseLines(array $lines): array
     {
         $result = [];
         $description = [];
@@ -91,10 +95,9 @@ class DocParse
      * @param string $line  行信息
      * @return array|string
      */
-    protected function parseLine($line)
+    protected function parseLine(string $line)
     {
         $content = trim($line);
-
         if (mb_strpos($content, '@') === 0) {
             if (mb_strpos($content, ' ') > 0) {
                 // 获取参数名称
@@ -129,9 +132,9 @@ class DocParse
      * 解析return或throws类型的参数
      *
      * @param string $string  注解字符串
-     * @return string|array
+     * @return array|string
      */
-    protected function formatResult($string)
+    protected function formatResult(string $string)
     {
         $string = trim($string);
         if (mb_strpos($string, ' ') !== false) {
@@ -155,7 +158,7 @@ class DocParse
      * @param string $string  注解字符串
      * @return string|array
      */
-    protected function formatParam($string)
+    protected function formatParam(string $string)
     {
         $string = trim($string);
         if (mb_strpos($string, ' ') !== false) {
