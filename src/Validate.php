@@ -10,26 +10,26 @@ use mon\util\exception\ValidateException;
  * 验证器
  *
  * @author Mon <985558837@qq.com>
- * @version 1.3.3	2021-04-26 优化代码，增加getError获取错误信息，check方法返回固定boolean值
+ * @version 2.0.0	优化重构代码
  */
 class Validate
 {
 	/**
 	 * 对应待验证数据使用的验证规则
 	 * [
-	 * 	'name'	=> 'required|length:3'
+	 * 	'name'	=> ['required', 'length:3']
 	 * ]
 	 * 
 	 * @var array
 	 */
-	public $rule = [];
+	protected $rule = [];
 
 	/**
 	 * 当前验证规则
 	 *
 	 * @var array
 	 */
-	public $checkRule = [];
+	protected $checkRule = [];
 
 	/**
 	 * 待验证的数据
@@ -40,7 +40,14 @@ class Validate
 	 * 
 	 * @var array
 	 */
-	public $data = [];
+	protected $data = [];
+
+	/**
+	 * 当前验证的数据
+	 *
+	 * @var array
+	 */
+	protected $checkData = [];
 
 	/**
 	 * 错误提示
@@ -48,40 +55,41 @@ class Validate
 	 * 	'name' => [
 	 * 		'required'	=> '名称未设置',
 	 * 		'length'	=> '长度错误'
-	 * 	]
+	 * 	],
+	 *  'age' => '请输入年龄'
 	 * ]
 	 * 
 	 * @var array
 	 */
-	public $message  = [];
+	protected $message  = [];
 
 	/**
 	 * 当前验证错误信息数据
 	 *
 	 * @var array
 	 */
-	public $checkMessage = [];
+	protected $checkMessage = [];
 
 	/**
 	 * 验证的场景
 	 *
 	 * @var array
 	 */
-	public $scope = [];
+	protected $scope = [];
 
 	/**
 	 * 当前校验的场景
 	 *
 	 * @var mixed
 	 */
-	public $checkScope = null;
+	protected $checkScope = [];
 
 	/**
 	 * 错误信息
 	 *
 	 * @var mixed
 	 */
-	public $error = null;
+	protected $error = null;
 
 	/**
 	 * 正则匹配规则
@@ -123,23 +131,13 @@ class Validate
 	public function check(array $data = []): bool
 	{
 		// 错误节点
-		$errorItme = null;
+		$errorItme = [];
 		// 验证数据
-		$checkData = array_merge($this->data, $data);
-		// 解析验证规则
-		$checkRule = empty($this->checkRule) ? $this->rule : $this->checkRule;
+		$checkData = array_merge($this->getCheckData(), $data);
 		// 验证错误信息
-		$checkMessage = empty($this->checkMessage) ? $this->message : $this->checkMessage;
-		// 判断是否存在验证场景，获取验证字段
-		if (!empty($this->checkScope) && is_array($this->checkScope)) {
-			foreach ($this->checkScope as $v) {
-				if (isset($checkRule[$v])) {
-					$scopeRule[$v] = $checkRule[$v];
-				}
-			}
-		} else {
-			$scopeRule = $checkRule;
-		}
+		$checkMessage = $this->getCheckMessage();
+		// 获取验证规则
+		$scopeRule = $this->getCheckScopeRule();
 
 		// 验证数据
 		foreach ($scopeRule as $dataItem => $rules) {
@@ -149,7 +147,7 @@ class Validate
 			if (isset($checkData[$dataItem])) {
 				$value = $checkData[$dataItem];
 				// 解析规则
-				$status = $this->analysis($value, $rule, $dataItem);
+				$status = $this->analysis($value, $rule, $dataItem, $checkData);
 				if ($status !== true) {
 					// 验证错误，返回[错误节点，错误规则]
 					$errorItme = [$dataItem, $status];
@@ -166,11 +164,8 @@ class Validate
 			}
 		}
 
-		// 重置数据
-		$this->data = [];
-		$this->checkRule = [];
-		$this->checkMessage = [];
-		$this->checkScope = null;
+		// 重置验证数据
+		$this->reset();
 
 		// 不存在错误节点，验证通过
 		if (empty($errorItme)) {
@@ -222,13 +217,33 @@ class Validate
 	 */
 	public function data(array $data = []): Validate
 	{
-		$this->data = $data;
+		$this->checkData = $data;
 
 		return $this;
 	}
 
 	/**
-	 * 设置本次数据的验证规则
+	 * 获取默认的验证数据
+	 *
+	 * @return array
+	 */
+	public function getData(): array
+	{
+		return $this->data;
+	}
+
+	/**
+	 * 验证当前验证的数据
+	 *
+	 * @return array
+	 */
+	public function getCheckData(): array
+	{
+		return array_merge($this->data, $this->checkData);
+	}
+
+	/**
+	 * 设置当前的验证规则
 	 *
 	 * @param array $rule	验证规则
 	 * @return Validate
@@ -238,6 +253,26 @@ class Validate
 		$this->checkRule = $rule;
 
 		return $this;
+	}
+
+	/**
+	 * 获取验证规则
+	 *
+	 * @return array
+	 */
+	public function getRule(): array
+	{
+		return $this->rule;
+	}
+
+	/**
+	 * 获取当前的验证规则
+	 *
+	 * @return array
+	 */
+	public function getCheckRule(): array
+	{
+		return empty($this->checkRule) ? $this->rule : $this->checkRule;
 	}
 
 	/**
@@ -254,6 +289,26 @@ class Validate
 	}
 
 	/**
+	 * 获取错误提示信息
+	 *
+	 * @return array
+	 */
+	public function getMessage(): array
+	{
+		return $this->message;
+	}
+
+	/**
+	 * 获取当前的验证错误信息
+	 *
+	 * @return array
+	 */
+	public function getCheckMessage(): array
+	{
+		return empty($this->checkMessage) ? $this->message : $this->checkMessage;
+	}
+
+	/**
 	 * 设置校验场景
 	 *
 	 * @param string|array $item 查询场景名称
@@ -263,11 +318,58 @@ class Validate
 	{
 		if (is_array($item)) {
 			$this->checkScope = $item;
-		}
-		if (is_string($item) && isset($this->scope[$item])) {
+		} else if (is_string($item) && isset($this->scope[$item])) {
 			$this->checkScope = $this->scope[$item];
+		} else {
+			throw new ValidateException('未支持的验证场景');
 		}
 
+		return $this;
+	}
+
+	/**
+	 * 验证验证场景
+	 *
+	 * @return array
+	 */
+	public function getScope(): array
+	{
+		return $this->scope;
+	}
+
+	/**
+	 * 获取当前验证场景验证规则
+	 *
+	 * @return array
+	 */
+	public function getCheckScopeRule(): array
+	{
+		$scopeRule = [];
+		$checkRule = $this->getCheckRule();
+		if (!empty($this->checkScope) && is_array($this->checkScope)) {
+			foreach ($this->checkScope as $v) {
+				if (isset($checkRule[$v])) {
+					$scopeRule[$v] = $checkRule[$v];
+				}
+			}
+		} else {
+			$scopeRule = $checkRule;
+		}
+
+		return $scopeRule;
+	}
+
+	/**
+	 * 验证验证器
+	 *
+	 * @return Validate
+	 */
+	public function reset(): Validate
+	{
+		$this->checkData = [];
+		$this->checkRule = [];
+		$this->checkMessage = [];
+		$this->checkScope = [];
 		return $this;
 	}
 
@@ -291,18 +393,19 @@ class Validate
 	 * @param mixed $value	验证的值
 	 * @param array $rule	对应的验证规则
 	 * @param string $dataItem 验证的字段名
+	 * @param array $checkData 验证的数据
 	 * @return true|string 成功返回true,失败返回验证失败的规则名称
 	 */
-	protected function analysis($value, array $rule, string $dataItem)
+	protected function analysis($value, array $rule, string $dataItem, array $checkData)
 	{
 		$resule = true;
 		foreach ($rule as $type) {
 			// 分割获取规则参数，支持二维。例子：max:9
 			$item = explode(':', $type, 2);
 			if (count($item) > 1) {
-				$status = $this->checkItem($dataItem, $value, $item[0], $item[1]);
+				$status = $this->checkItem($dataItem, $value, $checkData, $item[0], $item[1]);
 			} else {
-				$status = $this->checkItem($dataItem, $value, $item[0]);
+				$status = $this->checkItem($dataItem, $value, $checkData, $item[0]);
 			}
 
 			// 判断验证是否通过,失败返回当前校验失败的规则名称
@@ -320,11 +423,12 @@ class Validate
 	 *
 	 * @param string $field		验证字段名称
 	 * @param mixed $value		验证值
+	 * @param array $checkData  验证的数据
 	 * @param string $rule		验证规则
 	 * @param mixed $rule_data	规则参数
 	 * @return boolean
 	 */
-	protected function checkItem(string $field, $value, string $rule, $rule_data = null): bool
+	protected function checkItem(string $field, $value, array $checkData, string $rule, $rule_data = null): bool
 	{
 		// 过滤不需要验证的规则
 		if (in_array($rule, ['isset'])) {
@@ -333,7 +437,7 @@ class Validate
 
 		$resule = false;
 		if (method_exists($this, $rule)) {
-			$options = is_null($rule_data) ? [$value, $field] : [$value, $rule_data, $field];
+			$options = is_null($rule_data) ? [$value, $checkData, $field] : [$value, $rule_data, $checkData, $field];
 			$resule = call_user_func_array([$this, $rule], $options);
 		}
 
@@ -632,7 +736,7 @@ class Validate
 	 * @param mixed $value
 	 * @return boolean
 	 */
-	public function pay_card($value): bool
+	public function payCard($value): bool
 	{
 		return preg_match($this->regex['pay_card'], $value) === 1;
 	}
@@ -643,7 +747,7 @@ class Validate
 	 * @param mixed $value
 	 * @return boolean
 	 */
-	public function car_num($value): bool
+	public function carNum($value): bool
 	{
 		return preg_match($this->regex['car_num'], $value) === 1;
 	}
@@ -796,7 +900,7 @@ class Validate
 	 * @param string $idcard 身份证号
 	 * @return boolean
 	 */
-	public function idcard($idcard): bool
+	public function idCard($idcard): bool
 	{
 		return IdCard::instance()->check($idcard);
 	}
@@ -806,15 +910,11 @@ class Validate
 	 *
 	 * @param mixed $value	比较的值
 	 * @param string $rule	比较的字段名
-	 * @param string $field	当前的字段名
-	 * @param array $data	用于比较的数据集，默认为$this->data
+	 * @param array $data	验证的数据
 	 * @return boolean
 	 */
-	public function confirm($value, $rule, $field = null, $data = []): bool
+	public function confirm($value, $rule, array $data = []): bool
 	{
-		// TODO 这里有问题，等明天验证下
-		$data = empty($data) ? $this->data : $data;
-
 		return !(!isset($data[$rule]) || $value != $data[$rule]);
 	}
 
