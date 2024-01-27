@@ -360,7 +360,7 @@ class Validate
 	}
 
 	/**
-	 * 验证验证器
+	 * 重置验证器数据
 	 *
 	 * @return Validate
 	 */

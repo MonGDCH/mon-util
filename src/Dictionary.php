@@ -91,7 +91,7 @@ class Dictionary
      * @param string $mark  视图前缀标志
      * @return Dictionary
      */
-    public function setViewMark($mark): Dictionary
+    public function setViewMark(string $mark): Dictionary
     {
         $this->viewMark = $mark;
         return $this;

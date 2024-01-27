@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace mon\util;
 
-use InvalidArgumentException;
-
 /**
  * 单例trait
  *
@@ -17,42 +15,21 @@ trait Instance
     /**
      * 单例实体
      *
-     * @var null
+     * @var mixed
      */
     protected static $instance = null;
 
     /**
      * 获取单例
      *
-     * @param array $options 初始化参数
+     * @param mixed $options 初始化参数
      * @return static
      */
-    public static function instance($options = [])
+    public static function instance($options = null)
     {
         if (is_null(static::$instance)) {
             static::$instance = new static($options);
         }
         return static::$instance;
-    }
-
-    /**
-     * 静态调用支持，以"_"开头加方法名调用非静态方法
-     * 
-     * @see 例子： className::_methodName()
-     * @param  string $method 方法名
-     * @param  array  $params 参数
-     * @return mixed
-     */
-    public static function __callStatic(string $method, $params)
-    {
-        if (is_null(static::$instance)) {
-            static::$instance = new static();
-        }
-        $call = mb_substr($method, 1);
-        if (0 === mb_strpos($method, '_') && is_callable([static::$instance, $call])) {
-            return call_user_func_array([static::$instance, $call], (array) $params);
-        } else {
-            throw new InvalidArgumentException("method not found => " . $method);
-        }
     }
 }

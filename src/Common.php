@@ -626,7 +626,7 @@ class Common
      * @param string $str 字符串  
      * @return string
      */
-    public function str2ascii(string $str): string
+    public function strToAscii(string $str): string
     {
         $change_after = '';
         if (!empty($str)) {
@@ -655,7 +655,7 @@ class Common
      * @param string $ascii Ascii码
      * @return string
      */
-    public function ascii2str(string $ascii): string
+    public function asciiToStr(string $ascii): string
     {
         $str = '';
         if (!empty($ascii)) {

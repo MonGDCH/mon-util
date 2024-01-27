@@ -224,12 +224,12 @@ class File
     /**
      * 创建文件
      *
-     * @param  string  $content 写入内容
+     * @param  mixed  $content 写入内容
      * @param  string  $path    文件路径
      * @param  boolean $append  存在文件是否继续写入
      * @return boolean|integer
      */
-    public function createFile(string $content, string $path, bool $append = true)
+    public function createFile($content, string $path, bool $append = true)
     {
         $dirPath = dirname($path);
         is_dir($dirPath) || $this->createDir($dirPath);

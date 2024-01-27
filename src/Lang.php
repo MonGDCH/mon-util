@@ -31,13 +31,6 @@ class Lang
     protected $range = 'zh-cn';
 
     /**
-     * 多语言cookie标志
-     *
-     * @var string
-     */
-    protected $lang_var = 'mon_lang_var';
-
-    /**
      * 设定当前的语言
      *
      * @param  string $range 语言类型
@@ -80,11 +73,11 @@ class Lang
     /**
      * 加载语言包
      *
-     * @param  array|string $file 语言文件
-     * @param  string $range      语言作用域
+     * @param  string $file     语言文件
+     * @param  string $range    语言作用域
      * @return Lang
      */
-    public function load($file, string $range = '')
+    public function load(string $file, string $range = ''): Lang
     {
         $range = $range ?: $this->range;
 
@@ -150,7 +143,7 @@ class Lang
             return $this->lang[$range];
         }
 
-        $key   = strtolower($name);
+        $key = strtolower($name);
         $value = isset($this->lang[$range][$key]) ? $this->lang[$range][$key] : $name;
 
         // 变量解析
@@ -184,9 +177,7 @@ class Lang
      */
     public function detect(): string
     {
-        if (isset($_COOKIE[$this->lang_var])) {
-            $this->range = strtolower($_COOKIE[$this->lang_var]);
-        } else if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+        if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
             // 自动侦测浏览器语言
             preg_match('/^([a-z\d\-]+)/i', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $matches);
             $lang = strtolower($matches[1]);

@@ -189,7 +189,7 @@ class Date
      * @param string $format  格式化参数
      * @return string
      */
-    public function format($format = 'Y-m-d H:i:s'): string
+    public function format(string $format = 'Y-m-d H:i:s'): string
     {
         return date($format, $this->date);
     }
@@ -304,7 +304,7 @@ class Date
      *
      * @param mixed $date 要比较的日期
      * @param string $elaps  比较跨度
-     * @return integer
+     * @return integer|float
      */
     public function dateDiff($date, string $elaps = 'd')
     {
@@ -317,23 +317,29 @@ class Date
         //计算天数差
         $dayselaps = ($this->parse($date) - $this->date) / $seconds_in_day;
         switch ($elaps) {
-            case 'y': //转换成年
-                $dayselaps =  $dayselaps / $days_per_year;
+            case 'y':
+                // 转换成年
+                $dayselaps = $dayselaps / $days_per_year;
                 break;
-            case 'm': //转换成月
-                $dayselaps =  $dayselaps / $days_per_month;
+            case 'm':
+                // 转换成月
+                $dayselaps = $dayselaps / $days_per_month;
                 break;
-            case 'w': //转换成星期
-                $dayselaps =  $dayselaps / $days_per_week;
+            case 'w':
+                // 转换成星期
+                $dayselaps = $dayselaps / $days_per_week;
                 break;
-            case 'h': //转换成小时
-                $dayselaps =  $dayselaps * $hours_in_day;
+            case 'h':
+                // 转换成小时
+                $dayselaps = $dayselaps * $hours_in_day;
                 break;
-            case 'i': //转换成分钟
-                $dayselaps =  $dayselaps * $minutes_in_day;
+            case 'i':
+                // 转换成分钟
+                $dayselaps = $dayselaps * $minutes_in_day;
                 break;
-            case 's': //转换成秒
-                $dayselaps =  $dayselaps * $seconds_in_day;
+            case 's':
+                // 转换成秒
+                $dayselaps = $dayselaps * $seconds_in_day;
                 break;
         }
 
@@ -376,9 +382,9 @@ class Date
      * 比对月份查，只比较月份
      *
      * @param mixed $date  对比的日期
-     * @return integer
+     * @return integer|float
      */
-    public function monthDiff($date): int
+    public function monthDiff($date)
     {
         $start = explode('-', $this->format('Y-m'), 2);
         $end = explode('-', date('Y-m', $this->parse($date)), 2);
@@ -460,9 +466,9 @@ class Date
     /**
      * 计算月份的最大天数
      *
-     * @return integer
+     * @return integer|float
      */
-    public function maxDayOfMonth(): int
+    public function maxDayOfMonth()
     {
         return $this->dateDiff(strtotime($this->dateAdd(1, 'm')->format()), 'd');
     }
@@ -571,7 +577,7 @@ class Date
         $array = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
         $str = $flag ? '公元' : '';
         for ($i = 0; $i < 4; $i++) {
-            $str .= $array[mb_substr((string)$year, $i, 1)];
+            $str .= $array[Common::instance()->mSubstr((string)$year, $i, 1)];
         }
 
         return $str;
@@ -592,7 +598,8 @@ class Date
         $d = $this->day;
 
         switch ($type) {
-            case 'XZ': //星座
+            case 'XZ':
+                // 星座
                 $XZDict = ['摩羯', '宝瓶', '双鱼', '白羊', '金牛', '双子', '巨蟹', '狮子', '处女', '天秤', '天蝎', '射手'];
                 $Zone   = [1222, 122, 222, 321, 421, 522, 622, 722, 822, 922, 1022, 1122, 1222];
                 if ((100 * $m + $d) >= $Zone[0] || (100 * $m + $d) < $Zone[1]) {
@@ -606,8 +613,8 @@ class Date
                 }
                 $result = $XZDict[$i] . '座';
                 break;
-
-            case 'GZ': //干支
+            case 'GZ':
+                // 干支
                 $GZDict = [
                     ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'],
                     ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']
@@ -615,8 +622,8 @@ class Date
                 $i = $y - 1900 + 36;
                 $result = $GZDict[0][$i % 10] . $GZDict[1][$i % 12];
                 break;
-
-            case 'SX': //生肖
+            case 'SX':
+                // 生肖
                 $SXDict = ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪'];
                 $result = $SXDict[($y - 4) % 12];
                 break;

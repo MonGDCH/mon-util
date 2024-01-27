@@ -286,7 +286,7 @@ class Tree
     public function rollbackTree(array $data, string $mark = 'children'): array
     {
         $result = [];
-        foreach ($data as $k => $v) {
+        foreach ($data as $v) {
             // 判断是否存在子集
             $child = isset($v[$mark]) ? $v[$mark] : [];
             unset($v[$mark]);

@@ -341,28 +341,28 @@ class IPLocation
                     case 2:
                         // 标志字节为2，表示国家信息被重定向
                         fseek($this->fp, $this->getlong3());
-                        $location['country'] = $this->getstring();
+                        $location['country'] = $this->getString();
                         fseek($this->fp, $countryOffset + 4);
-                        $location['area'] = $this->getarea();
+                        $location['area'] = $this->getArea();
                         break;
                     default:
                         // 否则，表示国家信息没有被重定向
-                        $location['country'] = $this->getstring($byte);
-                        $location['area'] = $this->getarea();
+                        $location['country'] = $this->getString($byte);
+                        $location['area'] = $this->getArea();
                         break;
                 }
                 break;
             case 2:
                 // 标志字节为2，表示国家信息被重定向
                 fseek($this->fp, $this->getlong3());
-                $location['country'] = $this->getstring();
+                $location['country'] = $this->getString();
                 fseek($this->fp, $offset + 8);
-                $location['area'] = $this->getarea();
+                $location['area'] = $this->getArea();
                 break;
             default:
                 // 否则，表示国家信息没有被重定向
-                $location['country'] = $this->getstring($byte);
-                $location['area'] = $this->getarea();
+                $location['country'] = $this->getString($byte);
+                $location['area'] = $this->getArea();
                 break;
         }
         // GBK转UTF8
@@ -383,7 +383,7 @@ class IPLocation
      *
      * @return integer
      */
-    private function getlong(): int
+    private function getlong()
     {
         // 将读取的little-endian编码的4个字节转化为长整型数
         $result = unpack('Vlong', fread($this->fp, 4));
@@ -396,7 +396,7 @@ class IPLocation
      *
      * @return integer
      */
-    private function getlong3(): int
+    private function getlong3()
     {
         // 将读取的little-endian编码的3个字节转化为长整型数
         $result = unpack('Vlong', fread($this->fp, 3) . chr(0));
@@ -434,7 +434,7 @@ class IPLocation
      * @param string $data
      * @return string
      */
-    private function getstring(string $data = ''): string
+    private function getString(string $data = ''): string
     {
         $char = fread($this->fp, 1);
         while (ord($char) > 0) {
@@ -452,7 +452,7 @@ class IPLocation
      *
      * @return string
      */
-    private function getarea(): string
+    private function getArea(): string
     {
         // 标志字节
         $byte = fread($this->fp, 1);
@@ -465,11 +465,11 @@ class IPLocation
             case 2:
                 // 标志字节为1或2，表示区域信息被重定向
                 fseek($this->fp, $this->getlong3());
-                $area = $this->getstring();
+                $area = $this->getString();
                 break;
             default:
                 // 否则，表示区域信息没有被重定向
-                $area = $this->getstring($byte);
+                $area = $this->getString($byte);
                 break;
         }
 

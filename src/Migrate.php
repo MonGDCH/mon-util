@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace mon\util;
 
 use PDO;
+use PDOException;
 use FilesystemIterator;
 use InvalidArgumentException;
 use mon\util\exception\SqlException;
@@ -298,7 +299,7 @@ class Migrate
      * @throws InvalidArgumentException
      * @return array
      */
-    public function export($time, $part = 0): array
+    public function export(int $time, int $part = 0): array
     {
         $file = $this->fileInfo('time', $time);
         if (!isset($file[$part])) {
@@ -485,6 +486,7 @@ class Migrate
     /**
      * 获取DB链接
      *
+     * @throws PDOException
      * @return PDO
      */
     public function getDB(): PDO
