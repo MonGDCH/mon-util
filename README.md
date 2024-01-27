@@ -28,8 +28,8 @@
 * Nework类，网络客户端工具类
 * UploadSilce类，处理大文件分片上传
 * Migrate类，Mysql数据库备份迁移
-* Log类，日志处理
 * Nbed64类，Nbed64加密算法类
+* View类，视图字符串操作类
 
 
 ## 安装
