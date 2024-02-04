@@ -196,7 +196,7 @@ class IdCard
      */
     public function fifteen2Eighteen(string $idcard): string
     {
-        if (mb_strlen($idcard) != 15) {
+        if (mb_strlen($idcard, 'UTF-8') != 15) {
             return $idcard;
         }
 
@@ -215,7 +215,7 @@ class IdCard
     protected function getCode(string $idCardBase): string
     {
         $length = 17;
-        if (mb_strlen($idCardBase) < $length) {
+        if (mb_strlen($idCardBase, 'UTF-8') < $length) {
             throw new InvalidArgumentException('idCardBase params faild');
         }
         $factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];

@@ -30,6 +30,7 @@
 * Migrate类，Mysql数据库备份迁移
 * Nbed64类，Nbed64加密算法类
 * View类，视图字符串操作类
+* SnowFlake类，雪花ID生成类
 
 
 ## 安装

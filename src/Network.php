@@ -36,18 +36,18 @@ class Network
      * @param   string  $agent   请求user-agent
      * @return  mixed 结果集
      */
-    public function sendHTTP(string $url, array $data = [], string $type = 'GET', array $header = [], bool $toJson = false, int $timeOut = 2, string $agent = '')
+    public function sendHTTP(string $url, array $data = [], string $type = 'GET', array $header = [], bool $toJson = true, int $timeOut = 2, string $agent = '')
     {
         $method = strtoupper($type);
         $queryData = $data;
         // get请求
-        if ($method == 'GET' && is_array($data) && count($data) > 0) {
+        if ($method == 'GET' && count($data) > 0) {
             $uri = Common::instance()->mapToStr($data);
             $url = $url . (strpos($url, '?') === false ? '?' : '') . $uri;
             $queryData = [];
         }
 
-        $ch = $this->getRequest($url, $queryData, $method, $timeOut, $header, $agent);
+        $ch = $this->getRequest($url, $queryData, $method, $header, $timeOut, $agent);
         // 发起请求
         $html = curl_exec($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -81,7 +81,7 @@ class Network
         for ($i = 0; $i < $rolling; $i++) {
             $item = $queryList[$i];
             // 获取curl
-            $ch = $this->getCh($item, $timeOut, $header, $agent);
+            $ch = $this->getCh($item, $header, $timeOut, $agent);
             // 写入批量请求
             curl_multi_add_handle($master, $ch);
             // 记录队列
@@ -153,17 +153,17 @@ class Network
      * @param string $name 文件名
      * @param array $header 额外的请求头
      * @param boolean $toJson 是否解析json返回数据
-     * @param string $agent 请求user-agent
      * @param integer $timeout 上传超时时间
+     * @param string $agent 请求user-agent
      * @return mixed
      */
-    public function sendFile(string $url, string $path, array $data = [], string $filename = '', string $name = 'file', array $header = [], bool $toJson = false, string $agent = '', int $timeout = 300)
+    public function sendFile(string $url, string $path, array $data = [], string $filename = '', string $name = 'file', array $header = [], bool $toJson = true, int $timeout = 300, string $agent = '')
     {
         // 处理文件上传数据集
         $filename = empty($filename) ? basename($path) : $filename;
         $sendData = array_merge($data, [$name => new \CURLFile(realpath($path), File::instance()->getMimeType($path), $filename)]);
         $header = array_merge(['Content-Type: multipart/form-data'], $header);
-        $ch = $this->getRequest($url, $sendData, 'post', $timeout, $header, $agent);
+        $ch = $this->getRequest($url, $sendData, 'post', $header, $timeout, $agent);
         // 发起请求
         $html = curl_exec($ch);
         if ($html === false) {
@@ -181,13 +181,13 @@ class Network
      * @param string  $ip       IP
      * @param integer $port     端口
      * @param string  $cmd      请求命令套接字
-     * @param integer $timeOut  超时时间
      * @param boolean $toJson   是否转换JSON数组为数组
+     * @param integer $timeOut  超时时间，默认2秒
      * @param integer $readLen  最大能够读取的字节数，默认102400
      * @param boolean $close    是否关闭链接
      * @return array 结果集
      */
-    public function sendTCP(string $ip, int $port, string $cmd, int $timeOut = 2, bool $toJson = false, int $readLen = 102400, bool $close = true): array
+    public function sendTCP(string $ip, int $port, string $cmd, bool $toJson = true, int $timeOut = 2, int $readLen = 102400, bool $close = true): array
     {
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (!$socket) {
@@ -199,7 +199,7 @@ class Network
         if (socket_connect($socket, $ip, $port) == false) {
             throw new NetWorkException('链接TCP-Socket失败');
         }
-        $send_len = strlen($cmd);
+        $send_len = mb_strlen($cmd, 'UTF-8');
         $sent = socket_write($socket, $cmd, $send_len);
         if ($sent != $send_len) {
             throw new NetWorkException('发送TCP套接字数据失败');
@@ -225,13 +225,13 @@ class Network
      * @param string  $ip       IP
      * @param integer $port     端口
      * @param string  $cmd      请求命令套接字
-     * @param integer $timeOut  超时时间
      * @param boolean $toJson   是否转换JSON数组为数组
+     * @param integer $timeOut  超时时间，默认2秒
      * @param integer $readLen  最大能够读取的字节数，默认102400
      * @param boolean $close    是否关闭链接
      * @return array 结果集
      */
-    public function sendUDP(string $ip, int $port, string $cmd, int $timeOut = 2, bool $toJson = false, int $readLen = 102400, bool $close = true): array
+    public function sendUDP(string $ip, int $port, string $cmd, bool $toJson = true, int $timeOut = 2, int $readLen = 102400, bool $close = true): array
     {
         $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
         if (!$socket) {
@@ -244,7 +244,7 @@ class Network
             // 执行链接Socket失败钩子
             throw new NetWorkException('链接UDP-Socket失败');
         }
-        $send_len = strlen($cmd);
+        $send_len = mb_strlen($cmd, 'UTF-8');
         $sent = socket_write($socket, $cmd, $send_len);
         if ($sent != $send_len) {
             throw new NetWorkException('发送UDP套接字数据失败');
@@ -270,15 +270,15 @@ class Network
      * @param  string  $url     请求的URL
      * @param  array   $data    请求的数据
      * @param  string  $type    请求方式
-     * @param  integer $timeOut 超时时间
      * @param  array   $header  请求头
+     * @param  integer $timeOut 超时时间
      * @param  string  $agent   请求user-agent
      * @return mixed cURL句柄
      */
-    public function getRequest(string $url, array $data = [], string $type = 'GET', int $timeOut = 2, array $header = [], string $agent = '')
+    public function getRequest(string $url, array $data = [], string $type = 'GET', array $header = [], int $timeOut = 2, string $agent = '')
     {
         // 判断是否为https请求
-        $ssl = strtolower(substr($url, 0, 8)) == 'https://' ? true : false;
+        $ssl = strtolower(mb_substr($url, 0, 8, 'UTF-8')) == 'https://' ? true : false;
         $ch = curl_init();
         // 设置请求URL
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -345,12 +345,12 @@ class Network
      * 解析请求列表项，获取curl
      *
      * @param array $item 请求配置信息
-     * @param integer $timeOut 超时时间
      * @param array $header 请求头
+     * @param integer $timeOut 超时时间
      * @param string $agent 请求user-agent
      * @return mixed cURL句柄
      */
-    protected function getCh(array $item, int $timeOut = 2, array $header = [], string $agent = '')
+    protected function getCh(array $item, array $header = [], int $timeOut = 2, string $agent = '')
     {
         // 请求URL
         if (!isset($item['url']) || empty($item['url'])) {

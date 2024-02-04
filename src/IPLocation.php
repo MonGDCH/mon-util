@@ -224,9 +224,9 @@ class IPLocation
                             //没有省份标志 只能替换
                             $_tmp_city = str_replace($location['province'], '', $location['country']);
                             //防止直辖市捣乱 上海市xxx区 =》 市xx区
-                            $_tmp_shi_pos = mb_stripos($_tmp_city, $seperator_shi);
+                            $_tmp_shi_pos = mb_stripos($_tmp_city, $seperator_shi, 0, 'UTF-8');
                             if ($_tmp_shi_pos === 0) {
-                                $_tmp_city = mb_substr($_tmp_city, 1);
+                                $_tmp_city = mb_substr($_tmp_city, 1, null, 'UTF-8');
                             }
 
                             // 内蒙古类型的获取市县信息

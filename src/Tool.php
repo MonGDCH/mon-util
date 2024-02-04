@@ -452,9 +452,9 @@ class Tool
             return '';
         }
         //截取银行卡号前4位
-        $prefix = mb_substr($card, 0, 4);
+        $prefix = mb_substr($card, 0, 4, 'UTF-8');
         //截取银行卡号后4位
-        $suffix = mb_substr($card, -4, 4);
+        $suffix = mb_substr($card, -4, 4, 'UTF-8');
         return $prefix . " **** **** **** " . $suffix;
     }
 
@@ -882,7 +882,7 @@ class Tool
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 300);
         // 判断是否为https请求
-        $ssl = strtolower(mb_substr($url, 0, 8)) == "https://" ? true : false;
+        $ssl = strtolower(mb_substr($url, 0, 8, 'UTF-8')) == "https://" ? true : false;
         if ($ssl) {
             curl_setopt($ch, CURLOPT_SSLVERSION, false);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -950,15 +950,15 @@ class Tool
         $color = str_replace('#', '', $hex_color);
         if (strlen($color) > 3) {
             $rgb = [
-                'r' => hexdec(mb_substr($color, 0, 2)),
-                'g' => hexdec(mb_substr($color, 2, 2)),
-                'b' => hexdec(mb_substr($color, 4, 2))
+                'r' => hexdec(mb_substr($color, 0, 2, 'UTF-8')),
+                'g' => hexdec(mb_substr($color, 2, 2, 'UTF-8')),
+                'b' => hexdec(mb_substr($color, 4, 2, 'UTF-8'))
             ];
         } else {
             $color = $hex_color;
-            $r = mb_substr($color, 0, 1) . mb_substr($color, 0, 1);
-            $g = mb_substr($color, 1, 1) . mb_substr($color, 1, 1);
-            $b = mb_substr($color, 2, 1) . mb_substr($color, 2, 1);
+            $r = mb_substr($color, 0, 1, 'UTF-8') . mb_substr($color, 0, 1, 'UTF-8');
+            $g = mb_substr($color, 1, 1, 'UTF-8') . mb_substr($color, 1, 1, 'UTF-8');
+            $b = mb_substr($color, 2, 1, 'UTF-8') . mb_substr($color, 2, 1, 'UTF-8');
             $rgb = [
                 'r' => hexdec($r),
                 'g' => hexdec($g),

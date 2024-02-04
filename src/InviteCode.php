@@ -46,7 +46,7 @@ class InviteCode
     {
         $this->key = $key;
         $this->mixins = $mixins;
-        $this->num = strlen($key);
+        $this->num = mb_strlen($key, 'UTF-8');
         return $this;
     }
 
@@ -82,9 +82,9 @@ class InviteCode
     public function decode(string $code): int
     {
         if (strrpos($code, '0') !== false) {
-            $code = substr($code, strrpos($code, '0') + 1);
+            $code = mb_substr($code, strrpos($code, '0') + 1, null, 'UTF-8');
         }
-        $len = strlen($code);
+        $len = mb_strlen($code, 'UTF-8');
         $code = strrev($code);
         $uid = 0;
         for ($i = 0; $i < $len; $i++) {

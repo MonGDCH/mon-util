@@ -103,7 +103,7 @@ class DocParse
                 // 获取参数名称
                 $param = mb_substr($content, 1, mb_strpos($content, ' ') - 1);
                 // 获取值
-                $value = mb_substr($content, mb_strlen($param) + 2);
+                $value = mb_substr($content, mb_strlen($param, 'UTF-8') + 2);
             } else {
                 $param = mb_substr($content, 1);
                 $value = '';

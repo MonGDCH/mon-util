@@ -542,7 +542,6 @@ class Migrate
         return $str;
     }
 
-
     /**
      * 写入SQL语句
      *
@@ -551,7 +550,7 @@ class Migrate
      */
     protected function write(string $sql): bool
     {
-        $size = strlen($sql);
+        $size = mb_strlen($sql, 'UTF-8');
         // 由于压缩原因，无法计算出压缩后的长度，这里假设压缩率为50%，
         // 一般情况压缩率都会高于50%；
         $size = $this->config['compress'] ? $size / 2 : $size;

@@ -59,12 +59,12 @@ class Sql
                 continue;
             }
             // 多行注释开始
-            if (mb_substr($line, 0, 2) == '/*') {
+            if (mb_substr($line, 0, 2, 'UTF-8') == '/*') {
                 $comment = true;
                 continue;
             }
             // 多行注释结束
-            if (mb_substr($line, -2) == '*/') {
+            if (mb_substr($line, -2, null, 'UTF-8') == '*/') {
                 $comment = false;
                 continue;
             }

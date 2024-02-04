@@ -136,7 +136,7 @@ class Common
      */
     public function isXDigit(string $src): bool
     {
-        if (strlen($src) < 1) {
+        if (mb_strlen($src, 'UTF-8') < 1) {
             return false;
         }
         if (($src >= '0' && $src <= '9') || ($src >= 'A' && $src <= 'F') || ($src >= 'a' && $src <= 'f')) {
@@ -157,7 +157,7 @@ class Common
         $c = 0;
         $b = 0;
         $bits = 0;
-        $len = mb_strlen($str);
+        $len = mb_strlen($str, 'UTF-8');
         for ($i = 0; $i < $len; $i++) {
             $c = ord($str[$i]);
             if ($c > 128) {
@@ -636,7 +636,7 @@ class Common
                 $str = mb_convert_encoding($str, 'UTF-8', $encode);
             }
             // 开始转换
-            for ($i = 0, $l = mb_strlen($str); $i < $l; $i++) {
+            for ($i = 0, $l = mb_strlen($str, 'UTF-8'); $i < $l; $i++) {
                 $temp_str = dechex(ord($str[$i]));
                 if (isset($temp_str[1])) {
                     $change_after .= $temp_str[1];
