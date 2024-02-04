@@ -28,7 +28,11 @@ trait Instance
     public static function instance($options = null)
     {
         if (is_null(static::$instance)) {
-            static::$instance = new static($options);
+            if (!is_null($options)) {
+                static::$instance = new static($options);
+            } else {
+                static::$instance = new static();
+            }
         }
         return static::$instance;
     }

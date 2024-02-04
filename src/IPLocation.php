@@ -81,7 +81,7 @@ class IPLocation
      *
      * @param string $db IP库文件路径
      */
-    public function __construct(string $db = '')
+    public function __construct(?string $db = '')
     {
         if (!empty($db)) {
             $this->init($db);

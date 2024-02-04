@@ -119,8 +119,9 @@ class Event
     {
         $tags = $this->get($tag);
         $results = [];
+        array_unshift($args, $tag);
         foreach ($tags as $name => $handler) {
-            $results[$name] = $this->execute($handler, ...$args);
+            $results[$name] = $this->execute($handler, $args);
             if ($results[$name] === false) {
                 // 如果返回false 则中断行为执行
                 break;
@@ -168,14 +169,14 @@ class Event
      * @throws RuntimeException
      * @return mixed
      */
-    protected function execute($class, ...$args)
+    protected function execute($class, array $args = [])
     {
         if ($class instanceof Closure) {
             // 匿名回调
-            return Container::instance()->invokeFunction($class, (array)$args);
+            return Container::instance()->invokeFunction($class, $args);
         } elseif (is_string($class) && !empty($class)) {
             // 类方法回调
-            return Container::instance()->invokeMethd([$class, $this->handler()], (array)$args);
+            return Container::instance()->invokeMethd([$class, $this->handler()], $args);
         }
 
         throw new RuntimeException('Event handler not found!');

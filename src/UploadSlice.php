@@ -42,9 +42,9 @@ class UploadSlice
      *
      * @param array $config 自定义配置信息
      */
-    public function __construct(array $config = [])
+    public function __construct(?array $config = [])
     {
-        $this->config = array_merge($this->config, $config);
+        $this->config = array_merge($this->config, (array)$config);
     }
 
     /**

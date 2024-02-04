@@ -90,9 +90,9 @@ class Migrate
      *
      * @param array $config 配置信息
      */
-    public function __construct(array $config = [])
+    public function __construct(?array $config = [])
     {
-        $this->config = array_merge($this->config, $config);
+        $this->config = array_merge($this->config, (array)$config);
         // 初始化文件名
         $this->setFile();
     }
