@@ -554,7 +554,7 @@ class Migrate
         // 由于压缩原因，无法计算出压缩后的长度，这里假设压缩率为50%，
         // 一般情况压缩率都会高于50%；
         $size = $this->config['compress'] ? $size / 2 : $size;
-        $this->open($size);
+        $this->open((int)$size);
         $ret = $this->config['compress'] ? gzwrite($this->fp, $sql) : fwrite($this->fp, $sql);
         return boolval($ret);
     }
