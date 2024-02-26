@@ -10,7 +10,7 @@ use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
 
 /**
- * 文章操作类
+ * 文件操作类
  *
  * @author Mon <985558837@qq.com>
  * @version 1.1.2 优化注解，增加copyFile 2022-08-25

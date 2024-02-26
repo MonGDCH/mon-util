@@ -11,7 +11,6 @@ declare(strict_types=1);
 */
 
 use mon\util\Tool;
-use mon\util\Common;
 use mon\util\Validate;
 use mon\util\Collection;
 
@@ -77,21 +76,5 @@ if (!function_exists('collection')) {
     function collection(array $data): Collection
     {
         return new Collection($data);
-    }
-}
-
-if (!function_exists('randString')) {
-    /**
-     * 产生随机字串，可用来自动生成密码
-     * 默认长度6位 字母和数字混合 支持中文
-     *
-     * @param integer $len       长度
-     * @param integer $type      字串类型，0:字母;1:数字;2:大写字母;3:小写字母;4:中文;5:字母数字混合;othor:过滤掉混淆字符的字母数字组合
-     * @param string  $addChars  额外字符
-     * @return string
-     */
-    function randString(int $len = 6, int $type = -1, string $addChars = ''): string
-    {
-        return Common::instance()->randString($len, $type, $addChars);
     }
 }

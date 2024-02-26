@@ -31,6 +31,7 @@
 * Nbed64类，Nbed64加密算法类
 * View类，视图字符串操作类
 * SnowFlake类，雪花ID生成类
+* Spids类，生成简短唯一ID类
 
 
 ## 安装
