@@ -64,11 +64,18 @@ class Date
     protected $second;
 
     /**
+     * 毫秒
+     *
+     * @var float
+     */
+    protected $milliSecond;
+
+    /**
      * 星期的数字表示
      *
      * @var integer
      */
-    protected $weekday;
+    protected $weekDay;
 
     /**
      * 一年中的天数 0－365
@@ -129,25 +136,28 @@ class Date
     public function setDate(int $timestamp): Date
     {
         // 时间信息
-        $dateArray      = getdate($timestamp);
+        $dateArray          = getdate($timestamp);
         // 时间戳
-        $this->date     = $dateArray[0];
+        $this->date         = $dateArray[0];
         // 秒
-        $this->second   = $dateArray['seconds'];
+        $this->second       = $dateArray['seconds'];
+        // 毫秒
+        list($milliSecond)  = explode(' ', (string)microtime());
+        $this->milliSecond  = $milliSecond;
         // 分 
-        $this->minute   = $dateArray['minutes'];
+        $this->minute       = $dateArray['minutes'];
         // 时
-        $this->hour     = $dateArray['hours'];
+        $this->hour         = $dateArray['hours'];
         // 日
-        $this->day      = $dateArray['mday'];
+        $this->day          = $dateArray['mday'];
         // 月
-        $this->month    = $dateArray['mon'];
+        $this->month        = $dateArray['mon'];
         // 年 
-        $this->year     = $dateArray['year'];
+        $this->year         = $dateArray['year'];
         // 星期 0～6
-        $this->weekday  = $dateArray['wday'];
+        $this->weekDay      = $dateArray['wday'];
         // 一年中的天数 0－365
-        $this->yDay     = $dateArray['yday'];
+        $this->yDay         = $dateArray['yday'];
 
         return $this;
     }
@@ -163,13 +173,24 @@ class Date
     }
 
     /**
+     * 获取毫秒数
+     *
+     * @param boolean $timeStamp    是否返回完整时间戳
+     * @return float
+     */
+    public function getMilliSecond(bool $timeStamp = true)
+    {
+        return $timeStamp ? (float)sprintf('%.0f', ($this->date + $this->milliSecond) * 1000) : $this->milliSecond;
+    }
+
+    /**
      * 获取当前周几, 0-6，0为周天
      *
      * @return integer
      */
     public function getWeek(): int
     {
-        return $this->weekday;
+        return $this->weekDay;
     }
 
     /**

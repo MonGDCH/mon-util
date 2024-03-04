@@ -6,6 +6,7 @@ namespace mon\util;
 
 use RuntimeException;
 use mon\util\Instance;
+use InvalidArgumentException;
 
 /**
  * 公共工具类库(数据处理)
@@ -26,7 +27,7 @@ class Common
      * @param array $filter     过滤的数据
      * @return array
      */
-    public function rand_num_arr(int $min, int $max, int $count, array $filter = []): array
+    public function randomNumberForArray(int $min, int $max, int $count, array $filter = []): array
     {
         $i = 0;
         $result = [];
@@ -152,7 +153,7 @@ class Common
      * @param string $string 验证的字符串
      * @return boolean
      */
-    public function isUtf8(string $str): bool
+    public function isUTF8(string $str): bool
     {
         $c = 0;
         $b = 0;
@@ -207,30 +208,38 @@ class Common
     }
 
     /**
-     * 返回正数的ip2long值
+     * 优化ip2long函数，支持ipv6
      *
      * @param  string $ip ip
      * @return string
      */
-    public function ip2long_positive(string $ip)
+    public function ipToLong(string $ip): string
     {
-        return sprintf("%u", $this->mIp2long($ip));
+        return sprintf('%u', ip2long($ip));
     }
 
     /**
-     * IP地址转为数字地址
-     * php 的 ip2long 这个函数有问题
-     * 133.205.0.0 ==>> 2244804608
+     * ip长整型格式转换为ip字符串格式
      *
-     * @param string $ip 要转换的 ip 地址
-     * @return integer 转换完成的数字
+     * @param integer $long
+     * @return string
      */
-    public function mIp2long(string $ip)
+    public function longToIp(int $long): string
     {
-        $ip_arr = explode('.', $ip);
-        $iplong = (16777216 * intval($ip_arr[0])) + (65536 * intval($ip_arr[1])) + (256 * intval($ip_arr[2])) + intval($ip_arr[3]);
+        if ($long < 0 || $long > 4294967295) {
+            throw new InvalidArgumentException('长整型IP地址值超出范围');
+        }
 
-        return $iplong;
+        $ip = '';
+        for ($i = 3; $i >= 0; $i--) {
+            $ip   .= (int)($long / pow(256, $i));
+            $long -= (int)($long / pow(256, $i)) * pow(256, $i);
+            if ($i > 0) {
+                $ip .= ".";
+            }
+        }
+
+        return $ip;
     }
 
     /**
@@ -279,16 +288,17 @@ class Common
     public function strToMap(string $str, string $ds = '&'): array
     {
         $str = trim($str);
-        $infoMap = [];
-        $strArr = explode($ds, $str);
-        for ($i = 0; $i < count($strArr); $i++) {
-            $infoArr = explode("=", $strArr[$i]);
-            if (count($infoArr) != 2) {
+        $data = explode($ds, $str);
+        $result = [];
+        foreach ($data as $item) {
+            if (empty($item)) {
                 continue;
             }
-            $infoMap[$infoArr[0]] = $infoArr[1];
+            list($key, $val) = explode("=", $item, 2);
+            $result[$key] = $val;
         }
-        return $infoMap;
+
+        return $result;
     }
 
     /**
@@ -305,7 +315,7 @@ class Common
             $result = $result . $ds . trim((string)$key) . "=" . trim((string)$value);
         }
 
-        return $result;
+        return ltrim($result, $ds);
     }
 
     /**
@@ -314,7 +324,7 @@ class Common
      * @param  array $arr    需要去重的数组
      * @return array
      */
-    public function array_2D_unique(array $arr): array
+    public function uniqueArray2D(array $arr): array
     {
         foreach ($arr as $v) {
             // 降维,将一维数组转换为用","连接的字符串.
@@ -339,7 +349,7 @@ class Common
      * @param  array $arr    需要去重的数组
      * @return array
      */
-    public function array_2D_value_unique(array $arr): array
+    public function uniqueArrayValue2D(array $arr): array
     {
         $tmp = [];
         foreach ($arr as $k => $v) {
@@ -363,7 +373,7 @@ class Common
      * @param integer $sort 排序方式，默认值：SORT_DESC
      * @return array
      */
-    public function array_2D_sort(array $array, string $keys, $sort = \SORT_DESC): array
+    public function sortArray2D(array $array, string $keys, $sort = \SORT_DESC): array
     {
         $keysValue = [];
         foreach ($array as $k => $v) {
@@ -552,7 +562,7 @@ class Common
      * @param  string $in_charset   输入编码
      * @return mixed
      */
-    public function iconv_recursion($data, string $out_charset, string $in_charset)
+    public function iconvRecursion($data, string $out_charset, string $in_charset)
     {
         switch (gettype($data)) {
             case 'integer':
@@ -574,12 +584,12 @@ class Common
             case 'object':
                 $vars = array_keys(get_object_vars($data));
                 foreach ($vars as $key) {
-                    $data->$key = $this->iconv_recursion($data->$key, $out_charset, $in_charset);
+                    $data->$key = $this->iconvRecursion($data->$key, $out_charset, $in_charset);
                 }
                 return $data;
             case 'array':
                 foreach ($data as $k => $v) {
-                    $data[$this->iconv_recursion($k, $out_charset, $in_charset)] = $this->iconv_recursion($v, $out_charset, $in_charset);
+                    $data[$this->iconvRecursion($k, $out_charset, $in_charset)] = $this->iconvRecursion($v, $out_charset, $in_charset);
                 }
                 return $data;
             default:
@@ -701,7 +711,7 @@ class Common
      * @param string    $re       替代符
      * @return string   处理后的字符串
      */
-    public function hidestr(string $string, int $start = 0, int $length = 0, string $re = '*'): string
+    public function hideStr(string $string, int $start = 0, int $length = 0, string $re = '*'): string
     {
         if (empty($string)) {
             return '';
@@ -730,5 +740,23 @@ class Common
         }
 
         return implode('', $strarr);
+    }
+
+    /**
+     * Excel英文列转数字
+     *
+     * @param string $column
+     * @return int
+     */
+    public function letterToNumber(string $column): int
+    {
+        $column = strtoupper($column);
+        $length = strlen($column);
+        $number = 0;
+        for ($i = 0; $i < $length; $i++) {
+            $char = ord($column[$i]) - 64;
+            $number = $number * 26 + $char;
+        }
+        return $number;
     }
 }

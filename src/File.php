@@ -37,8 +37,8 @@ class File
             $pos++;
         }
         return [
-            'size'  => round($size, $dec),
-            'type'  => $type[$pos]
+            'size' => round($size, $dec),
+            'type' => $type[$pos]
         ];
     }
 

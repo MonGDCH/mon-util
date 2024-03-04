@@ -301,7 +301,7 @@ class IPLocation
         while ($l <= $u) {
             // 计算近似中间记录
             $i = floor(($l + $u) / 2);
-            fseek($this->fp, $this->firstip + $i * 7);
+            fseek($this->fp, intval($this->firstip + $i * 7));
             // 获取中间记录的开始IP地址
             $beginip = strrev(fread($this->fp, 4));
             // strrev函数在这里的作用是将little-endian的压缩IP地址转化为big-endian的格式，以便用于比较，后面相同。
@@ -323,7 +323,7 @@ class IPLocation
             }
         }
         // 获取查找到的IP地理位置信息
-        fseek($this->fp, $findip);
+        fseek($this->fp, (int)$findip);
         // 用户IP所在范围的开始地址
         $location['beginip'] = long2ip($this->getlong());
         $offset = $this->getlong3();
@@ -425,7 +425,7 @@ class IPLocation
     {
         // 将IP地址转化为长整型数，如果在PHP5中，IP地址错误，则返回False，
         // 这时intval将Flase转化为整数-1，之后压缩成big-endian编码的字符串
-        return pack('N', intval(Common::instance()->mIp2long($ip)));
+        return pack('N', intval(Common::instance()->ipToLong($ip)));
     }
 
     /**

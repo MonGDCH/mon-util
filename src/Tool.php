@@ -123,7 +123,7 @@ class Tool
      * @param string $ua    请求user-agent
      * @return boolean
      */
-    public function is_wx(string $ua = ''): bool
+    public function isWechat(string $ua = ''): bool
     {
         $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
 
@@ -136,7 +136,7 @@ class Tool
      * @param string $ua    请求user-agent
      * @return boolean
      */
-    public function is_android(string $ua = ''): bool
+    public function isAndroid(string $ua = ''): bool
     {
         $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
 
@@ -149,11 +149,59 @@ class Tool
      * @param string $ua    请求user-agent
      * @return boolean 
      */
-    public function is_ios(string $ua = ''): bool
+    public function isIOS(string $ua = ''): bool
     {
         $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
 
         return (mb_strpos($ua, 'iPhone') !== false || mb_strpos($ua, 'iPad') !== false);
+    }
+
+    /**
+     * 已否移动端
+     *
+     * @param array $server $_SERVER信息
+     * @return boolean
+     */
+    public function isMobile(array $server = []): bool
+    {
+        $server = $server ?: $_SERVER;
+        // 如果有HTTP_X_WAP_PROFILE则一定是移动设备
+        if (isset($server['HTTP_X_WAP_PROFILE'])) {
+            return true;
+        }
+        //此条摘自TPM智能切换模板引擎，适合TPM开发
+        if (isset($server['HTTP_CLIENT']) && 'PhoneClient' == $server['HTTP_CLIENT']) {
+            return true;
+        }
+        //如果via信息含有wap则一定是移动设备,部分服务商会屏蔽该信息
+        if (isset($server['HTTP_VIA'])) {
+            //找不到为flase,否则为true
+            return stristr($server['HTTP_VIA'], 'wap') ? true : false;
+        }
+        //判断手机发送的客户端标志,兼容性有待提高
+        if (isset($server['HTTP_USER_AGENT'])) {
+            $clientkeywords = [
+                'nokia', 'sony', 'ericsson', 'mot', 'samsung', 'htc', 'sgh', 'lg', 'sharp', 'sie-', 'philips', 'panasonic',
+                'alcatel', 'lenovo', 'iphone', 'ipod', 'blackberry', 'meizu', 'android', 'netfront', 'symbian', 'ucweb',
+                'windowsce', 'palm', 'operamini', 'operamobi', 'openwave', 'nexusone', 'cldc', 'midp', 'wap', 'mobile'
+            ];
+            //从HTTP_USER_AGENT中查找手机浏览器的关键字
+            if (preg_match("/(" . implode('|', $clientkeywords) . ")/i", strtolower($server['HTTP_USER_AGENT']))) {
+                return true;
+            }
+        }
+        //协议法，因为有可能不准确，放到最后判断
+        if (isset($server['HTTP_ACCEPT'])) {
+            // 如果只支持wml并且不支持html那一定是移动设备
+            // 如果支持wml和html但是wml在html之前则是移动设备
+            if ((strpos($server['HTTP_ACCEPT'], 'vnd.wap.wml') !== false) &&
+                (strpos($server['HTTP_ACCEPT'], 'text/html') === false || (strpos($server['HTTP_ACCEPT'], 'vnd.wap.wml') < strpos($server['HTTP_ACCEPT'], 'text/html')))
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -493,12 +541,13 @@ class Tool
     /**
      * 安全IP检测，支持IP段检测
      *
-     * @param string $ip 要检测的IP
      * @param array $ips  白名单IP或者黑名单IP，例如白名单IP：['192.168.1.13', '123.23.23.44', '193.134.*.*']
+     * @param string $ip 要检测的IP
      * @return boolean true 在白名单或者黑名单中，否则不在
      */
-    public function safe_ip($ip, array $ips): bool
+    public function checkSafeIP(array $ips, string $ip = ''): bool
     {
+        $ip = $ip ?: $this->ip();
         if (in_array($ip, $ips)) {
             return true;
         }
@@ -517,7 +566,7 @@ class Tool
      *
      * @return string
      */
-    public function mac_address(): string
+    public function getMacAddress(): string
     {
         $data = [];
         switch (strtolower(PHP_OS)) {
@@ -905,7 +954,7 @@ class Tool
      * @param string|array $reg reg颜色值
      * @return string
      */
-    public function rgb2hex($rgb): string
+    public function rgbToHex($rgb): string
     {
         if (is_array($rgb)) {
             $match = $rgb;
@@ -945,7 +994,7 @@ class Tool
      * @param string $hex_color 十六进制颜色值
      * @return array
      */
-    public function hex2rgb(string $hex_color): array
+    public function hexToRgb(string $hex_color): array
     {
         $color = str_replace('#', '', $hex_color);
         if (strlen($color) > 3) {
@@ -975,7 +1024,7 @@ class Tool
      * @param string $path 保存路径
      * @return boolean
      */
-    public function base64_img(string $base64, string $path): bool
+    public function base64ToImg(string $base64, string $path): bool
     {
         $base64Info = explode(',', $base64);
         $content = base64_decode($base64Info[1]);
@@ -988,8 +1037,11 @@ class Tool
      * @param string $path 图片路径
      * @return string
      */
-    public function img_base64(string $path): string
+    public function imgToBase64(string $path): string
     {
+        if (!file_exists($path)) {
+            throw new RuntimeException('Img file not extsis! path: ' . $path);
+        }
         $img = getimagesize($path);
         $content = chunk_split(base64_encode(file_get_contents($path)));
         $base64 = 'data:' . $img['mime'] . ';base64,' . $content;
@@ -1003,7 +1055,7 @@ class Tool
      * @throws InvalidArgumentException
      * @return mixed
      */
-    public function require_cache(string $file)
+    public function requireCache(string $file)
     {
         static $import_files = [];
         if (!isset($import_files[$file])) {
@@ -1024,7 +1076,7 @@ class Tool
      * @throws InvalidArgumentException
      * @return mixed
      */
-    public function include_cache(string $file)
+    public function includeCache(string $file)
     {
         static $import_files = [];
         if (!isset($import_files[$file])) {
