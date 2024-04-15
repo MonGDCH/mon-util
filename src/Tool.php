@@ -64,8 +64,8 @@ class Tool
         // 判断是否包含域名,解析URL和传参
         if (strpos($url, '://') === false && strpos($url, '/') !== 0) {
             $info = parse_url($url);
-            $url  = $info['path'] ?: '';
-            // 判断是否存在锚点,解析请求串
+            $url = $info['path'] ?: '';
+            // 判断是否存在锚点, 解析请求串
             if (isset($info['fragment'])) {
                 // 解析锚点
                 $anchor = $info['fragment'];
@@ -77,7 +77,7 @@ class Tool
         } elseif (strpos($url, '://') !== false) {
             // 存在协议头，自带domain
             $info = parse_url($url);
-            $url  = $info['host'];
+            $url = $info['host'];
             $scheme = isset($info['scheme']) ? $info['scheme'] : 'http';
             // 判断是否存在锚点,解析请求串
             if (isset($info['fragment'])) {

@@ -145,7 +145,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      */
     public function unique2D(): Collection
     {
-        $data = Common::instance()->array_2D_unique($this->data);
+        $data = Common::instance()->uniqueArray2D($this->data);
         return new self($data);
     }
 
@@ -156,7 +156,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      */
     public function valueUnique2D(): Collection
     {
-        $data = Common::instance()->array_2D_value_unique($this->data);
+        $data = Common::instance()->uniqueArrayValue2D($this->data);
         return new self($data);
     }
 
@@ -215,7 +215,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      */
     public function sort2D(string $keys, $sort = SORT_DESC): Collection
     {
-        $data = Common::instance()->array_2D_sort($this->data, $keys, $sort);
+        $data = Common::instance()->sortArray2D($this->data, $keys, $sort);
         return new self($data);
     }
 

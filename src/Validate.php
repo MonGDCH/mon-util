@@ -542,7 +542,7 @@ class Validate
 	 */
 	public function date($value): bool
 	{
-		return strtotime($value) !== false;
+		return strtotime(strval($value)) !== false;
 	}
 
 	/**
@@ -553,7 +553,7 @@ class Validate
 	 */
 	public function timestamp($value): bool
 	{
-		return $this->int($value) && (strtotime(date('Y-m-d H:i:s', $value)) == $value);
+		return $this->int($value) && (strtotime(date('Y-m-d H:i:s', intval($value))) == $value);
 	}
 
 	/**
@@ -565,7 +565,7 @@ class Validate
 	 */
 	public function afterDate($value, $date): bool
 	{
-		return ($this->date($value) && strtotime($value) >= strtotime($date));
+		return ($this->date($value) && strtotime(strval($value)) >= strtotime(strval($date)));
 	}
 
 	/**
@@ -577,7 +577,7 @@ class Validate
 	 */
 	public function beforeDate($value, $date): bool
 	{
-		return ($this->date($value) && strtotime($value) <= strtotime($date));
+		return ($this->date($value) && strtotime(strval($value)) <= strtotime(strval($date)));
 	}
 
 	/**
@@ -595,7 +595,7 @@ class Validate
 			$regexp = '/^' . $regexp . '$/';
 		}
 
-		return preg_match($regexp, $value) === 1;
+		return preg_match($regexp, strval($value)) === 1;
 	}
 
 	/**
@@ -628,7 +628,7 @@ class Validate
 	 */
 	public function mobile($value): bool
 	{
-		return preg_match($this->regex['mobile'], $value) === 1;
+		return preg_match($this->regex['mobile'], strval($value)) === 1;
 	}
 
 	/**
@@ -639,7 +639,7 @@ class Validate
 	 */
 	public function tel($value): bool
 	{
-		return preg_match($this->regex['tel'], $value) === 1;
+		return preg_match($this->regex['tel'], strval($value)) === 1;
 	}
 
 	/**
@@ -661,7 +661,7 @@ class Validate
 	 */
 	public function china($value): bool
 	{
-		return preg_match($this->regex['china'], $value) === 1;
+		return preg_match($this->regex['china'], strval($value)) === 1;
 	}
 
 	/**
@@ -672,7 +672,7 @@ class Validate
 	 */
 	public function language($value): bool
 	{
-		return preg_match($this->regex['language'], $value) === 1;
+		return preg_match($this->regex['language'], strval($value)) === 1;
 	}
 
 	/**
@@ -683,7 +683,7 @@ class Validate
 	 */
 	public function alpha($value): bool
 	{
-		return preg_match($this->regex['alpha'], $value) === 1;
+		return preg_match($this->regex['alpha'], strval($value)) === 1;
 	}
 
 	/**
@@ -694,7 +694,7 @@ class Validate
 	 */
 	public function lower($value): bool
 	{
-		return preg_match($this->regex['lower'], $value) === 1;
+		return preg_match($this->regex['lower'], strval($value)) === 1;
 	}
 
 	/**
@@ -705,7 +705,7 @@ class Validate
 	 */
 	public function upper($value): bool
 	{
-		return preg_match($this->regex['upper'], $value) === 1;
+		return preg_match($this->regex['upper'], strval($value)) === 1;
 	}
 
 	/**
@@ -716,7 +716,7 @@ class Validate
 	 */
 	public function account($value): bool
 	{
-		return preg_match($this->regex['account'], $value) === 1;
+		return preg_match($this->regex['account'], strval($value)) === 1;
 	}
 
 	/**
@@ -727,7 +727,7 @@ class Validate
 	 */
 	public function license($value): bool
 	{
-		return preg_match($this->regex['license'], $value) === 1;
+		return preg_match($this->regex['license'], strval($value)) === 1;
 	}
 
 	/**
@@ -738,7 +738,7 @@ class Validate
 	 */
 	public function payCard($value): bool
 	{
-		return preg_match($this->regex['pay_card'], $value) === 1;
+		return preg_match($this->regex['pay_card'], strval($value)) === 1;
 	}
 
 	/**
@@ -749,7 +749,7 @@ class Validate
 	 */
 	public function carNum($value): bool
 	{
-		return preg_match($this->regex['car_num'], $value) === 1;
+		return preg_match($this->regex['car_num'], strval($value)) === 1;
 	}
 
 	/**
@@ -848,6 +848,9 @@ class Validate
 	 */
 	public function json($value): bool
 	{
+		if (function_exists('Json_validate')) {
+			return Json_validate(strval($value));
+		}
 		return $this->str($value) && !is_null(json_decode($value));
 	}
 
@@ -860,7 +863,7 @@ class Validate
 	public function xml($value): bool
 	{
 		$xmlParser = xml_parser_create();
-		if (!$this->str($value) || !xml_parse($xmlParser, $value, true)) {
+		if (!$this->str($value) || !xml_parse($xmlParser, strval($value), true)) {
 			xml_parser_free($xmlParser);
 			return false;
 		}

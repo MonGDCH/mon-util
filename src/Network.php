@@ -137,10 +137,7 @@ class Network
             }
         } while ($running);
 
-        return [
-            'success'   => $result,
-            'error'     => $errors
-        ];
+        return ['success' => $result, 'error' => $errors];
     }
 
     /**

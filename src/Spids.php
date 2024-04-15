@@ -77,12 +77,16 @@ class Spids
         $filteredBlocklist = [];
         $alphabetChars = str_split(strtolower($this->alphabet));
         foreach ((array) $blocklist as $word) {
-            if (strlen((string) $word) >= 3) {
+            $word = strval($word);
+            if (strlen($word) >= 3) {
                 $wordLowercased = strtolower($word);
-                $wordChars = str_split((string) $wordLowercased);
-                $intersection = array_filter($wordChars, fn ($c) => in_array($c, $alphabetChars));
+                $wordChars = str_split($wordLowercased);
+                // $intersection = array_filter($wordChars, fn ($c) => in_array($c, $alphabetChars));
+                $intersection = array_filter($wordChars, function ($c) use ($alphabetChars) {
+                    return in_array($c, $alphabetChars);
+                });
                 if (count($intersection) == count($wordChars)) {
-                    $filteredBlocklist[] = strtolower((string) $wordLowercased);
+                    $filteredBlocklist[] = strtolower($wordLowercased);
                 }
             }
         }
@@ -139,7 +143,6 @@ class Spids
 
         while (strlen($id) > 0) {
             $separator = $alphabet[0];
-
             $chunks = explode($separator, $id, 2);
             if (!empty($chunks)) {
                 if ($chunks[0] == '') {
@@ -194,7 +197,6 @@ class Spids
         }
 
         $id = implode('', $ret);
-
         if ($this->minLength > strlen($id)) {
             $id .= $alphabet[0];
 

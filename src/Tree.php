@@ -261,7 +261,7 @@ class Tree
         }
         foreach ($this->data as $key => $data) {
             // 判断是否存在parent
-            $parentId =  $data[$this->config['pid']];
+            $parentId = $data[$this->config['pid']];
             if ($this->config['root'] == $parentId) {
                 $tree[] = &$this->data[$key];
             } elseif (isset($refer[$parentId])) {
