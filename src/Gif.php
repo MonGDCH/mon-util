@@ -303,7 +303,7 @@ class GIFEncoder
     /**
      * GetAnimation
      *
-     * @return void
+     * @return mixed
      */
     public function GetAnimation()
     {

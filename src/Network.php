@@ -373,7 +373,7 @@ class Network
         // 请求user-agent
         $agent = (isset($item['agent']) && !empty($item['agent'])) ? $item['agent'] : $agent;
         // 获取curl请求
-        $ch = $this->getRequest($url, $data, $method, $timeOut, $header, $agent);
+        $ch = $this->getRequest($url, $data, $method, $header, $timeOut, $agent);
 
         return $ch;
     }

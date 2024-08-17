@@ -7,7 +7,7 @@ namespace mon\util;
 use InvalidArgumentException;
 
 /**
- * 生成简短唯一ID类库
+ * 生成简短唯一ID类库(用户ID转换加解密)
  * 由于 Spids\Spids 库没有PHP7的版本，故自行移植改库支持PHP7
  * 
  * @author Mon <985558837@qq.com>

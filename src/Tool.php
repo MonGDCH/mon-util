@@ -221,8 +221,8 @@ class Tool
 
         $_COOKIE[$tokenName] = $token;
         $_COOKIE[$tokenTimeName] = $now;
-        setcookie($tokenName, $token, $now + $expire, '/');
-        setcookie($tokenTimeName, $now, $now + $expire, '/');
+        setcookie($tokenName, $token, ($now + $expire), '/');
+        setcookie($tokenTimeName, (string)$now, ($now + $expire), '/');
 
         return ['token' => $token, 'tokenTime' => $now];
     }
@@ -394,11 +394,11 @@ class Tool
         $tbody = implode('', $trs);
         $showBorder = $border ? 1 : 0;
         $table = '<table border="' . $showBorder . '" cellpadding="10" cellspacing="0">' . $thead . $tbody . '</table>';
-
+        $style = '<style>td{mso-style-parent:style0;mso-number-format:"\@";}</style>';
         $xls = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-                    <head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>' . $sheetName . '</x:Name>
-                    <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
-                    <body>' . $table . '</body></html>';
+                <head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>' . $sheetName . '</x:Name>
+                <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->' . $style . '</head>
+                <body>' . $table . '</body></html>';
 
         // 响应头信息
         $headers = [
