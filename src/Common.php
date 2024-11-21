@@ -483,7 +483,7 @@ class Common
      * @param string $addChar   截断显示字符内容
      * @return string
      */
-    public function mSubstr(string $str, int $start = 0, int $length, string $charset = 'UTF-8', bool $suffix = false, string $addChar = ''): string
+    public function mSubstr(string $str, int $start, int $length, string $charset = 'UTF-8', bool $suffix = false, string $addChar = ''): string
     {
         if (function_exists('mb_substr')) {
             $slice = mb_substr($str, $start, $length, $charset);
