@@ -759,4 +759,26 @@ class Common
         }
         return $number;
     }
+
+    /**
+     * 数字转Excel英文列
+     *
+     * @param integer $number
+     * @return string
+     */
+    public function numberToLetter(int $number): string
+    {
+        $excelColumn = '';
+        --$number;
+        while ($number >= 0) {
+            // 取余数
+            $mod = $number % 26;
+            // 转成字母
+            $excelColumn = chr($mod + 65) . $excelColumn;
+            // 转成数字
+            $number = (int) ($number / 26) - 1;
+        }
+
+        return $excelColumn;
+    }
 }
