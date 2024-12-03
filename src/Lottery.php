@@ -90,14 +90,14 @@ class Lottery
         $probabilityCount = $this->probabilityCount;
         $pow = pow(10, $this->scale);
         foreach ($this->awards as $item) {
-            $randProbability = $probabilityCount * $pow;
+            $randProbability = intval($probabilityCount * $pow);
             $randInum = mt_rand(1, $randProbability);
             $randNum = bcdiv((string)$randInum, (string)$pow, $this->scale);
-            $bccomp = bccomp($randNum, $item[$this->probabilityKey], $this->scale);
-            if ($bccomp == 0 || $bccomp == -1) {
+            $bccomp = bccomp((string)$randNum, (string)$item[$this->probabilityKey], $this->scale);
+            if ($bccomp <= 0) {
                 return $item;
             }
-            $probabilityCount = bcsub((string)$probabilityCount, $item[$this->probabilityKey], $this->scale);
+            $probabilityCount = bcsub((string)$probabilityCount, (string)$item[$this->probabilityKey], $this->scale);
         }
 
         throw new LotteryException('抽奖失败，未抽到奖品', LotteryException::ERROR_NOT_AWARD);

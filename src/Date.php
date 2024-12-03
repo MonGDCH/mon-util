@@ -304,7 +304,7 @@ class Date
      * @param string $year 年份
      * @return boolean
      */
-    public function isLeapYear(?int $year = null)
+    public function isLeapYear(?int $year = null): bool
     {
         if (is_null($year)) {
             $year = $this->year;
@@ -325,9 +325,9 @@ class Date
      *
      * @param mixed $date 要比较的日期
      * @param string $elaps  比较跨度
-     * @return integer|float
+     * @return float
      */
-    public function dateDiff($date, string $elaps = 'd')
+    public function dateDiff($date, string $elaps = 'd'): float
     {
         $days_per_week  = 7;
         $days_per_month = 30;
@@ -364,21 +364,21 @@ class Date
                 break;
         }
 
-        return $dayselaps;
+        return (float)$dayselaps;
     }
 
     /**
      * 人性化的计算日期差
      *
      * @param mixed $time 要比较的时间
-     * @param mixed $precision 返回的精度
+     * @param integer|string $precision 返回的精度
      * @return string
      */
     public function timeDiff($time, $precision = null): string
     {
-        if (!is_null($precision) && !is_numeric($precision) && !is_bool($precision)) {
-            $_diff = ['y' => '年', 'm' => '个月', 'd' => '天', 'h' => '小时', 'i' => '分钟', 's' => '秒', 'w' => '周'];
-            return ceil($this->dateDiff($time, $precision)) . $_diff[$precision] . '前';
+        $diff = ['y' => '年', 'm' => '个月', 'd' => '天', 'h' => '小时', 'i' => '分钟', 's' => '秒', 'w' => '周'];
+        if (is_string($precision) && in_array($precision, array_keys($diff))) {
+            return ceil($this->dateDiff($time, $precision)) . $diff[$precision] . '前';
         }
         $diff = abs($this->parse($time) - $this->date);
         $chunks = [[31536000, '年'], [2592000, '个月'], [604800, '周'], [86400, '天'], [3600, '小时'], [60, '分钟'], [1, '秒']];
@@ -403,13 +403,13 @@ class Date
      * 比对月份查，只比较月份
      *
      * @param mixed $date  对比的日期
-     * @return integer|float
+     * @return integer
      */
-    public function monthDiff($date)
+    public function monthDiff($date): int
     {
-        $start = explode('-', $this->format('Y-m'), 2);
-        $end = explode('-', date('Y-m', $this->parse($date)), 2);
-        return abs($start[0] - $end[0]) * 12 + abs($start[1] - $end[1]);
+        $start = array_map('intval', explode('-', $this->format('Y-m'), 2));
+        $end = array_map('intval', explode('-', date('Y-m', $this->parse($date)), 2));
+        return abs((($start[0] - $end[0]) * 12) + abs($start[1] - $end[1]));
     }
 
     /**
@@ -487,9 +487,9 @@ class Date
     /**
      * 计算月份的最大天数
      *
-     * @return integer|float
+     * @return float
      */
-    public function maxDayOfMonth()
+    public function maxDayOfMonth(): float
     {
         return $this->dateDiff(strtotime($this->dateAdd(1, 'm')->format()), 'd');
     }
@@ -617,8 +617,7 @@ class Date
         $y = $this->year;
         $m = $this->month;
         $d = $this->day;
-
-        switch ($type) {
+        switch (strtoupper($type)) {
             case 'XZ':
                 // 星座
                 $XZDict = ['摩羯', '宝瓶', '双鱼', '白羊', '金牛', '双子', '巨蟹', '狮子', '处女', '天秤', '天蝎', '射手'];

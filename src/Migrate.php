@@ -276,7 +276,7 @@ class Migrate
      * @throws MigrateException
      * @return boolean
      */
-    public function remove(int $time): bool
+    public function remove(int $time = null): bool
     {
         if (!$time) {
             throw new MigrateException("{$time} Time parameter is incorrect");

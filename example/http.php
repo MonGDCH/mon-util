@@ -5,7 +5,7 @@ require __DIR__ . '/../vendor/autoload.php';
 use mon\util\Network;
 
 
-$path = __DIR__ . '/img.php';
+$path = __DIR__ . '/http.php';
 $url = 'http://localhost/index.php';
 
 

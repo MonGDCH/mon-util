@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace mon\util;
 
+use InvalidArgumentException;
 use mon\util\exception\ValidateException;
 
 /**
@@ -119,7 +120,8 @@ class Validate
 		'pay_card'	=> '/^[1-9]\d{9,29}$/',
 		// 车牌号
 		'car_num'	=> '/^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领][A-HJ-NP-Z][A-HJ-NP-Z0-9]{4,5}[A-HJ-NP-Z0-9挂学警港澳]$/',
-
+		// 邮政编码
+		'zip'		=> '/\d{6}/',
 	];
 
 	/**
@@ -621,6 +623,17 @@ class Validate
 	}
 
 	/**
+	 * mac地址
+	 *
+	 * @param mixed $value
+	 * @return boolean
+	 */
+	public function mac($value): bool
+	{
+		return filter_var($value, FILTER_VALIDATE_MAC) !== false;
+	}
+
+	/**
 	 * 手机号码
 	 *
 	 * @param  mixed $value 操作的数据
@@ -640,6 +653,17 @@ class Validate
 	public function tel($value): bool
 	{
 		return preg_match($this->regex['tel'], strval($value)) === 1;
+	}
+
+	/**
+	 * 邮政编码
+	 *
+	 * @param mixed $value
+	 * @return boolean
+	 */
+	public function zip($value): bool
+	{
+		return preg_match($this->regex['zip'], strval($value)) === 1;
 	}
 
 	/**
@@ -835,7 +859,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function arr($value): bool
+	public function array($value): bool
 	{
 		return is_array($value);
 	}
@@ -898,6 +922,34 @@ class Validate
 	}
 
 	/**
+	 * 值是否在某个区间
+	 *
+	 * @param integer|float $value	比较值
+	 * @param string $rule	验证规则
+	 * @return boolean
+	 */
+	public function between($value, $rule): bool
+	{
+		[$min, $max] = is_string($rule) ? explode(',', $rule) : $rule;
+
+		return $value >= $min && $value <= $max;
+	}
+
+	/**
+	 * 值是否不在某个区间
+	 *
+	 * @param integer|float $value	比较值
+	 * @param string $rule	验证规则
+	 * @return boolean
+	 */
+	public function notBetween($value, $rule): bool
+	{
+		[$min, $max] = is_string($rule) ? explode(',', $rule) : $rule;
+
+		return $value < $min || $value > $max;
+	}
+
+	/**
 	 * 身份证号码(支持15位和18位)
 	 *
 	 * @param string $idcard 身份证号
@@ -918,7 +970,88 @@ class Validate
 	 */
 	public function confirm($value, $rule, array $data = []): bool
 	{
-		return !(!isset($data[$rule]) || $value != $data[$rule]);
+		return isset($data[$rule]) && $value == $data[$rule];
+	}
+
+	/**
+	 * 比较字段值是否不一致
+	 *
+	 * @param mixed $value	比较的值
+	 * @param string $rule	比较的字段名
+	 * @param array $data	验证的数据
+	 * @return boolean
+	 */
+	public function different($value, $rule, array $data = []): bool
+	{
+		return !isset($data[$rule]) || $value != $data[$rule];
+	}
+
+	/**
+	 * 是否以某个字符串开头
+	 *
+	 * @param mixed $value 字段值
+	 * @param string $rule  验证规则
+	 * @return boolean
+	 */
+	public function startWith($value, string $rule): bool
+	{
+		if (!is_string($value)) {
+			return false;
+		}
+		if (function_exists('str_starts_with')) {
+			return str_starts_with($value, $rule);
+		}
+		$code = substr($value, 0, 1);
+		return $code == $rule;
+	}
+
+	/**
+	 * 是否以某个字符串结尾
+	 * 
+	 * @param mixed $value 字段值
+	 * @param string $rule  验证规则
+	 * @return boolean
+	 */
+	public function endWith($value, string $rule): bool
+	{
+		if (!is_string($value)) {
+			return false;
+		}
+		if (function_exists('str_ends_with')) {
+			return str_ends_with($value, $rule);
+		}
+		$code = substr($value, -1);
+		return $code == $rule;
+	}
+
+	/**
+	 * 是否包含某个字符串
+	 *
+	 * @param mixed $value 字段值
+	 * @param string $rule  验证规则
+	 * @return boolean
+	 */
+	public function contain($value, string $rule): bool
+	{
+		if (!is_string($value)) {
+			return false;
+		}
+		if (function_exists('str_contains')) {
+			return str_contains($value, $rule);
+		}
+		return strpos($value, $rule) !== false;
+	}
+
+	/**
+	 * 比较两值是否不相等
+	 *
+	 * @param mixed $value	比较的值1
+	 * @param mixed $rule	比较的值2
+	 * @return boolean
+	 */
+	public function neq($value, $rule): bool
+	{
+		return $value != $rule;
 	}
 
 	/**
@@ -1013,5 +1146,27 @@ class Validate
 	{
 		$values = explode(',', $value);
 		return count($values) >= $count;
+	}
+
+	/**
+	 * 验证某个字段必须是指定值的倍数
+	 *
+	 * @param mixed $value 字段值
+	 * @param mixed $rule 比较倍数值
+	 * @return bool
+	 */
+	public function multipleOf($value, $rule): bool
+	{
+		if (!$this->num($value)) {
+			return false;
+		}
+		if (!$this->num($rule)) {
+			throw new InvalidArgumentException('比较倍数值必须为数字');
+		}
+		if ('0' == $rule || $value < $rule) {
+			return false;
+		}
+
+		return $value % $rule === 0;
 	}
 }

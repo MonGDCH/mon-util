@@ -246,7 +246,7 @@ class Tree
      * 组成树结构
      *
      * @param  string $childName    子级标志位
-     * @param  boolean $mark    是否显示mark标志符号
+     * @param  boolean $mark        是否显示mark标志符号
      * @return array
      */
     public function getTree(string $childName = 'children', bool $mark = false): array
@@ -293,7 +293,7 @@ class Tree
             $result[] = $v;
             if ($child) {
                 // 递归合并
-                $result = array_merge($result, (array) $this->rollbackTree($child, $mark));
+                $result = array_merge($result, $this->rollbackTree($child, $mark));
             }
         }
 
@@ -414,7 +414,7 @@ class Tree
         $number = 1;
         if ($childs) {
             $total = count($childs);
-            foreach ($childs as $id => $value) {
+            foreach ($childs as $value) {
                 $j = $k = '';
                 if ($number == $total) {
                     $j .= $this->config['icon'][2];
@@ -444,7 +444,7 @@ class Tree
     public function getTreeList(array $data = [], string $field = 'name'): array
     {
         $arr = [];
-        foreach ($data as $k => $v) {
+        foreach ($data as $v) {
             $childlist = isset($v['childlist']) ? $v['childlist'] : [];
             unset($v['childlist']);
             $v[$field] = $v['spacer'] . ' ' . $v[$field];

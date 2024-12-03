@@ -543,6 +543,7 @@ class View implements ArrayAccess
      * @param  string  $key 变量名称
      * @return boolean
      */
+    #[\ReturnTypeWillChange]
     public function offsetExists($key): bool
     {
         return $this->has($key);
@@ -554,6 +555,7 @@ class View implements ArrayAccess
      * @param  string $key     变量名称
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($key)
     {
         return $this->get($key);
@@ -566,6 +568,7 @@ class View implements ArrayAccess
      * @param mixed $value  变量值
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function offsetSet($key, $value = null): void
     {
         $this->set($key, $value);
@@ -577,6 +580,7 @@ class View implements ArrayAccess
      * @param  string $key 变量名称
      * @return void
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset($key): void
     {
         $this->delete($key);

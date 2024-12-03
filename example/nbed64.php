@@ -30,8 +30,6 @@ $token = Nbed64::instance()->stringEncryptEx($str, $key);
 dd($token);
 
 
-$key = 'aaaa';
-
 // $decode = Nbed64::instance()->stringDecrypt($token, $key);
 $decode = Nbed64::instance()->stringDecryptEx($token, $key);
 dd($decode);

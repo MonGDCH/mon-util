@@ -22,11 +22,11 @@ $config = [
         // 服务器地址
         'host'          => '127.0.0.1',
         // 数据库名
-        'database'      => 'test',
+        'database'      => 'gaia',
         // 用户名
-        'username'      => 'root',
+        'username'      => 'dev',
         // 密码
-        'password'      => 'root',
+        'password'      => 'dev',
         // 端口
         'port'          => '3306',
         // 数据库编码默认采用utf8
@@ -44,10 +44,13 @@ $tableStruct = Migrate::instance()->tableStruct('record');
 $fileList = Migrate::instance()->fileList();
 // 获取指定备份文件信息
 $fileInfo = Migrate::instance()->fileInfo();
+
+
+
 // 删除备份文件
-// $del = Migrate::instance()->del();
+// $del = Migrate::instance()->remove(time());
 // 备份指定表
-// $backup = Migrate::instance()->backup('record');
+// $backup = Migrate::instance()->backup('user_log');
 // 备份所有数据表
 // $migrate = Migrate::instance()->migrate();
 
@@ -59,5 +62,5 @@ $fileInfo = Migrate::instance()->fileInfo();
 // $import = Migrate::instance()->import(1657696160);
 // debug($tableList);
 
-$d = new Dictionary($config['db']);
-echo $d->getHTML();
+// $d = new Dictionary($config['db']);
+// echo $d->getHTML();
