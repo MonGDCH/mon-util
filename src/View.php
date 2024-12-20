@@ -121,7 +121,7 @@ class View implements ArrayAccess
      */
     public function getExt(bool $dot = true): string
     {
-        return ($dot ? '.' : '') . $this->ext;
+        return ($dot && $this->ext ? '.' : '') . $this->ext;
     }
 
     /**
