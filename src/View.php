@@ -116,12 +116,11 @@ class View implements ArrayAccess
     /**
      * 获取视图文件后缀
      *
-     * @param boolean $dot  是否加上 . 符号
      * @return string
      */
-    public function getExt(bool $dot = true): string
+    public function getExt(): string
     {
-        return ($dot && $this->ext ? '.' : '') . $this->ext;
+        return $this->ext;
     }
 
     /**
@@ -185,10 +184,9 @@ class View implements ArrayAccess
      * @param boolean $ext  是否加上后缀名
      * @return string
      */
-    public function display(string $view, array $data = [], bool $ext = true): string
+    public function display(string $view, array $data = []): string
     {
-        $tmp = $ext ? ($view . $this->getExt()) : $view;
-        return $this->render($tmp, $data);
+        return $this->render($view, $data);
     }
 
     /**

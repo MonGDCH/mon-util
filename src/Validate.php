@@ -1043,12 +1043,12 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function idCard($idcard, $allowEmpty = false): bool
+	public function idCard($value, $allowEmpty = false): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
 		}
-		return IdCard::instance()->check($idcard);
+		return IdCard::instance()->check($value);
 	}
 
 	/**
