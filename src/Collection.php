@@ -229,7 +229,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
     {
         $data = [];
         foreach ($this->data as $item) {
-            if (isset($item[$key])) {
+            if (array_key_exists($key, $item)) {
                 $data[] = $item[$key];
             }
         }
@@ -325,7 +325,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * pop
+     * pop 弹出数据
      *
      * @param integer $count pop个数
      * @return mixed

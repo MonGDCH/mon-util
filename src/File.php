@@ -402,26 +402,28 @@ class File
     /**
      * 获取文件mimetype
      *
-     * @param string $file  文件路径
-     * @param string $default  默认文件mimetype
+     * @param string $file      文件路径
+     * @param string $default   默认文件mimetype
+     * @param array  $mimeTypes 扩展mimetype，如定义则不使用 mime_content_type 函数
      * @return string
      */
-    public function getMimeType(string $file, string $default = 'application/octet-stream'): string
+    public function getMimeType(string $file, string $default = 'application/octet-stream', array $mimeTypes = []): string
     {
         // 默认类型
         $mimeType = $default;
-        if (function_exists('mime_content_type')) {
+        if (empty($mimeTypes) && function_exists('mime_content_type')) {
             // 使用 mime_content_type 函数，需要安装 Fileinfo 扩展
             $mimeType = mime_content_type($file);
         } else {
             // 使用自定义函数
-            $mime_types = [
+            $mime_types = array_merge([
                 'html' => 'text/html',
                 'htm' => 'text/html',
                 'shtml' => 'text/html',
                 'css' => 'text/css',
                 'xml' => 'text/xml',
                 'js' => 'application/javascript',
+                'mjs' => 'application/javascript',
                 'gif' => 'image/gif',
                 'jpeg' => 'image/jpeg',
                 'jpg' => 'image/jpeg',
@@ -521,7 +523,7 @@ class File
                 'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-            ];
+            ], $mimeTypes);
             $ext = strtolower($this->getExt($file));
             if (isset($mime_types[$ext])) {
                 // 存在支持的mimeType类型

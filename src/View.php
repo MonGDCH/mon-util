@@ -35,7 +35,7 @@ class View implements ArrayAccess
      *
      * @var string
      */
-    protected $ext = 'html';
+    protected $ext = '';
 
     /**
      * 视图嵌套级别
@@ -330,7 +330,7 @@ class View implements ArrayAccess
         $result = $this->data;
         for ($i = 0, $len = count($name); $i < $len; $i++) {
             // 不存在配置节点，返回默认值
-            if (!isset($result[$name[$i]])) {
+            if (!array_key_exists($name[$i], $result)) {
                 $result = $default;
                 break;
             }

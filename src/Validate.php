@@ -145,7 +145,7 @@ class Validate
 			// 分割获取验证规则
 			$rule = is_array($rules) ? $rules : explode('|', $rules);
 			// 存在节点，验证节点
-			if (isset($checkData[$dataItem])) {
+			if (array_key_exists($dataItem, $checkData)) {
 				$value = $checkData[$dataItem];
 				// 解析规则
 				$status = $this->analysis($value, $rule, $dataItem, $checkData);
@@ -349,7 +349,7 @@ class Validate
 		$checkRule = $this->getCheckRule();
 		if (!empty($this->checkScope) && is_array($this->checkScope)) {
 			foreach ($this->checkScope as $v) {
-				if (isset($checkRule[$v])) {
+				if (array_key_exists($v, $checkRule)) {
 					$scopeRule[$v] = $checkRule[$v];
 				}
 			}
@@ -1061,7 +1061,7 @@ class Validate
 	 */
 	public function confirm($value, $rule, array $data = []): bool
 	{
-		return isset($data[$rule]) && $value == $data[$rule];
+		return array_key_exists($rule, $data) && $value == $data[$rule];
 	}
 
 	/**
@@ -1074,7 +1074,7 @@ class Validate
 	 */
 	public function different($value, $rule, array $data = []): bool
 	{
-		return !isset($data[$rule]) || $value != $data[$rule];
+		return !array_key_exists($rule, $data) || $value != $data[$rule];
 	}
 
 	/**
