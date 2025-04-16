@@ -736,7 +736,7 @@ class Common
             $strarr[$i] = $re;
         }
         if ($begin >= $end || $begin >= $last || $end > $last) {
-            return false;
+            return '';
         }
 
         return implode('', $strarr);

@@ -30,7 +30,7 @@ class Network
      * @param   string  $url     请求地址
      * @param   array   $data    传递数据
      * @param   string  $type    请求类型
-     * @param   array   $header  请求头
+     * @param   array   $header  请求头，关联数组
      * @param   boolean $toJson  解析json返回数组
      * @param   integer $timeOut 请求超时时间
      * @param   string  $agent   请求user-agent
@@ -41,9 +41,9 @@ class Network
         $method = strtoupper($type);
         $queryData = $data;
         // get请求
-        if ($method == 'GET' && count($data) > 0) {
-            $uri = Common::instance()->mapToStr($data);
-            $url = $url . (strpos($url, '?') === false ? '?' : '') . $uri;
+        if ($method == 'GET' && !empty($data)) {
+            $uri = http_build_query($data);
+            $url = $url . (strpos($url, '?') === false ? '?' : '&') . $uri;
             $queryData = [];
         }
 
@@ -77,7 +77,8 @@ class Network
         $curls = [];
         $master = curl_multi_init();
         // 确保滚动窗口不大于网址数量
-        $rolling = (count($queryList) < $rolling) ? count($queryList) : $rolling;
+        $queryListCount = count($queryList);
+        $rolling = ($queryListCount < $rolling) ? $queryListCount : $rolling;
         for ($i = 0; $i < $rolling; $i++) {
             $item = $queryList[$i];
             // 获取curl
@@ -159,8 +160,8 @@ class Network
         // 处理文件上传数据集
         $filename = empty($filename) ? basename($path) : $filename;
         $sendData = array_merge($data, [$name => new \CURLFile(realpath($path), File::instance()->getMimeType($path), $filename)]);
-        $header = array_merge(['Content-Type: multipart/form-data'], $header);
-        $ch = $this->getRequest($url, $sendData, 'post', $header, $timeout, $agent);
+        $header['Content-Type'] = 'multipart/form-data';
+        $ch = $this->getRequest($url, $sendData, 'POST', $header, $timeout, $agent);
         // 发起请求
         $html = curl_exec($ch);
         if ($html === false) {
@@ -274,8 +275,6 @@ class Network
      */
     public function getRequest(string $url, array $data = [], string $type = 'GET', array $header = [], int $timeOut = 2, string $agent = '')
     {
-        // 判断是否为https请求
-        $ssl = strtolower(mb_substr($url, 0, 8, 'UTF-8')) == 'https://' ? true : false;
         $ch = curl_init();
         // 设置请求URL
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -290,21 +289,13 @@ class Network
             case 'PUT':
             case 'DELETE':
             case 'PATCH':
-                $data = empty($data) ? $data : json_encode($data, JSON_UNESCAPED_UNICODE);
-                $header[] = 'Content-Type:application/json';
+                $header['Content-Type'] = 'application/json';
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $type);
                 break;
             default:
                 throw new NetWorkException("不支持的HTTP请求类型({$type})");
         }
-        // 判断是否需要传递数据
-        if (!empty($data)) {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        }
-        // 设置超时时间
-        if ($timeOut > 0) {
-            curl_setopt($ch, CURLOPT_TIMEOUT, $timeOut);
-        }
+
         // 设置内容以文本形式返回，而不直接返回
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_VERBOSE, false);
@@ -318,17 +309,30 @@ class Network
         // 设置请求头
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         if (!empty($header)) {
-            // 优化关联数组请求头处理
-            $headers = $header;
-            if (Common::instance()->isAssoc($header)) {
-                $headers = [];
-                foreach ($header as $k => $v) {
-                    $headers[] = "{$k}: {$v}";
+            $headers = [];
+            foreach ($header as $k => $v) {
+                $headers[] = "{$k}: {$v}";
+                if (strtolower($k) == 'content-type') {
+                    if (strpos($v, 'application/x-www-form-urlencoded') !== false) {
+                        $data = http_build_query($data);
+                    } else if (strpos($v, 'application/json') !== false) {
+                        $data = json_encode($data, JSON_UNESCAPED_UNICODE);
+                    }
+                    // $headers[] = "Content-Length: " . strlen($data);
                 }
             }
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         }
-        if ($ssl) {
+        // 判断是否需要传递数据
+        if (!empty($data)) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        }
+        // 设置超时时间
+        if ($timeOut > 0) {
+            curl_setopt($ch, CURLOPT_TIMEOUT, $timeOut);
+        }
+        // 判断是否为https请求
+        if (strtolower(mb_substr($url, 0, 8, 'UTF-8')) == 'https://') {
             // 跳过证书检查
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             // 从证书中检查SSL加密算法是否存在
@@ -361,8 +365,8 @@ class Network
         if (isset($item['data']) && !empty($item['data'])) {
             $data = $item['data'];
             if ($method == 'GET') {
-                $uri = Common::instance()->mapToStr($data);
-                $url = $url . (strpos($url, '?') === false ? '?' : '') . $uri;
+                $uri = http_build_query($data);
+                $url = $url . (strpos($url, '?') === false ? '?' : '&') . $uri;
                 $data = [];
             }
         }

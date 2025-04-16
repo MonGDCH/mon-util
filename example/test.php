@@ -2,19 +2,22 @@
 
 declare(strict_types=1);
 
-use mon\util\Context;
-use mon\util\File;
-use mon\util\OS;
+use mon\util\Common;
+use mon\util\Network;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// dd(OS::instance()->getCpuInfo());
+$data = ['a' => 1, 'b' => 2];
 
-// dd(File::instance()->formatByte(6545648, 2));
+$file = __FILE__;
 
-$d = Context::set('aa', 'bb');
-$c = Context::get('aa');
+// dd(http_build_query($data));
 
-$e = Context::get('aac', 'cc1');
-dd($c);
-dd($e);
+// dd(Common::instance()->mapToStr($data));
+
+$url = 'http://gdmon.test/test.php?ac=3';
+// $url = 'http://localhost:8088/';
+// $result = Network::instance()->sendFile('http://gdmon.test/test.php', $file, ['a' => 123], 'test.txt', 'file', [], false);
+$result = Network::instance()->sendHTTP($url, ['a' => 'asdf', 'bb' => 3], 'get', ['Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8'], toJson: false);
+
+echo $result;
