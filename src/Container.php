@@ -40,9 +40,7 @@ class Container implements ContainerInterface
     /**
      * 私有化构造方法
      */
-    protected function __construct()
-    {
-    }
+    protected function __construct() {}
 
     /**
      * get方法别名，重新获取实例

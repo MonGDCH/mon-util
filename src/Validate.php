@@ -1169,6 +1169,39 @@ class Validate
 	}
 
 	/**
+	 * 数据列表验证
+	 * 
+	 * value: [1,2,4,5,6]
+	 * scope: listCheck:required,id
+	 *
+	 * @param array $value  验证值
+	 * @param string $rule  验证规则
+	 * @throws ValidateException
+	 * @return boolean
+	 */
+	public function arrayCheck($value, $rule): bool
+	{
+		if (!is_array($value)) {
+			return false;
+		}
+		if (empty($value)) {
+			return true;
+		}
+		$rules = explode(',', $rule);
+		foreach ($rules as $call) {
+			if (!is_string($call) || empty($call) || !method_exists($this, $call)) {
+				throw new ValidateException('验证器验证方法不支持[' . $call . ']');
+			}
+			foreach ($value as $v) {
+				if (!call_user_func([$this, $call], $v)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
 	 * 字符串列表验证
 	 * 
 	 * value: 1,2,4,5,6

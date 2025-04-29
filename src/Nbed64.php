@@ -746,7 +746,7 @@ class Nbed64
     private function _keyToByteArray(string $key): array
     {
         $byteArr = [];
-        for ($i = 0; $i < strlen($key); $i++) {
+        for ($i = 0, $l = strlen($key); $i < $l; $i++) {
             $byteArr[$i] = ord($key[$i]);
         }
         return $byteArr;
@@ -812,7 +812,7 @@ class Nbed64
             $map = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
         }
         $byteArr = [];
-        for ($i = 0; $i < strlen($map); $i++) {
+        for ($i = 0, $l = strlen($map); $i < $l; $i++) {
             //$byteArr[$i] = ord($map[$i]);
             array_push($byteArr, ord($map[$i]));
         }

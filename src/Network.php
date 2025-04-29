@@ -38,16 +38,7 @@ class Network
      */
     public function sendHTTP(string $url, array $data = [], string $type = 'GET', array $header = [], bool $toJson = true, int $timeOut = 2, string $agent = '')
     {
-        $method = strtoupper($type);
-        $queryData = $data;
-        // get请求
-        if ($method == 'GET' && !empty($data)) {
-            $uri = http_build_query($data);
-            $url = $url . (strpos($url, '?') === false ? '?' : '&') . $uri;
-            $queryData = [];
-        }
-
-        $ch = $this->getRequest($url, $queryData, $method, $header, $timeOut, $agent);
+        $ch = $this->getRequest($url, $data, $type, $header, $timeOut, $agent);
         // 发起请求
         $html = curl_exec($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -271,16 +262,19 @@ class Network
      * @param  array   $header  请求头
      * @param  integer $timeOut 超时时间
      * @param  string  $agent   请求user-agent
-     * @return mixed cURL句柄
+     * @return \CurlHandle cURL句柄
      */
     public function getRequest(string $url, array $data = [], string $type = 'GET', array $header = [], int $timeOut = 2, string $agent = '')
     {
         $ch = curl_init();
-        // 设置请求URL
-        curl_setopt($ch, CURLOPT_URL, $url);
         // 判断请求类型
         switch (strtoupper($type)) {
             case 'GET':
+                if (!empty($data)) {
+                    $uri = http_build_query($data);
+                    $url = $url . (strpos($url, '?') === false ? '?' : '&') . $uri;
+                    $data = [];
+                }
                 curl_setopt($ch, CURLOPT_HTTPGET, true);
                 break;
             case 'POST':
@@ -295,7 +289,15 @@ class Network
             default:
                 throw new NetWorkException("不支持的HTTP请求类型({$type})");
         }
-
+        // 设置请求URL
+        curl_setopt($ch, CURLOPT_URL, $url);
+        // 判断是否为https请求
+        if (strtolower(mb_substr($url, 0, 8, 'UTF-8')) == 'https://') {
+            // 跳过证书检查
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            // 从证书中检查SSL加密算法是否存在
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        }
         // 设置内容以文本形式返回，而不直接返回
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_VERBOSE, false);
@@ -313,12 +315,14 @@ class Network
             foreach ($header as $k => $v) {
                 $headers[] = "{$k}: {$v}";
                 if (strtolower($k) == 'content-type') {
+                    $v = strtolower($v);
                     if (strpos($v, 'application/x-www-form-urlencoded') !== false) {
                         $data = http_build_query($data);
                     } else if (strpos($v, 'application/json') !== false) {
                         $data = json_encode($data, JSON_UNESCAPED_UNICODE);
+                    } else if (strpos($v, 'application/xml') !== false) {
+                        $data = Common::instance()->arrToXML($data);
                     }
-                    // $headers[] = "Content-Length: " . strlen($data);
                 }
             }
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -331,13 +335,6 @@ class Network
         if ($timeOut > 0) {
             curl_setopt($ch, CURLOPT_TIMEOUT, $timeOut);
         }
-        // 判断是否为https请求
-        if (strtolower(mb_substr($url, 0, 8, 'UTF-8')) == 'https://') {
-            // 跳过证书检查
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            // 从证书中检查SSL加密算法是否存在
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        }
 
         return $ch;
     }
@@ -349,7 +346,7 @@ class Network
      * @param array $header 请求头
      * @param integer $timeOut 超时时间
      * @param string $agent 请求user-agent
-     * @return mixed cURL句柄
+     * @return \CurlHandle cURL句柄
      */
     protected function getCh(array $item, array $header = [], int $timeOut = 2, string $agent = '')
     {

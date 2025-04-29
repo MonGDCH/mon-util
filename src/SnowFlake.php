@@ -80,9 +80,7 @@ class SnowFlake
     /**
      * 私有化构造方法
      */
-    protected function __construct()
-    {
-    }
+    protected function __construct() {}
 
     /**
      * 配置，设置机房号及机器号
