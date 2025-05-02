@@ -1750,7 +1750,7 @@ class QRmask
 
             $howManuOut = 8 - (QRcodeEnum::QR_FIND_FROM_RANDOM % 9);
             for ($i = 0; $i <  $howManuOut; $i++) {
-                $remPos = rand(0, count($checked_masks) - 1);
+                $remPos = random_int(0, count($checked_masks) - 1);
                 unset($checked_masks[$remPos]);
                 $checked_masks = array_values($checked_masks);
             }

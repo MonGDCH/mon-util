@@ -32,7 +32,7 @@ class Common
         $i = 0;
         $result = [];
         while ($i < $count) {
-            $num = mt_rand($min, $max);
+            $num = random_int($min, $max);
             if (!in_array($num, $filter)) {
                 $result[] = $num;
                 $filter[] = $num;
@@ -450,7 +450,7 @@ class Common
      */
     public function uuid(): string
     {
-        $charid = md5(uniqid((string)mt_rand(), true));
+        $charid = md5(uniqid(random_bytes(10), true));
         // 字符"-"
         $hyphen = chr(45);
         $uuid = $this->mSubstr($charid, 0, 8) . $hyphen
@@ -547,7 +547,7 @@ class Common
         } else {
             // 中文随机字
             for ($i = 0; $i < $len; $i++) {
-                $str .= $this->mSubstr($chars, (int)floor(mt_rand(0, mb_strlen($chars, 'UTF-8') - 1)), 1);
+                $str .= $this->mSubstr($chars, (int)floor(random_int(0, mb_strlen($chars, 'UTF-8') - 1)), 1);
             }
         }
 

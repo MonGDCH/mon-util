@@ -790,7 +790,7 @@ class Nbed64
         $maskNumber = $maskNumber > 65535 ? 65535 : $maskNumber;
         $byteArr = [];
         for ($i = 0; $i < $maskNumber; $i++) {
-            $byteArr[$i] = rand(0, 255);
+            $byteArr[$i] = random_int(0, 255);
         }
         return $byteArr;
     }

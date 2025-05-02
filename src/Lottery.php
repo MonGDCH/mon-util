@@ -91,7 +91,7 @@ class Lottery
         $pow = pow(10, $this->scale);
         foreach ($this->awards as $item) {
             $randProbability = intval($probabilityCount * $pow);
-            $randInum = mt_rand(1, $randProbability);
+            $randInum = random_int(1, $randProbability);
             $randNum = bcdiv((string)$randInum, (string)$pow, $this->scale);
             $bccomp = bccomp((string)$randNum, (string)$item[$this->probabilityKey], $this->scale);
             if ($bccomp <= 0) {

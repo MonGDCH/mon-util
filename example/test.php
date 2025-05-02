@@ -7,6 +7,10 @@ use mon\util\Network;
 
 require __DIR__ . '/../vendor/autoload.php';
 
+$d = Common::instance()->uuid();
+dd($d);
+exit;
+
 $data = ['a' => 1, 'b' => 2];
 
 $file = __FILE__;

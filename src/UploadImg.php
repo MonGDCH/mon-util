@@ -150,6 +150,6 @@ class UploadImg
      */
     protected function buildName(string $name): string
     {
-        return empty($name) ? uniqid('img_' . mt_rand()) : $name;
+        return empty($name) ? uniqid('img_' . random_bytes(6)) : $name;
     }
 }
