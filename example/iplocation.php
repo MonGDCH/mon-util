@@ -14,4 +14,4 @@ $ip = '255.255.255.1';
 
 $location = IPLocation::instance()->init($qqwry)->getLocation($ip);
 
-debug($location);
+dd($location);

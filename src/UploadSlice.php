@@ -114,7 +114,7 @@ class UploadSlice
         // 保存临时文件
         $fileName = md5($fileID) . '_' . $chunk;
         $tmpPath = $this->config['rootPath'] . DIRECTORY_SEPARATOR . $this->config['tmpPath'] . DIRECTORY_SEPARATOR . $fileID;
-        if (!File::instance()->createDir($tmpPath)) {
+        if (!File::createDir($tmpPath)) {
             throw new UploadException('创建临时文件存储目录失败', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
         }
         $savePath = $tmpPath . DIRECTORY_SEPARATOR . $fileName;
@@ -143,14 +143,14 @@ class UploadSlice
             throw new UploadException('临时文件不存在', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
         }
         // 验证文件名
-        $ext = File::instance()->getExt($fileName);
+        $ext = File::getExt($fileName);
         if (!empty($this->config['exts']) && !in_array($ext, $this->config['exts'])) {
             throw new UploadException('不支持文件保存类型', UploadException::ERROR_UPLOAD_EXT_FAILD);
         }
         // 多级目录存储
         $savePath = $this->config['rootPath'] . DIRECTORY_SEPARATOR . $saveDir;
         if (!empty($saveDir) && !is_dir($savePath)) {
-            if (!File::instance()->createDir($savePath)) {
+            if (!File::createDir($savePath)) {
                 throw new UploadException('创建文件存储目录失败', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
             }
         }
@@ -180,12 +180,12 @@ class UploadSlice
             fclose($readerFp);
             unset($readerFp);
             // 删除临时文件
-            File::instance()->removeFile($chunkPath);
+            File::removeFile($chunkPath);
         }
         // 关闭保存文件句柄
         fclose($writerFp);
         // 删除临时目录
-        File::instance()->removeDir($tmpPath);
+        File::removeDir($tmpPath);
 
         return ['savePath' => $saveFile, 'saveDir' => $savePath, 'fileName' => $fileName];
     }
@@ -226,11 +226,11 @@ class UploadSlice
     protected function checkPath(): bool
     {
         $rootPath = $this->config['rootPath'];
-        if ((!is_dir($rootPath) && !File::instance()->createDir($rootPath)) || (is_dir($rootPath) && !is_writable($rootPath))) {
+        if ((!is_dir($rootPath) && !File::createDir($rootPath)) || (is_dir($rootPath) && !is_writable($rootPath))) {
             throw new UploadException('上传文件保存目录不可写入：' . $rootPath, UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
         }
         $tmpPath = $rootPath . DIRECTORY_SEPARATOR . $this->config['tmpPath'];
-        if ((!is_dir($tmpPath) && !File::instance()->createDir($tmpPath)) || (is_dir($tmpPath) && !is_writable($tmpPath))) {
+        if ((!is_dir($tmpPath) && !File::createDir($tmpPath)) || (is_dir($tmpPath) && !is_writable($tmpPath))) {
             throw new UploadException('上传文件临时保存目录不可写入：' . $tmpPath, UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
         }
         return true;

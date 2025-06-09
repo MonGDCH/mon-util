@@ -78,7 +78,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      */
     public function getXML(): string
     {
-        return Common::instance()->arrToXML($this->data);
+        return Common::arrToXML($this->data);
     }
 
     /**
@@ -89,7 +89,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      */
     public function getSpecCartesian(array $data = []): Collection
     {
-        $result = Common::instance()->specCartesian($this->data, $data);
+        $result = Common::specCartesian($this->data, $data);
         return new self($result);
     }
 
@@ -102,7 +102,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      */
     public function serialize(string $ds = "&", bool $startDS = false): string
     {
-        $data = Common::instance()->mapToStr($this->data, $ds);
+        $data = Common::mapToStr($this->data, $ds);
         return $startDS ? $data : ltrim($data, $ds);
     }
 
@@ -145,7 +145,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      */
     public function unique2D(): Collection
     {
-        $data = Common::instance()->uniqueArray2D($this->data);
+        $data = Common::uniqueArray2D($this->data);
         return new self($data);
     }
 
@@ -156,7 +156,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      */
     public function valueUnique2D(): Collection
     {
-        $data = Common::instance()->uniqueArrayValue2D($this->data);
+        $data = Common::uniqueArrayValue2D($this->data);
         return new self($data);
     }
 
@@ -215,7 +215,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
      */
     public function sort2D(string $keys, $sort = SORT_DESC): Collection
     {
-        $data = Common::instance()->sortArray2D($this->data, $keys, $sort);
+        $data = Common::sortArray2D($this->data, $keys, $sort);
         return new self($data);
     }
 

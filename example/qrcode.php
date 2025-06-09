@@ -7,7 +7,7 @@ use mon\util\Tool;
 require __DIR__ . '/../vendor/autoload.php';
 
 // qrcode('https://gdmon.com/');
-$img = Tool::instance()->qrcode('https://gdmon.com/');
+$img = Tool::qrcode('https://gdmon.com/');
 // $img = QRcode::text('https://gdmon.com/', false, QRcodeEnum::QR_ECLEVEL_L, 8, 1);
 dd($img);
 // file_put_contents('./aaa.png', $img);

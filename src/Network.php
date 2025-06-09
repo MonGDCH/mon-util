@@ -15,15 +15,6 @@ use mon\util\exception\NetWorkException;
  */
 class Network
 {
-    use Instance;
-
-    /**
-     * 默认的user-agent
-     *
-     * @var string
-     */
-    protected $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36';
-
     /**
      * HTTP以URL的形式发送请求
      *
@@ -36,9 +27,9 @@ class Network
      * @param   string  $agent   请求user-agent
      * @return  mixed 结果集
      */
-    public function sendHTTP(string $url, array $data = [], string $type = 'GET', array $header = [], bool $toJson = true, int $timeOut = 2, string $agent = '')
+    public static function sendHTTP(string $url, array $data = [], string $type = 'GET', array $header = [], bool $toJson = true, int $timeOut = 2, string $agent = '')
     {
-        $ch = $this->getRequest($url, $data, $type, $header, $timeOut, $agent);
+        $ch = static::getRequest($url, $data, $type, $header, $timeOut, $agent);
         // 发起请求
         $html = curl_exec($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -61,7 +52,7 @@ class Network
      * @param string $agent 默认user-agent
      * @return array 成功结果集与失败结果集
      */
-    public function sendMultiHTTP(array $queryList, int $rolling = 5, array $header = [], int $timeOut = 2, string $agent = ''): array
+    public static function sendMultiHTTP(array $queryList, int $rolling = 5, array $header = [], int $timeOut = 2, string $agent = ''): array
     {
         $result = [];
         $errors = [];
@@ -73,7 +64,7 @@ class Network
         for ($i = 0; $i < $rolling; $i++) {
             $item = $queryList[$i];
             // 获取curl
-            $ch = $this->getCh($item, $header, $timeOut, $agent);
+            $ch = static::getCh($item, $header, $timeOut, $agent);
             // 写入批量请求
             curl_multi_add_handle($master, $ch);
             // 记录队列
@@ -115,7 +106,7 @@ class Network
 
                 // 发起新请求（在删除旧请求之前，请务必先执行此操作）, 当$i等于$urls数组大小时不用再增加了
                 if ($i < count($queryList)) {
-                    $ch = $this->getCh($queryList[$i++]);
+                    $ch = static::getCh($queryList[$i++]);
                     curl_multi_add_handle($master, $ch);
                     // 记录队列
                     $key = (string)$ch;
@@ -146,13 +137,13 @@ class Network
      * @param string $agent 请求user-agent
      * @return mixed
      */
-    public function sendFile(string $url, string $path, array $data = [], string $filename = '', string $name = 'file', array $header = [], bool $toJson = true, int $timeout = 300, string $agent = '')
+    public static function sendFile(string $url, string $path, array $data = [], string $filename = '', string $name = 'file', array $header = [], bool $toJson = true, int $timeout = 300, string $agent = '')
     {
         // 处理文件上传数据集
         $filename = empty($filename) ? basename($path) : $filename;
-        $sendData = array_merge($data, [$name => new \CURLFile(realpath($path), File::instance()->getMimeType($path), $filename)]);
+        $sendData = array_merge($data, [$name => new \CURLFile(realpath($path), File::getMimeType($path), $filename)]);
         $header['Content-Type'] = 'multipart/form-data';
-        $ch = $this->getRequest($url, $sendData, 'POST', $header, $timeout, $agent);
+        $ch = static::getRequest($url, $sendData, 'POST', $header, $timeout, $agent);
         // 发起请求
         $html = curl_exec($ch);
         if ($html === false) {
@@ -176,7 +167,7 @@ class Network
      * @param boolean $close    是否关闭链接
      * @return array 结果集
      */
-    public function sendTCP(string $ip, int $port, string $cmd, bool $toJson = true, int $timeOut = 2, int $readLen = 102400, bool $close = true): array
+    public static function sendTCP(string $ip, int $port, string $cmd, bool $toJson = true, int $timeOut = 2, int $readLen = 102400, bool $close = true): array
     {
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (!$socket) {
@@ -220,7 +211,7 @@ class Network
      * @param boolean $close    是否关闭链接
      * @return array 结果集
      */
-    public function sendUDP(string $ip, int $port, string $cmd, bool $toJson = true, int $timeOut = 2, int $readLen = 102400, bool $close = true): array
+    public static function sendUDP(string $ip, int $port, string $cmd, bool $toJson = true, int $timeOut = 2, int $readLen = 102400, bool $close = true): array
     {
         $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
         if (!$socket) {
@@ -264,7 +255,7 @@ class Network
      * @param  string  $agent   请求user-agent
      * @return \CurlHandle cURL句柄
      */
-    public function getRequest(string $url, array $data = [], string $type = 'GET', array $header = [], int $timeOut = 2, string $agent = '')
+    public static function getRequest(string $url, array $data = [], string $type = 'GET', array $header = [], int $timeOut = 2, string $agent = '')
     {
         $ch = curl_init();
         // 判断请求类型
@@ -306,7 +297,8 @@ class Network
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_MAXREDIRS, 6);
         // 设置user-agent
-        $userAgent = $agent ? $agent : $this->userAgent;
+        $defaultUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36';
+        $userAgent = $agent ? $agent : $defaultUserAgent;
         curl_setopt($ch, CURLOPT_USERAGENT, $userAgent);
         // 设置请求头
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
@@ -321,7 +313,7 @@ class Network
                     } else if (strpos($v, 'application/json') !== false) {
                         $data = json_encode($data, JSON_UNESCAPED_UNICODE);
                     } else if (strpos($v, 'application/xml') !== false) {
-                        $data = Common::instance()->arrToXML($data);
+                        $data = Common::arrToXML($data);
                     }
                 }
             }
@@ -348,7 +340,7 @@ class Network
      * @param string $agent 请求user-agent
      * @return \CurlHandle cURL句柄
      */
-    protected function getCh(array $item, array $header = [], int $timeOut = 2, string $agent = '')
+    protected static function getCh(array $item, array $header = [], int $timeOut = 2, string $agent = '')
     {
         // 请求URL
         if (!isset($item['url']) || empty($item['url'])) {
@@ -374,7 +366,7 @@ class Network
         // 请求user-agent
         $agent = (isset($item['agent']) && !empty($item['agent'])) ? $item['agent'] : $agent;
         // 获取curl请求
-        $ch = $this->getRequest($url, $data, $method, $header, $timeOut, $agent);
+        $ch = static::getRequest($url, $data, $method, $header, $timeOut, $agent);
 
         return $ch;
     }

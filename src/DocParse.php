@@ -16,8 +16,6 @@ use RuntimeException;
  */
 class DocParse
 {
-    use Instance;
-
     /**
      * 解析类型对象, 获取类型注解文档
      *
@@ -26,7 +24,7 @@ class DocParse
      * @throws RuntimeException
      * @return array
      */
-    public function parseClass(string $class, $type = ReflectionMethod::IS_PUBLIC): array
+    public static function parseClass(string $class, $type = ReflectionMethod::IS_PUBLIC): array
     {
         if (class_exists($class)) {
             $result = [];
@@ -35,7 +33,7 @@ class DocParse
             // 解析文档中所有的方法
             foreach ($method as $action) {
                 $doc = $action->getDocComment();
-                $data = $this->parse($doc);
+                $data = static::parse($doc);
                 $result[$action->name] = $data;
             }
 
@@ -51,7 +49,7 @@ class DocParse
      * @param string $doc 注解文档内容
      * @return array
      */
-    public function parse(string $doc): array
+    public static function parse(string $doc): array
     {
         // 解析注解文本块，获取文档内容
         if (preg_match('#^/\*\*(.*)\*/#s', $doc, $comment) === false) {
@@ -63,7 +61,7 @@ class DocParse
             return [];
         }
         // 解析每行注解，获取对应的内容信息
-        $result = $this->parseLines($lines[1]);
+        $result = static::parseLines($lines[1]);
         return $result;
     }
 
@@ -73,12 +71,12 @@ class DocParse
      * @param array $lines  注解内容
      * @return array
      */
-    protected function parseLines(array $lines): array
+    protected static function parseLines(array $lines): array
     {
         $result = [];
         $description = [];
         foreach ($lines as $line) {
-            $lineData = $this->parseLine($line);
+            $lineData = static::parseLine($line);
             if (is_string($lineData)) {
                 $description[] = $lineData;
             } else if (is_array($lineData)) {
@@ -95,7 +93,7 @@ class DocParse
      * @param string $line  行信息
      * @return array|string
      */
-    protected function parseLine(string $line)
+    protected static function parseLine(string $line)
     {
         $content = trim($line);
         if (mb_strpos($content, '@') === 0) {
@@ -112,11 +110,11 @@ class DocParse
             // 解析行参数
             switch ($param) {
                 case 'param':
-                    $value = $this->formatParam($value);
+                    $value = static::formatParam($value);
                     break;
                 case 'return':
                 case 'throws':
-                    $value = $this->formatResult($value);
+                    $value = static::formatResult($value);
                     break;
             }
             return [
@@ -134,7 +132,7 @@ class DocParse
      * @param string $string  注解字符串
      * @return array|string
      */
-    protected function formatResult(string $string)
+    protected static function formatResult(string $string)
     {
         $string = trim($string);
         if (mb_strpos($string, ' ') !== false) {
@@ -158,7 +156,7 @@ class DocParse
      * @param string $string  注解字符串
      * @return string|array
      */
-    protected function formatParam(string $string)
+    protected static function formatParam(string $string)
     {
         $string = trim($string);
         if (mb_strpos($string, ' ') !== false) {

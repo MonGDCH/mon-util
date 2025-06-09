@@ -146,7 +146,7 @@ class UploadFile
         // 多级目录存储
         $savePath = $this->config['rootPath'] . DIRECTORY_SEPARATOR . $saveDir;
         if (!empty($saveDir) && !is_dir($savePath)) {
-            if (!File::instance()->createDir($savePath)) {
+            if (!File::createDir($savePath)) {
                 throw new UploadException('创建文件存储目录失败', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
             }
         }

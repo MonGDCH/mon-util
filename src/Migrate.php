@@ -190,7 +190,7 @@ class Migrate
     public function fileList(): array
     {
         // 检查文件是否可写
-        if (!File::instance()->createDir($this->config['path'])) {
+        if (!File::createDir($this->config['path'])) {
             throw new MigrateException("The current directory is not writable");
         }
         $path = realpath($this->config['path']);
@@ -310,7 +310,7 @@ class Migrate
             throw new MigrateException("{$time} File is abnormal");
         }
 
-        return Tool::instance()->exportFile($fileName, basename($fileName));
+        return Tool::exportFile($fileName, basename($fileName));
     }
 
     /**
@@ -336,9 +336,9 @@ class Migrate
         $ext = pathinfo($fileName, PATHINFO_EXTENSION);
         if (strtolower($ext) == 'gz') {
             $content = $this->read($fileName);
-            $sqls = Sql::instance()->parseSql($content);
+            $sqls = Sql::parseSql($content);
         } else {
-            $sqls = Sql::instance()->parseFile($fileName);
+            $sqls = Sql::parseFile($fileName);
         }
         // 执行sql
         foreach ($sqls as $sql) {

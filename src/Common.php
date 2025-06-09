@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace mon\util;
 
 use RuntimeException;
-use mon\util\Instance;
 use InvalidArgumentException;
 
 /**
@@ -16,8 +15,6 @@ use InvalidArgumentException;
  */
 class Common
 {
-    use Instance;
-
     /**
      * 随机生成指定区间内一定个数的随机数
      *
@@ -27,7 +24,7 @@ class Common
      * @param array $filter     过滤的数据
      * @return array
      */
-    public function randomNumberForArray(int $min, int $max, int $count, array $filter = []): array
+    public static function randomNumberForArray(int $min, int $max, int $count, array $filter = []): array
     {
         $i = 0;
         $result = [];
@@ -48,13 +45,13 @@ class Common
      * @param  string $src 安全转码的字符串
      * @return string
      */
-    public function encodeEX(string $src): string
+    public static function encodeEX(string $src): string
     {
         $result = '';
         $len = mb_strlen($src, 'UTF-8');
         $encode_buf = '';
         for ($i = 0; $i < $len; $i++) {
-            $sChar = $this->mSubstr($src, $i, 1);
+            $sChar = static::mSubstr($src, $i, 1);
             switch ($sChar) {
                 case "~":
                 case "`":
@@ -111,14 +108,14 @@ class Common
      * @param  string $src 安全解码的字符串
      * @return string
      */
-    public function decodeEX(string $src): string
+    public static function decodeEX(string $src): string
     {
         $result = '';
         $len = mb_strlen($src, 'UTF-8');
         for ($i = 0; $i < $len; $i++) {
-            $sChar = $this->mSubstr($src, $i, 1);
-            if ($sChar == '%' && $i < ($len - 2) && $this->IsXDigit($this->mSubstr($src, $i + 1, 1)) && $this->IsXDigit($this->mSubstr($src, $i + 2, 1))) {
-                $chDecode = $this->mSubstr($src, $i + 1, 2);
+            $sChar = static::mSubstr($src, $i, 1);
+            if ($sChar == '%' && $i < ($len - 2) && static::IsXDigit(static::mSubstr($src, $i + 1, 1)) && static::IsXDigit(static::mSubstr($src, $i + 2, 1))) {
+                $chDecode = static::mSubstr($src, $i + 1, 2);
                 $result .= pack("H*", $chDecode);
                 $i += 2;
             } else {
@@ -135,7 +132,7 @@ class Common
      * @param  string  $src 验证的字符串
      * @return boolean
      */
-    public function isXDigit(string $src): bool
+    public static function isXDigit(string $src): bool
     {
         if (mb_strlen($src, 'UTF-8') < 1) {
             return false;
@@ -153,7 +150,7 @@ class Common
      * @param string $string 验证的字符串
      * @return boolean
      */
-    public function isUTF8(string $str): bool
+    public static function isUTF8(string $str): bool
     {
         $c = 0;
         $b = 0;
@@ -201,7 +198,7 @@ class Common
      * @param  float|integer $sn 除数
      * @return float|integer 余
      */
-    public function mod($bn, $sn)
+    public static function mod($bn, $sn)
     {
         $mod = intval(fmod(floatval($bn), $sn));
         return abs($mod);
@@ -213,7 +210,7 @@ class Common
      * @param  string $ip ip
      * @return string
      */
-    public function ipToLong(string $ip): string
+    public static function ipToLong(string $ip): string
     {
         return sprintf('%u', ip2long($ip));
     }
@@ -224,7 +221,7 @@ class Common
      * @param integer $long
      * @return string
      */
-    public function longToIp(int $long): string
+    public static function longToIp(int $long): string
     {
         if ($long < 0 || $long > 4294967295) {
             throw new InvalidArgumentException('长整型IP地址值超出范围');
@@ -248,12 +245,12 @@ class Common
      * @param  array  $data 输出的数据
      * @return string
      */
-    public function arrToXML(array $data): string
+    public static function arrToXML(array $data): string
     {
         $xml = '';
         foreach ($data as $key => $val) {
             $xml .= "<{$key}>";
-            $xml .= (is_array($val) || is_object($val)) ? $this->arrToXML($val) : $val;
+            $xml .= (is_array($val) || is_object($val)) ? static::arrToXML($val) : $val;
             $xml .= "</{$key}>";
         }
 
@@ -266,7 +263,7 @@ class Common
      * @param string $xml
      * @return array
      */
-    public function xmlToArr(string $xml): array
+    public static function xmlToArr(string $xml): array
     {
         $obj = simplexml_load_string($xml);
         $json = json_encode($obj);
@@ -285,7 +282,7 @@ class Common
      * @param  string $ds  分隔符
      * @return array 字符数组
      */
-    public function strToMap(string $str, string $ds = '&'): array
+    public static function strToMap(string $str, string $ds = '&'): array
     {
         $str = trim($str);
         $data = explode($ds, $str);
@@ -308,7 +305,7 @@ class Common
      * @param  string $ds 分隔符
      * @return string
      */
-    public function mapToStr(array $map, string $ds = '&'): string
+    public static function mapToStr(array $map, string $ds = '&'): string
     {
         $result = "";
         foreach ($map as $key => $value) {
@@ -324,7 +321,7 @@ class Common
      * @param  array $arr    需要去重的数组
      * @return array
      */
-    public function uniqueArray2D(array $arr): array
+    public static function uniqueArray2D(array $arr): array
     {
         foreach ($arr as $v) {
             // 降维,将一维数组转换为用","连接的字符串.
@@ -349,7 +346,7 @@ class Common
      * @param  array $arr    需要去重的数组
      * @return array
      */
-    public function uniqueArrayValue2D(array $arr): array
+    public static function uniqueArrayValue2D(array $arr): array
     {
         $tmp = [];
         foreach ($arr as $k => $v) {
@@ -373,7 +370,7 @@ class Common
      * @param integer $sort 排序方式，默认值：SORT_DESC
      * @return array
      */
-    public function sortArray2D(array $array, string $keys, $sort = \SORT_DESC): array
+    public static function sortArray2D(array $array, string $keys, $sort = \SORT_DESC): array
     {
         $keysValue = [];
         foreach ($array as $k => $v) {
@@ -389,7 +386,7 @@ class Common
      * @param  array   $array 验证码的数组
      * @return boolean
      */
-    public function isAssoc(array $array): bool
+    public static function isAssoc(array $array): bool
     {
         $keys = array_keys($array);
         return array_keys($keys) !== $keys;
@@ -401,7 +398,7 @@ class Common
      * @param  string $str 中文字符串
      * @return string
      */
-    public function getFirstChar(string $str): string
+    public static function getFirstChar(string $str): string
     {
         if (empty($str)) {
             return '';
@@ -448,16 +445,16 @@ class Common
      *
      * @return string
      */
-    public function uuid(): string
+    public static function uuid(): string
     {
         $charid = md5(uniqid(random_bytes(10), true));
         // 字符"-"
         $hyphen = chr(45);
-        $uuid = $this->mSubstr($charid, 0, 8) . $hyphen
-            . $this->mSubstr($charid, 8, 4) . $hyphen
-            . $this->mSubstr($charid, 12, 4) . $hyphen
-            . $this->mSubstr($charid, 16, 4) . $hyphen
-            . $this->mSubstr($charid, 20, 12);
+        $uuid = static::mSubstr($charid, 0, 8) . $hyphen
+            . static::mSubstr($charid, 8, 4) . $hyphen
+            . static::mSubstr($charid, 12, 4) . $hyphen
+            . static::mSubstr($charid, 16, 4) . $hyphen
+            . static::mSubstr($charid, 20, 12);
 
         return $uuid;
     }
@@ -467,9 +464,9 @@ class Common
      *
      * @return string
      */
-    public function keyGen(): string
+    public static function keyGen(): string
     {
-        return str_replace('-', '', $this->mSubstr($this->uuid(), 1, -1));
+        return str_replace('-', '', static::mSubstr(static::uuid(), 1, -1));
     }
 
     /**
@@ -483,7 +480,7 @@ class Common
      * @param string $addChar   截断显示字符内容
      * @return string
      */
-    public function mSubstr(string $str, int $start, int $length, string $charset = 'UTF-8', bool $suffix = false, string $addChar = ''): string
+    public static function mSubstr(string $str, int $start, int $length, string $charset = 'UTF-8', bool $suffix = false, string $addChar = ''): string
     {
         if (function_exists('mb_substr')) {
             $slice = mb_substr($str, $start, $length, $charset);
@@ -510,7 +507,7 @@ class Common
      * @param string  $addChars  额外字符
      * @return string
      */
-    public function randString(int $len = 6, int $type = -1, string $addChars = ''): string
+    public static function randString(int $len = 6, int $type = -1, string $addChars = ''): string
     {
         $str = '';
         switch ($type) {
@@ -543,11 +540,11 @@ class Common
         }
         if ($type != 4) {
             $chars = str_shuffle($chars);
-            $str = $this->mSubstr($chars, 0, $len);
+            $str = static::mSubstr($chars, 0, $len);
         } else {
             // 中文随机字
             for ($i = 0; $i < $len; $i++) {
-                $str .= $this->mSubstr($chars, (int)floor(random_int(0, mb_strlen($chars, 'UTF-8') - 1)), 1);
+                $str .= static::mSubstr($chars, (int)floor(random_int(0, mb_strlen($chars, 'UTF-8') - 1)), 1);
             }
         }
 
@@ -562,7 +559,7 @@ class Common
      * @param  string $in_charset   输入编码
      * @return mixed
      */
-    public function iconvRecursion($data, string $out_charset, string $in_charset)
+    public static function iconvRecursion($data, string $out_charset, string $in_charset)
     {
         switch (gettype($data)) {
             case 'integer':
@@ -584,12 +581,12 @@ class Common
             case 'object':
                 $vars = array_keys(get_object_vars($data));
                 foreach ($vars as $key) {
-                    $data->$key = $this->iconvRecursion($data->$key, $out_charset, $in_charset);
+                    $data->$key = static::iconvRecursion($data->$key, $out_charset, $in_charset);
                 }
                 return $data;
             case 'array':
                 foreach ($data as $k => $v) {
-                    $data[$this->iconvRecursion($k, $out_charset, $in_charset)] = $this->iconvRecursion($v, $out_charset, $in_charset);
+                    $data[static::iconvRecursion($k, $out_charset, $in_charset)] = static::iconvRecursion($v, $out_charset, $in_charset);
                 }
                 return $data;
             default:
@@ -604,7 +601,7 @@ class Common
      * @param array $arr2   最终实现的笛卡尔积组合,可不传
      * @return array
      */
-    public function specCartesian(array $arr1, array $arr2 = []): array
+    public static function specCartesian(array $arr1, array $arr2 = []): array
     {
         $result = [];
         if (!empty($arr1)) {
@@ -624,7 +621,7 @@ class Common
             }
             // 递归进行拼接
             if (count($arr1) > 0) {
-                $result = $this->specCartesian($arr1, $result);
+                $result = static::specCartesian($arr1, $result);
             }
         }
         return $result;
@@ -636,7 +633,7 @@ class Common
      * @param string $str 字符串  
      * @return string
      */
-    public function strToAscii(string $str): string
+    public static function strToAscii(string $str): string
     {
         $change_after = '';
         if (!empty($str)) {
@@ -665,7 +662,7 @@ class Common
      * @param string $ascii Ascii码
      * @return string
      */
-    public function asciiToStr(string $ascii): string
+    public static function asciiToStr(string $ascii): string
     {
         $str = '';
         if (!empty($ascii)) {
@@ -689,7 +686,7 @@ class Common
      * @param string $str 要删除空格的字符串
      * @return string 返回删除空格后的字符串
      */
-    public function trimAll(string $str): string
+    public static function trimAll(string $str): string
     {
         $str = str_replace(" ", '', $str);
         $str = str_ireplace(["\r", "\n", '\r', '\n'], '', $str);
@@ -711,7 +708,7 @@ class Common
      * @param string    $re       替代符
      * @return string   处理后的字符串
      */
-    public function hideStr(string $string, int $start = 0, int $length = 0, string $re = '*'): string
+    public static function hideStr(string $string, int $start = 0, int $length = 0, string $re = '*'): string
     {
         if (empty($string)) {
             return '';
@@ -719,8 +716,8 @@ class Common
         $strarr = [];
         $mb_strlen = mb_strlen($string, 'UTF-8');
         while ($mb_strlen) {
-            $strarr[] = $this->mSubstr($string, 0, 1);
-            $string = $this->mSubstr($string, 1, $mb_strlen);
+            $strarr[] = static::mSubstr($string, 0, 1);
+            $string = static::mSubstr($string, 1, $mb_strlen);
             $mb_strlen = mb_strlen($string, 'UTF-8');
         }
         $strlen = count($strarr);
@@ -748,7 +745,7 @@ class Common
      * @param string $column
      * @return int
      */
-    public function letterToNumber(string $column): int
+    public static function letterToNumber(string $column): int
     {
         $column = strtoupper($column);
         $length = strlen($column);
@@ -766,7 +763,7 @@ class Common
      * @param integer $number
      * @return string
      */
-    public function numberToLetter(int $number): string
+    public static function numberToLetter(int $number): string
     {
         $excelColumn = '';
         --$number;

@@ -65,7 +65,7 @@ class IdCard
             return false;
         }
         // 校验省份码
-        if (!isset($this->provinces[Common::instance()->mSubstr($idcard, 0, 2)])) {
+        if (!isset($this->provinces[Common::mSubstr($idcard, 0, 2)])) {
             return false;
         }
         // 校验生日
@@ -77,7 +77,7 @@ class IdCard
         if (mb_strlen($idcard, 'UTF-8') == 18) {
             $vSum = 0;
             for ($i = 17; $i >= 0; $i--) {
-                $vSubStr = Common::instance()->mSubstr($idcard, 17 - $i, 1);
+                $vSubStr = Common::mSubstr($idcard, 17 - $i, 1);
                 $vSum += (pow(2, $i) % 11) * (($vSubStr == 'a') ? 10 : intval($vSubStr, 11));
             }
             if ($vSum % 11 != 1) {
@@ -96,7 +96,7 @@ class IdCard
      */
     public function getProvinces(string $idcard): string
     {
-        $code = Common::instance()->mSubstr($idcard, 0, 2);
+        $code = Common::mSubstr($idcard, 0, 2);
         return isset($this->provinces[$code]) ? $this->provinces[$code] : '';
     }
 
@@ -116,7 +116,7 @@ class IdCard
             }
         }
 
-        $code = Common::instance()->mSubstr($idcard, 0, 4) . '00';
+        $code = Common::mSubstr($idcard, 0, 4) . '00';
         return isset($this->location[$code]) ? $this->location[$code] : '';
     }
 
@@ -136,7 +136,7 @@ class IdCard
             }
         }
 
-        $code = Common::instance()->mSubstr($idcard, 0, 6);
+        $code = Common::mSubstr($idcard, 0, 6);
         return isset($this->location[$code]) ? $this->location[$code] : '';
     }
 
@@ -151,9 +151,9 @@ class IdCard
         $idcard = preg_replace('/[xX]$/i', 'a', $idcard);
         $vLength = mb_strlen($idcard, 'UTF-8');
         if ($vLength == 18) {
-            $birthday = Common::instance()->mSubstr($idcard, 6, 4) . '-' . Common::instance()->mSubstr($idcard, 10, 2) . '-' . Common::instance()->mSubstr($idcard, 12, 2);
+            $birthday = Common::mSubstr($idcard, 6, 4) . '-' . Common::mSubstr($idcard, 10, 2) . '-' . Common::mSubstr($idcard, 12, 2);
         } else {
-            $birthday = '19' . Common::instance()->mSubstr($idcard, 6, 2) . '-' . Common::instance()->mSubstr($idcard, 8, 2) . '-' . Common::instance()->mSubstr($idcard, 10, 2);
+            $birthday = '19' . Common::mSubstr($idcard, 6, 2) . '-' . Common::mSubstr($idcard, 8, 2) . '-' . Common::mSubstr($idcard, 10, 2);
         }
         return $birthday;
     }
@@ -168,7 +168,7 @@ class IdCard
     {
         // 转18位身份证号码
         $idcard = $this->fifteen2Eighteen($idcard);
-        return (int)Common::instance()->mSubstr($idcard, 16, 1) % 2 === 0 ? 2 : 1;
+        return (int)Common::mSubstr($idcard, 16, 1) % 2 === 0 ? 2 : 1;
     }
 
     /**
@@ -184,7 +184,7 @@ class IdCard
         $curr_ts = time();
         //得到两个日期相差的大体年数
         $diff = floor(($curr_ts - $birthday_ts) / 86400 / 365);
-        $age = strtotime(Common::instance()->mSubstr($birthday, 0, 8) . ' +' . $diff . 'years') > $curr_ts ? ($diff + 1) : $diff;
+        $age = strtotime(Common::mSubstr($birthday, 0, 8) . ' +' . $diff . 'years') > $curr_ts ? ($diff + 1) : $diff;
         return intval($age);
     }
 
@@ -201,7 +201,7 @@ class IdCard
         }
 
         $code = '19';
-        $idCardBase = Common::instance()->mSubstr($idcard, 0, 6) . $code . Common::instance()->mSubstr($idcard, 6, 9);
+        $idCardBase = Common::mSubstr($idcard, 0, 6) . $code . Common::mSubstr($idcard, 6, 9);
         return $idCardBase . $this->getCode($idCardBase);
     }
 
@@ -222,7 +222,7 @@ class IdCard
         $verifyNumbers = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
         $sum = 0;
         for ($i = 0; $i < $length; $i++) {
-            $sum += Common::instance()->mSubstr($idCardBase, $i, 1) * $factor[$i];
+            $sum += Common::mSubstr($idCardBase, $i, 1) * $factor[$i];
         }
         $index = $sum % 11;
         return $verifyNumbers[$index];

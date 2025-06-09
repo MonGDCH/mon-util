@@ -120,7 +120,13 @@ class Validate
 		// 车牌号
 		'car_num'	=> '/^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领][A-HJ-NP-Z][A-HJ-NP-Z0-9]{4,5}[A-HJ-NP-Z0-9挂学警港澳]$/',
 		// 邮政编码
-		'postal'		=> '/\d{6}/',
+		'postal'	=> '/\d{6}/',
+		// 日期
+		'day'		=> '/^\d{1,4}(-)(1[0-2]|0?[1-9])\1(0?[1-9]|[1-2]\d|30|31)$/',
+		// 时间，24小时
+		'time'		=> '/^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/',
+		// 时间，12小时
+		'time12'	=> '/^(?:1[0-2]|0?[1-9]):[0-5]\d:[0-5]\d$/',
 	];
 
 	/**
@@ -551,6 +557,51 @@ class Validate
 	}
 
 	/**
+	 * 验证是否为一个有效的时间，年月日
+	 *
+	 * @param mixed $value 操作的数据
+	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @return boolean
+	 */
+	public function day($value, $allowEmpty = false): bool
+	{
+		if ($allowEmpty && ($value === '' || is_null($value))) {
+			return true;
+		}
+		return preg_match($this->regex['day'], strval($value)) === 1;
+	}
+
+	/**
+	 * 验证是否为一个有效的24小时时间，时分秒
+	 *
+	 * @param [type] $value
+	 * @param boolean $allowEmpty
+	 * @return boolean
+	 */
+	public function time($value, $allowEmpty = false): bool
+	{
+		if ($allowEmpty && ($value === '' || is_null($value))) {
+			return true;
+		}
+		return preg_match($this->regex['time'], strval($value)) === 1;
+	}
+
+	/**
+	 * 验证是否为一个有效的12小时时间，时分秒
+	 *
+	 * @param [type] $value
+	 * @param boolean $allowEmpty
+	 * @return boolean
+	 */
+	public function time12($value, $allowEmpty = false): bool
+	{
+		if ($allowEmpty && ($value === '' || is_null($value))) {
+			return true;
+		}
+		return preg_match($this->regex['time12'], strval($value)) === 1;
+	}
+
+	/**
 	 * 验证是否为一个有效的时间戳
 	 *
 	 * @param mixed $value	操作的数据
@@ -927,7 +978,7 @@ class Validate
 	 * @param  mixed $value 操作的数据
 	 * @return boolean
 	 */
-	public function str($value): bool
+	public function string($value): bool
 	{
 		return is_string($value);
 	}
@@ -941,6 +992,28 @@ class Validate
 	public function array($value): bool
 	{
 		return is_array($value);
+	}
+
+	/**
+	 * 验证值必须为bool类型
+	 *
+	 * @param mixed $value
+	 * @return boolean
+	 */
+	public function bool($value): bool
+	{
+		return is_bool($value);
+	}
+
+	/**
+	 * 简化字符串验证，支持数字
+	 *
+	 * @param mixed $value
+	 * @return boolean
+	 */
+	public function str($value): bool
+	{
+		return is_string($value) || is_numeric($value);
 	}
 
 	/**

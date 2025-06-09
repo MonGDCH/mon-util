@@ -24,7 +24,7 @@ if (!function_exists('buildURL')) {
      */
     function buildURL(string $url, array $vars = []): string
     {
-        return Tool::instance()->buildURL($url, $vars);
+        return Tool::buildURL($url, $vars);
     }
 }
 
@@ -62,7 +62,7 @@ if (!function_exists('dd')) {
      */
     function dd($var, bool $echo = true, ?string $label = null, int $flags = ENT_SUBSTITUTE)
     {
-        return Tool::instance()->dd($var, $echo, $label, $flags);
+        return Tool::dd($var, $echo, $label, $flags);
     }
 }
 
@@ -89,7 +89,7 @@ if (!function_exists('includeCache')) {
      */
     function includeCache(string $file)
     {
-        return Tool::instance()->includeCache($file);
+        return Tool::includeCache($file);
     }
 }
 
@@ -103,6 +103,6 @@ if (!function_exists('requireCache')) {
      */
     function requireCache(string $file)
     {
-        return Tool::instance()->requireCache($file);
+        return Tool::requireCache($file);
     }
 }

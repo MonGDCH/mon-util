@@ -12,18 +12,16 @@ namespace mon\util;
  */
 class Sql
 {
-    use Instance;
-
     /**
      * 解析SQL文件
      *
      * @param string $file  sql文件路径
      * @return array
      */
-    public function parseFile(string $file): array
+    public static function parseFile(string $file): array
     {
-        $content = File::instance()->read($file);
-        return $this->parseSql($content);
+        $content = File::read($file);
+        return static::parseSql($content);
     }
 
     /**
@@ -32,7 +30,7 @@ class Sql
      * @param string $content sql内容
      * @return array
      */
-    public function parseSql(string $content): array
+    public static function parseSql(string $content): array
     {
         if (empty($content)) {
             return [];

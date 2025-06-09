@@ -24,13 +24,13 @@ $str = 'abcdefghijklnm1234560789';
 // $key = 'abcd';
 
 
-// $token = Nbed64::instance()->stringEncrypt($str, $key);
-$token = Nbed64::instance()->stringEncryptEx($str, $key);
+// $token = Nbed64::stringEncrypt($str, $key);
+$token = Nbed64::stringEncryptEx($str, $key);
 
 dd($token);
 
 
-// $decode = Nbed64::instance()->stringDecrypt($token, $key);
-$decode = Nbed64::instance()->stringDecryptEx($token, $key);
+// $decode = Nbed64::stringDecrypt($token, $key);
+$decode = Nbed64::stringDecryptEx($token, $key);
 dd($decode);
 // dd(json_decode($decode, true));

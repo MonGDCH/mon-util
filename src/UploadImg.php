@@ -134,7 +134,7 @@ class UploadImg
 
         $file_name = $this->buildName($name) . '.' . $suffix;
         $path = $path . DIRECTORY_SEPARATOR . $file_name;
-        $save = File::instance()->createFile($img, $path, false);
+        $save = File::createFile($img, $path, false);
         if ($save === false) {
             throw new UploadException('保存图片失败', UploadException::ERROR_UPLOAD_SAVE_FAILD);
         }

@@ -43,6 +43,21 @@ class Container implements ContainerInterface
     protected function __construct() {}
 
     /**
+     * get方法别名，静态调用
+     *
+     * @param  string  $id  对象名称或标识
+     * @param  array   $val 入参
+     * @param  boolean $new 是否获取新的实例
+     * @throws ReflectionException
+     * @throws InvalidArgumentException
+     * @return mixed
+     */
+    public static function gen(string $id, array $val = [], bool $new = false)
+    {
+        return static::instance()->get($id, $val, $new);
+    }
+
+    /**
      * get方法别名，重新获取实例
      *
      * @param  string  $id  对象名称或标识
@@ -52,7 +67,7 @@ class Container implements ContainerInterface
      * @throws InvalidArgumentException
      * @return mixed
      */
-    public function make($id, array $val = [], bool $new = true)
+    public function make(string $id, array $val = [], bool $new = true)
     {
         return $this->get($id, $val, $new);
     }
@@ -67,7 +82,7 @@ class Container implements ContainerInterface
      * @throws InvalidArgumentException
      * @return mixed
      */
-    public function get($id, array $val = [], bool $new = false)
+    public function get(string $id, array $val = [], bool $new = false)
     {
         if (isset($this->service[$id]) && !$new) {
             $object = $this->service[$id];
@@ -107,7 +122,7 @@ class Container implements ContainerInterface
      * @param  mixed  $server   要绑定的实例
      * @return Container
      */
-    public function set($id, $server = null): Container
+    public function set(string $id, $server = null): Container
     {
         // 传入数组，批量注册
         if (is_array($id)) {
@@ -127,7 +142,7 @@ class Container implements ContainerInterface
      * @param string $id 类名称或标识符
      * @return boolean
      */
-    public function has($id): bool
+    public function has(string $id): bool
     {
         return isset($this->bind[$id]) || isset($this->service[$id]);
     }
@@ -295,7 +310,7 @@ class Container implements ContainerInterface
      * @param  string $name 对象名称或标识
      * @return mixed
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         return $this->get($name);
     }
@@ -307,7 +322,7 @@ class Container implements ContainerInterface
      * @param  array  $args 参数
      * @return mixed
      */
-    public function __call($id, array $args)
+    public function __call(string $id, array $args)
     {
         return $this->get($id, $args);
     }

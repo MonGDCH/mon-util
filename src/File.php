@@ -18,8 +18,6 @@ use RecursiveDirectoryIterator;
  */
 class File
 {
-    use Instance;
-
     /**
      * 字节格式化 把字节数格式为 B K M G T P E Z Y 描述的大小
      *
@@ -27,7 +25,7 @@ class File
      * @param integer $dec 精准度，小数位数
      * @return array
      */
-    public function formatByte(int $size, int $dec = 0): array
+    public static function formatByte(int $size, int $dec = 0): array
     {
         $type = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
         $pos = 0;
@@ -48,9 +46,9 @@ class File
      * @param integer $dec 精准度，小数位数
      * @return string
      */
-    public function formatByteText(int $size, int $dec = 2): string
+    public static function formatByteText(int $size, int $dec = 2): string
     {
-        return $this->formatByte($size, $dec)['size'] . $this->formatByte($size, $dec)['type'];
+        return static::formatByte($size, $dec)['size'] . static::formatByte($size, $dec)['type'];
     }
 
     /**
@@ -62,7 +60,7 @@ class File
      * @throws InvalidArgumentException
      * @return boolean
      */
-    public function changeAuth(string $file, string $type, $ch_info): bool
+    public static function changeAuth(string $file, string $type, $ch_info): bool
     {
         switch ($type) {
             case 'group':
@@ -85,7 +83,7 @@ class File
      * @param  string $dirPath 目录路径
      * @return boolean
      */
-    public function createDir(string $dirPath): bool
+    public static function createDir(string $dirPath): bool
     {
         if (is_dir($dirPath)) {
             return true;
@@ -101,16 +99,16 @@ class File
      * @param boolean $overwrite   文件是否覆盖，默认不覆盖
      * @return void
      */
-    public function copydir(string $source, string $dest, bool $overwrite = false)
+    public static function copydir(string $source, string $dest, bool $overwrite = false)
     {
-        $this->createDir($dest);
+        static::createDir($dest);
         $dir_iterator = new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS);
         $iterator = new RecursiveIteratorIterator($dir_iterator, RecursiveIteratorIterator::SELF_FIRST);
         /** @var RecursiveDirectoryIterator $iterator */
         foreach ($iterator as $item) {
             if ($item->isDir()) {
                 $sontDir = $dest . '/' . $iterator->getSubPathName();
-                $this->createDir($sontDir);
+                static::createDir($sontDir);
             } else {
                 $file = $dest . '/' . $iterator->getSubPathName();
                 if (file_exists($file) && !$overwrite) {
@@ -130,18 +128,18 @@ class File
      * @param  boolean $all     是否删除所有
      * @return boolean
      */
-    public function removeDir(string $dirPath, bool $all = false): bool
+    public static function removeDir(string $dirPath, bool $all = false): bool
     {
-        $dirName = $this->pathReplace($dirPath);
+        $dirName = static::pathReplace($dirPath);
         $handle = @opendir($dirName);
         while (($file = @readdir($handle)) !== FALSE) {
             if ($file != '.' && $file != '..') {
                 $dir = $dirName . '/' . $file;
                 if ($all) {
-                    is_dir($dir) ? $this->removeDir($dir) : $this->removeFile($dir);
+                    is_dir($dir) ? static::removeDir($dir) : static::removeFile($dir);
                 } else {
                     if (is_file($dir)) {
-                        $this->removeFile($dir);
+                        static::removeFile($dir);
                     }
                 }
             }
@@ -156,7 +154,7 @@ class File
      * @param  string $dir  目录路径
      * @return array
      */
-    public function getDirInfo(string $dir): array
+    public static function getDirInfo(string $dir): array
     {
         $handle = @opendir($dir);
         $directory_count = 0;
@@ -167,7 +165,7 @@ class File
                 $next_path = $dir . '/' . $path;
                 if (is_dir($next_path)) {
                     $directory_count++;
-                    $result_value = $this->getDirInfo($next_path);
+                    $result_value = static::getDirInfo($next_path);
                     $total_size += $result_value['size'];
                     $file_cout += $result_value['filecount'];
                     $directory_count += $result_value['dircount'];
@@ -191,7 +189,7 @@ class File
      * @throws InvalidArgumentException
      * @return array
      */
-    public function getDirContent(string $dir): array
+    public static function getDirContent(string $dir): array
     {
         if (!is_dir($dir)) {
             throw new InvalidArgumentException('dir path is not dir!');
@@ -218,7 +216,7 @@ class File
                     $data[$i]['is_dir'] = false;
                     $data[$i]['has_file'] = false;
                     $data[$i]['filesize'] = filesize($file);
-                    $data[$i]['filetype'] = $this->getExt($file);
+                    $data[$i]['filetype'] = static::getExt($file);
                 }
                 // 文件名，包含扩展名
                 $data[$i]['filename'] = $filename;
@@ -240,10 +238,10 @@ class File
      * @param  boolean $append  存在文件是否继续写入
      * @return boolean|integer
      */
-    public function createFile($content, string $path, bool $append = true)
+    public static function createFile($content, string $path, bool $append = true)
     {
         $dirPath = dirname($path);
-        is_dir($dirPath) || $this->createDir($dirPath);
+        is_dir($dirPath) || static::createDir($dirPath);
         if ($append) {
             // 添加写入
             return file_put_contents($path, $content, FILE_APPEND);
@@ -259,9 +257,9 @@ class File
      * @param  string $path 文件路径
      * @return boolean
      */
-    public function removeFile(string $path): bool
+    public static function removeFile(string $path): bool
     {
-        $path = $this->pathReplace($path);
+        $path = static::pathReplace($path);
         if (file_exists($path)) {
             return unlink($path);
         }
@@ -277,7 +275,7 @@ class File
      * @param boolean $overwrite   文件是否覆盖，默认不覆盖
      * @return boolean
      */
-    public function copyFile(string $source, string $dest, bool $overwrite = false): bool
+    public static function copyFile(string $source, string $dest, bool $overwrite = false): bool
     {
         // 源文件不存在
         if (!file_exists($source)) {
@@ -288,7 +286,7 @@ class File
             return true;
         }
         // 创建目标文件目录
-        if (!File::instance()->createDir(dirname($dest))) {
+        if (!static::createDir(dirname($dest))) {
             return false;
         }
         return copy($source, $dest);
@@ -300,9 +298,9 @@ class File
      * @param  string $path 目录路径
      * @return string
      */
-    public function getBaseName(string $path): string
+    public static function getBaseName(string $path): string
     {
-        return basename(str_replace('\\', '/', $this->pathReplace($path)));
+        return basename(str_replace('\\', '/', static::pathReplace($path)));
     }
 
     /**
@@ -311,9 +309,9 @@ class File
      * @param  string $path 文件路径
      * @return string
      */
-    public function getExt(string $path): string
+    public static function getExt(string $path): string
     {
-        return pathinfo($this->pathReplace($path), PATHINFO_EXTENSION);
+        return pathinfo(static::pathReplace($path), PATHINFO_EXTENSION);
     }
 
     /**
@@ -323,7 +321,7 @@ class File
      * @param  string $newFileNmae 新名称
      * @return boolean
      */
-    public function rename(string $oldFileName, string $newFileNmae): bool
+    public static function rename(string $oldFileName, string $newFileNmae): bool
     {
         if (($oldFileName != $newFileNmae) && is_writable($oldFileName)) {
             return rename($oldFileName, $newFileNmae);
@@ -339,7 +337,7 @@ class File
      * @throws InvalidArgumentException
      * @return string
      */
-    public function read(string $file): string
+    public static function read(string $file): string
     {
         if (!file_exists($file)) {
             throw new InvalidArgumentException('File not found[' . $file . ']');
@@ -353,7 +351,7 @@ class File
      * @param  string $file 文件路径
      * @return array
      */
-    public function getFileInfo(string $file): array
+    public static function getFileInfo(string $file): array
     {
         $info = [];
         // 返回路径中的文件名部分
@@ -407,7 +405,7 @@ class File
      * @param array  $mimeTypes 扩展mimetype，如定义则不使用 mime_content_type 函数
      * @return string
      */
-    public function getMimeType(string $file, string $default = 'application/octet-stream', array $mimeTypes = []): string
+    public static function getMimeType(string $file, string $default = 'application/octet-stream', array $mimeTypes = []): string
     {
         // 默认类型
         $mimeType = $default;
@@ -524,7 +522,7 @@ class File
                 'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
             ], $mimeTypes);
-            $ext = strtolower($this->getExt($file));
+            $ext = strtolower(static::getExt($file));
             if (isset($mime_types[$ext])) {
                 // 存在支持的mimeType类型
                 $mimeType = $mime_types[$ext];
@@ -546,14 +544,14 @@ class File
      * @param boolean $tree  输出树结构还是数组
      * @return array
      */
-    public function getFoldersContent(string $path, bool $tree = false): array
+    public static function getFoldersContent(string $path, bool $tree = false): array
     {
         if ((!file_exists($path) || !is_dir($path))) {
             return [];
         }
         $dir = new DirectoryIterator($path);
 
-        return $tree ? $this->directoryIteratorToTree($dir) : $this->directoryIteratorToArray($dir);
+        return $tree ? static::directoryIteratorToTree($dir) : static::directoryIteratorToArray($dir);
     }
 
     /**
@@ -562,7 +560,7 @@ class File
      * @param DirectoryIterator $dir
      * @return array
      */
-    protected function directoryIteratorToArray(DirectoryIterator $dir): array
+    protected static function directoryIteratorToArray(DirectoryIterator $dir): array
     {
         $result = [];
         foreach ($dir as $key => $child) {
@@ -572,7 +570,7 @@ class File
             $name = $child->getBasename();
             if ($child->isDir()) {
                 $subit = new DirectoryIterator($child->getPathname());
-                $result[$name] = $this->DirectoryIteratorToArray($subit);
+                $result[$name] = static::DirectoryIteratorToArray($subit);
             } else {
                 $result[] = $name;
             }
@@ -586,7 +584,7 @@ class File
      * @param DirectoryIterator $dir
      * @return array
      */
-    protected function directoryIteratorToTree(DirectoryIterator $dir): array
+    protected static function directoryIteratorToTree(DirectoryIterator $dir): array
     {
         $result = [];
         foreach ($dir as $key => $child) {
@@ -598,7 +596,7 @@ class File
                 $path = $child->getPathname();
                 $subit = new DirectoryIterator($path);
                 $result[$key] = [
-                    'children'  => $this->directoryIteratorToTree($subit),
+                    'children'  => static::directoryIteratorToTree($subit),
                     'title'     => $name,
                     'path'      => $path,
                 ];
@@ -618,7 +616,7 @@ class File
      * @param string $path 路径
      * @return string
      */
-    protected function pathReplace(string $path): string
+    protected static function pathReplace(string $path): string
     {
         return str_replace('//', '/', str_replace('\\', '/', $path));
     }

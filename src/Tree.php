@@ -404,9 +404,10 @@ class Tree
      *
      * @param integer|string $myid  要查询的ID
      * @param string $itemprefix    前缀
+     * @param string $mark          后代标识
      * @return array
      */
-    public function getTreeArray($myid, string $itemprefix = ''): array
+    public function getTreeArray($myid, string $itemprefix = '', string $mark = 'children'): array
     {
         $childs = $this->getChild($myid);
         $n = 0;
@@ -426,7 +427,7 @@ class Tree
                 $spacer = $itemprefix ? $itemprefix . $j : '';
                 $value['spacer'] = $spacer;
                 $data[$n] = $value;
-                $data[$n]['childlist'] = $this->getTreeArray($value['id'], $itemprefix . $k . $this->config['nbsp']);
+                $data[$n][$mark] = $this->getTreeArray($value['id'], $itemprefix . $k . $this->config['nbsp'], $mark);
                 $n++;
                 $number++;
             }
@@ -439,21 +440,22 @@ class Tree
      *
      * @param array $data  树结构数据
      * @param string $field 字段名称
+     * @param string $mark          后代标识
      * @return array
      */
-    public function getTreeList(array $data = [], string $field = 'name'): array
+    public function getTreeList(array $data = [], string $field = 'name', string $mark = 'children'): array
     {
         $arr = [];
         foreach ($data as $v) {
-            $childlist = isset($v['childlist']) ? $v['childlist'] : [];
-            unset($v['childlist']);
+            $childlist = isset($v[$mark]) ? $v[$mark] : [];
+            unset($v[$mark]);
             $v[$field] = $v['spacer'] . ' ' . $v[$field];
             $v['haschild'] = ($childlist || $v['pid'] == 0) ? 1 : 0;
             if ($v['id']) {
                 $arr[] = $v;
             }
             if ($childlist) {
-                $arr = array_merge($arr, $this->getTreeList($childlist, $field));
+                $arr = array_merge($arr, $this->getTreeList($childlist, $field, $mark));
             }
         }
         return $arr;

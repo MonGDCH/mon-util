@@ -5,7 +5,7 @@ use mon\util\DocParse;
 require __DIR__ . '/../vendor/autoload.php';
 
 
-$data = DocParse::instance()->parseClass(DemoTest::class);
+$data = DocParse::parseClass(DemoTest::class);
 dd($data);
 
 class DemoTest

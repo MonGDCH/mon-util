@@ -425,7 +425,7 @@ class IPLocation
     {
         // 将IP地址转化为长整型数，如果在PHP5中，IP地址错误，则返回False，
         // 这时intval将Flase转化为整数-1，之后压缩成big-endian编码的字符串
-        return pack('N', intval(Common::instance()->ipToLong($ip)));
+        return pack('N', intval(Common::ipToLong($ip)));
     }
 
     /**

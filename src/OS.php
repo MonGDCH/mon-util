@@ -12,14 +12,12 @@ namespace mon\util;
  */
 class OS
 {
-    use Instance;
-
     /**
      * 获取操作系统
      *
      * @return string
      */
-    public function getOS(): string
+    public static function getOS(): string
     {
         $os = php_uname('s');
         if (stripos($os, 'win') !== false) {
@@ -37,7 +35,7 @@ class OS
      *
      * @return string
      */
-    public function getMac(): string
+    public static function getMac(): string
     {
         $data = [];
         switch (strtolower(PHP_OS)) {
@@ -79,9 +77,9 @@ class OS
      *
      * @return array
      */
-    public function getMemoryInfo(): array
+    public static function getMemoryInfo(): array
     {
-        if ($this->getOS() === 'Windows') {
+        if (static::getOS() === 'Windows') {
             $cap = shell_exec('wmic Path Win32_PhysicalMemory Get Capacity | findstr /V "Capacity"');
             $cap = trim($cap ?? '');
             $total = array_sum(array_map('intval', explode("\n", $cap)));
@@ -108,10 +106,10 @@ class OS
      *
      * @return array
      */
-    public function getDiskInfo(): array
+    public static function getDiskInfo(): array
     {
         $disk = [];
-        if ($this->getOS() === 'Windows') {
+        if (static::getOS() === 'Windows') {
             // Windows 系统
             $drives = shell_exec('wmic logicaldisk get size,freespace,caption');
             $lines  = explode("\n", trim($drives ?? ''));
@@ -121,9 +119,9 @@ class OS
                     if (count($parts) >= 3) {
                         $disk[] = [
                             'sys'       => $matches[1],
-                            'size'      => File::instance()->formatByteText(intval($parts[2])),
-                            'free'      => File::instance()->formatByteText(intval($parts[1])),
-                            'used'      => File::instance()->formatByteText(intval($parts[2]) - intval($parts[1])),
+                            'size'      => File::formatByteText(intval($parts[2])),
+                            'free'      => File::formatByteText(intval($parts[1])),
+                            'used'      => File::formatByteText(intval($parts[2]) - intval($parts[1])),
                             'rate'      => sprintf('%.2f', (intval($parts[2]) - intval($parts[1])) / intval($parts[2]) * 100) . '%',
                             'mounted'   => $matches[1],
                         ];
@@ -157,7 +155,7 @@ class OS
      *
      * @return array
      */
-    public function getPHPInfo(): array
+    public static function getPHPInfo(): array
     {
         return [
             'php_version'         => PHP_VERSION,
@@ -178,19 +176,19 @@ class OS
      *
      * @return array
      */
-    public function getCpuInfo(): array
+    public static function getCpuInfo(): array
     {
-        $cpu = $this->getCpuUsage();
-        $cache = $this->getCpuCache();
+        $cpu = static::getCpuUsage();
+        $cache = static::getCpuCache();
         return [
             // CPU 名称
-            'name'  => $this->getCpuName(),
+            'name'  => static::getCpuName(),
             // 物理核心数
-            'physics' =>  $this->getCpuPhysicsCores(),
+            'physics' =>  static::getCpuPhysicsCores(),
             // 逻辑核心数
-            'logic' => $this->getCpuLogicCores(),
+            'logic' => static::getCpuLogicCores(),
             // 缓存大小
-            'cache' => $cache ? File::instance()->formatByteText($cache) : 0,
+            'cache' => $cache ? File::formatByteText($cache) : 0,
             // CPU 使用率（%）
             'usage' => $cpu,
             // 可用 CPU 百分比（%）
@@ -203,9 +201,9 @@ class OS
      *
      * @return string
      */
-    public function getCpuLogicCores(): int
+    public static function getCpuLogicCores(): int
     {
-        if ($this->getOS() === 'Windows') {
+        if (static::getOS() === 'Windows') {
             $num  = shell_exec('wmic cpu get NumberOfLogicalProcessors | findstr /V "NumberOfLogicalProcessors"');
             $num  = trim($num ?? '1');
             $nums = explode("\n", $num);
@@ -224,9 +222,9 @@ class OS
      *
      * @return int
      */
-    public function getCpuPhysicsCores(): int
+    public static function getCpuPhysicsCores(): int
     {
-        if ($this->getOS() === 'Windows') {
+        if (static::getOS() === 'Windows') {
             $num  = shell_exec('wmic cpu get NumberOfCores | findstr /V "NumberOfCores"');
             $num  = trim($num ?? '1');
             $nums = explode("\n", $num);
@@ -247,9 +245,9 @@ class OS
      *
      * @return integer
      */
-    public function getCpuCache(): int
+    public static function getCpuCache(): int
     {
-        if ($this->getOS() === 'Windows') {
+        if (static::getOS() === 'Windows') {
             $cache = shell_exec('wmic cpu get L3CacheSize | findstr /V "L3CacheSize"');
             $cache = trim($cache ?? '');
             if ($cache === '') {
@@ -280,15 +278,15 @@ class OS
      *
      * @return float
      */
-    public function getCpuUsage(): float
+    public static function getCpuUsage(): float
     {
-        if ($this->getOS() === 'Windows') {
+        if (static::getOS() === 'Windows') {
             $cpu = shell_exec('wmic cpu get LoadPercentage | findstr /V "LoadPercentage"');
             return floatval(trim($cpu ?? '0'));
         }
-        $start = $this->calculationCpu();
+        $start = static::calculationCpu();
         sleep(1);
-        $end = $this->calculationCpu();
+        $end = static::calculationCpu();
 
         $totalStart = $start['total'];
         $totalEnd   = $end['total'];
@@ -308,7 +306,7 @@ class OS
      *
      * @return array
      */
-    protected function calculationCpu(): array
+    protected static function calculationCpu(): array
     {
         $mode   = '/(cpu)[\s]+([0-9]+)[\s]+([0-9]+)[\s]+([0-9]+)[\s]+([0-9]+)[\s]+([0-9]+)[\s]+([0-9]+)[\s]+([0-9]+)[\s]+([0-9]+)/';
         $string = shell_exec('cat /proc/stat | grep cpu');
@@ -326,9 +324,9 @@ class OS
      *
      * @return string
      */
-    public function getCpuName(): string
+    public static function getCpuName(): string
     {
-        if ($this->getOS() === 'Windows') {
+        if (static::getOS() === 'Windows') {
             $name = shell_exec('wmic cpu get Name | findstr /V "Name"');
             return trim($name);
         }
