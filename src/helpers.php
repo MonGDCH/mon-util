@@ -78,31 +78,3 @@ if (!function_exists('collection')) {
         return new Collection($data);
     }
 }
-
-if (!function_exists('includeCache')) {
-    /**
-     * include_once 优化版本
-     *
-     * @param string $file  文件地址
-     * @throws InvalidArgumentException
-     * @return mixed
-     */
-    function includeCache(string $file)
-    {
-        return Tool::includeCache($file);
-    }
-}
-
-if (!function_exists('requireCache')) {
-    /**
-     * require_once 优化版本
-     *
-     * @param string $file  文件地址
-     * @throws InvalidArgumentException
-     * @return mixed
-     */
-    function requireCache(string $file)
-    {
-        return Tool::requireCache($file);
-    }
-}

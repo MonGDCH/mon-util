@@ -21,7 +21,12 @@ use Psr\Container\ContainerInterface;
  */
 class Container implements ContainerInterface
 {
-    use Instance;
+    /**
+     * 单例实体
+     *
+     * @var mixed
+     */
+    protected static $instance = null;
 
     /**
      * 容器中对象的标识符
@@ -41,6 +46,20 @@ class Container implements ContainerInterface
      * 私有化构造方法
      */
     protected function __construct() {}
+
+    /**
+     * 获取单例
+     *
+     * @param mixed $options 初始化参数
+     * @return static
+     */
+    public static function instance()
+    {
+        if (is_null(static::$instance)) {
+            static::$instance = new static();
+        }
+        return static::$instance;
+    }
 
     /**
      * get方法别名，静态调用

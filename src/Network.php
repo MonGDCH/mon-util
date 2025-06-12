@@ -25,11 +25,14 @@ class Network
      * @param   boolean $toJson  解析json返回数组
      * @param   integer $timeOut 请求超时时间
      * @param   string  $agent   请求user-agent
+     * @param   string  $ssl_cer SSL证书
+     * @param   string  $ssl_key SSL密钥
+     * @throws  NetWorkException
      * @return  mixed 结果集
      */
-    public static function sendHTTP(string $url, array $data = [], string $type = 'GET', array $header = [], bool $toJson = true, int $timeOut = 2, string $agent = '')
+    public static function sendHTTP(string $url, array $data = [], string $type = 'GET', array $header = [], bool $toJson = true, int $timeOut = 2, string $agent = '', string $ssl_cer = '', string $ssl_key = '')
     {
-        $ch = static::getRequest($url, $data, $type, $header, $timeOut, $agent);
+        $ch = static::getRequest($url, $data, $type, $header, $timeOut, $agent, $ssl_cer, $ssl_key);
         // 发起请求
         $html = curl_exec($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -50,9 +53,11 @@ class Network
      * @param array $header 默认请求头
      * @param integer $timeOut 默认超时时间
      * @param string $agent 默认user-agent
+     * @param string $ssl_cer SSL证书
+     * @param string $ssl_key SSL密钥
      * @return array 成功结果集与失败结果集
      */
-    public static function sendMultiHTTP(array $queryList, int $rolling = 5, array $header = [], int $timeOut = 2, string $agent = ''): array
+    public static function sendMultiHTTP(array $queryList, int $rolling = 5, array $header = [], int $timeOut = 2, string $agent = '', string $ssl_cer = '', string $ssl_key = ''): array
     {
         $result = [];
         $errors = [];
@@ -64,7 +69,7 @@ class Network
         for ($i = 0; $i < $rolling; $i++) {
             $item = $queryList[$i];
             // 获取curl
-            $ch = static::getCh($item, $header, $timeOut, $agent);
+            $ch = static::getCh($item, $header, $timeOut, $agent, $ssl_cer, $ssl_key);
             // 写入批量请求
             curl_multi_add_handle($master, $ch);
             // 记录队列
@@ -135,15 +140,17 @@ class Network
      * @param boolean $toJson 是否解析json返回数据
      * @param integer $timeout 上传超时时间
      * @param string $agent 请求user-agent
+     * @param string $ssl_cer 证书路径
+     * @param string $ssl_key 证书密钥
      * @return mixed
      */
-    public static function sendFile(string $url, string $path, array $data = [], string $filename = '', string $name = 'file', array $header = [], bool $toJson = true, int $timeout = 300, string $agent = '')
+    public static function sendFile(string $url, string $path, array $data = [], string $filename = '', string $name = 'file', array $header = [], bool $toJson = true, int $timeout = 300, string $agent = '', string $ssl_cer = '', string $ssl_key = '')
     {
         // 处理文件上传数据集
         $filename = empty($filename) ? basename($path) : $filename;
         $sendData = array_merge($data, [$name => new \CURLFile(realpath($path), File::getMimeType($path), $filename)]);
         $header['Content-Type'] = 'multipart/form-data';
-        $ch = static::getRequest($url, $sendData, 'POST', $header, $timeout, $agent);
+        $ch = static::getRequest($url, $sendData, 'POST', $header, $timeout, $agent, $ssl_cer, $ssl_key);
         // 发起请求
         $html = curl_exec($ch);
         if ($html === false) {
@@ -253,9 +260,11 @@ class Network
      * @param  array   $header  请求头
      * @param  integer $timeOut 超时时间
      * @param  string  $agent   请求user-agent
+     * @param  string  $ssl_cer ssl证书
+     * @param  string  $ssl_key ssl秘钥
      * @return \CurlHandle cURL句柄
      */
-    public static function getRequest(string $url, array $data = [], string $type = 'GET', array $header = [], int $timeOut = 2, string $agent = '')
+    public static function getRequest(string $url, array $data = [], string $type = 'GET', array $header = [], int $timeOut = 2, string $agent = '', string $ssl_cer = '', string $ssl_key = ''): \CurlHandle
     {
         $ch = curl_init();
         // 判断请求类型
@@ -282,6 +291,16 @@ class Network
         }
         // 设置请求URL
         curl_setopt($ch, CURLOPT_URL, $url);
+        // 设置ssl证书
+        if (!empty($ssl_cer)) if (file_exists($ssl_cer)) {
+            curl_setopt($ch, CURLOPT_SSLCERTTYPE, 'PEM');
+            curl_setopt($ch, CURLOPT_SSLCERT, $ssl_cer);
+        } else throw new NetWorkException('ssl_cer 文件不存在');
+        if (!empty($ssl_key)) if (file_exists($ssl_key)) {
+            curl_setopt($ch, CURLOPT_SSLKEYTYPE, 'PEM');
+            curl_setopt($ch, CURLOPT_SSLKEY, $ssl_key);
+        } else throw new NetWorkException("ssl_key 文件不存在");
+
         // 判断是否为https请求
         if (strtolower(mb_substr($url, 0, 8, 'UTF-8')) == 'https://') {
             // 跳过证书检查
@@ -338,9 +357,11 @@ class Network
      * @param array $header 请求头
      * @param integer $timeOut 超时时间
      * @param string $agent 请求user-agent
+     * @param string $ssl_cer ssl证书
+     * @param string $ssl_key ssl秘钥
      * @return \CurlHandle cURL句柄
      */
-    protected static function getCh(array $item, array $header = [], int $timeOut = 2, string $agent = '')
+    protected static function getCh(array $item, array $header = [], int $timeOut = 2, string $agent = '', string $ssl_cer = '', string $ssl_key = ''): \CurlHandle
     {
         // 请求URL
         if (!isset($item['url']) || empty($item['url'])) {
@@ -366,7 +387,7 @@ class Network
         // 请求user-agent
         $agent = (isset($item['agent']) && !empty($item['agent'])) ? $item['agent'] : $agent;
         // 获取curl请求
-        $ch = static::getRequest($url, $data, $method, $header, $timeOut, $agent);
+        $ch = static::getRequest($url, $data, $method, $header, $timeOut, $agent, $ssl_cer, $ssl_key);
 
         return $ch;
     }
