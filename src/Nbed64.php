@@ -192,7 +192,7 @@ class Nbed64
     public static function binaryDecryptEx(string $base64str, string $key): array
     {
         $topArr = static::binaryDecrypt(substr($base64str, 0, 4), $key);
-        $maskLen = (int)static::_byteArrayGetShort($topArr);
+        $maskLen = static::_byteArrayGetShort($topArr);
         $maskRem = $maskLen % 3;
         $maskMax = $maskRem === 0 ? $maskLen / 3 * 4 : $maskLen / 3 * 4 + (3 - $maskRem);
         $maskMax = intval($maskMax);
@@ -210,7 +210,7 @@ class Nbed64
         $ml = sizeof($maskArr);
         $num = $bl % 4;
         $rem = $num === 0 ? 0 : 4 - $num;
-        $loop = $rem === 0 ? (int)($bl / 4) : (int)($bl / 4) + 1;
+        $loop = $rem === 0 ? intval($bl / 4) : intval($bl / 4) + 1;
         $nl = $loop * 3;
         /* 填充被省略的'='字符'----为了遵循严谨的编程精神（JS中可选，其它语言中必须） */
         $fill = '';
@@ -481,7 +481,7 @@ class Nbed64
         $bl = strlen($base64str);
         $num = $bl % 4;
         $rem = $num === 0 ? 0 : 4 - $num;
-        $loop = $rem === 0 ? (int)($bl / 4) : (int)($bl / 4) + 1;
+        $loop = $rem === 0 ? intval($bl / 4) : intval($bl / 4) + 1;
         $nl = $loop * 3;
         /* 填充被省略的'='字符'----为了遵循严谨的编程精神（JS中可选，其它语言中必须） */
         $fill = '';
@@ -645,7 +645,6 @@ class Nbed64
         $strLen = count($byteArr);
         $strLen = $strLen % 2 === 0 ? $strLen : $strLen - 1;
         if ($strLen < 2) {
-            // echo 'error.....' . $strLen;
             return '';
         }
         for ($i = 0; $strLen > $i; $i += 2) {
@@ -770,10 +769,10 @@ class Nbed64
      * @param array $byteArr    base64头部字节数组。
      * @return integer  表示mask的长度
      */
-    private static function _byteArrayGetShort(array $byteArr)
+    private static function _byteArrayGetShort(array $byteArr): int
     {
         $maskLen = ($byteArr[1] << 8) + $byteArr[0];
-        return $maskLen;
+        return intval($maskLen);
     }
 
     /**

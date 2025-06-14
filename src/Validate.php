@@ -92,6 +92,27 @@ class Validate
 	protected $error = null;
 
 	/**
+	 * 错误字段
+	 *
+	 * @var mixed
+	 */
+	protected $errorKey = null;
+
+	/**
+	 * 验证规则
+	 *
+	 * @var mixed
+	 */
+	protected $errorRule = null;
+
+	/**
+	 * 验证数据结果集
+	 *
+	 * @var array
+	 */
+	protected $result = [];
+
+	/**
 	 * 正则匹配规则
 	 *
 	 * @var array
@@ -139,6 +160,8 @@ class Validate
 	{
 		// 错误节点
 		$errorItme = [];
+		// 验证数据结果集
+		$result = [];
 		// 验证数据
 		$checkData = array_merge($this->getCheckData(), $data);
 		// 验证错误信息
@@ -160,6 +183,8 @@ class Validate
 					$errorItme = [$dataItem, $status];
 					break;
 				}
+
+				$result[$dataItem] = $value;
 			} elseif (in_array('required', $rule)) {
 				// 不存在节点，返回节点不存在
 				$errorItme = [$dataItem, 'required'];
@@ -176,44 +201,48 @@ class Validate
 
 		// 不存在错误节点，验证通过
 		if (empty($errorItme)) {
+			$this->result = $result;
 			return true;
 		}
+
+		// 验证未通过
+		list($this->errorKey, $this->errorRule) = $errorItme;
 		// 存在错误提示信息, 返回错误提示信息
-		if (isset($checkMessage[$errorItme[0]])) {
-			if (is_string($checkMessage[$errorItme[0]])) {
+		if (isset($checkMessage[$this->errorKey])) {
+			if (is_string($checkMessage[$this->errorKey])) {
 				// 字符串，直接返回提示
-				$this->error = $checkMessage[$errorItme[0]];
+				$this->error = $checkMessage[$this->errorKey];
 				return false;
-			} elseif (isset($checkMessage[$errorItme[0]][$errorItme[1]])) {
+			} elseif (isset($checkMessage[$this->errorKey][$this->errorRule])) {
 				// 数组，返回对应节点提示
-				$this->error = $checkMessage[$errorItme[0]][$errorItme[1]];
+				$this->error = $checkMessage[$this->errorKey][$this->errorRule];
 				return false;
 			} else {
 				// 返回默认提示
-				$this->error = $errorItme[0] . ' check error';
+				$this->error = $this->errorKey . ' check error';
 				return false;
 			}
 		}
 		// 返回默认提示
-		$this->error = $errorItme[0] . ' check faild';
+		$this->error = $this->errorKey . ' check faild';
 		return false;
 	}
 
 	/**
 	 * check方法的异常处理封装，当验证不通过是抛出异常
 	 *
-	 * @param array $data
+	 * @param array $data	验证的数据
 	 * @throws ValidateException
-	 * @return true
+	 * @return array	验证通过的结果集
 	 */
-	public function checked(array $data = []): bool
+	public function checked(array $data = []): array
 	{
 		$check = $this->check($data);
 		if (!$check) {
-			throw new ValidateException($this->getError(), 500);
+			throw new ValidateException($this->error, 500, $data, $this->errorKey, $this->errorRule);
 		}
 
-		return true;
+		return $this->getResult();
 	}
 
 	/**
@@ -377,6 +406,7 @@ class Validate
 		$this->checkRule = [];
 		$this->checkMessage = [];
 		$this->checkScope = [];
+		$this->result = [];
 		return $this;
 	}
 
@@ -390,6 +420,40 @@ class Validate
 		$error = $this->error;
 		$this->error = null;
 		return $error;
+	}
+
+	/**
+	 * 获取错误字段
+	 *
+	 * @return mixed
+	 */
+	public function getErrorKey()
+	{
+		$errorKey = $this->errorKey;
+		$this->errorKey = null;
+		return $errorKey;
+	}
+
+	/**
+	 * 获取错误验证规则
+	 *
+	 * @return void
+	 */
+	public function getErrorRule()
+	{
+		$errorRule = $this->errorRule;
+		$this->errorRule = null;
+		return $errorRule;
+	}
+
+	/**
+	 * 获取验证结果集，只包含验证通过的数据
+	 *
+	 * @return array
+	 */
+	public function getResult(): array
+	{
+		return $this->result;
 	}
 
 	###############################  辅助方法  ###################################

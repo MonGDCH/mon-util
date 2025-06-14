@@ -216,7 +216,7 @@ class Tool
                 return true;
             }
         }
-        //协议法，因为有可能不准确，放到最后判断
+        // 协议法，因为有可能不准确，放到最后判断
         if (isset($server['HTTP_ACCEPT'])) {
             // 如果只支持wml并且不支持html那一定是移动设备
             // 如果支持wml和html但是wml在html之前则是移动设备

@@ -447,7 +447,7 @@ class Common
      */
     public static function uuid(): string
     {
-        $charid = md5(uniqid(random_bytes(10), true));
+        $charid = md5(uniqid(bin2hex(random_bytes(6)), true));
         // 字符"-"
         $hyphen = chr(45);
         $uuid = static::mSubstr($charid, 0, 8) . $hyphen
@@ -464,7 +464,7 @@ class Common
      *
      * @return string
      */
-    public static function keyGen(): string
+    public static function guid(): string
     {
         return str_replace('-', '', static::mSubstr(static::uuid(), 1, -1));
     }

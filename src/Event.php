@@ -35,9 +35,7 @@ class Event
     /**
      * 私有化构造方法
      */
-    protected function __construct()
-    {
-    }
+    protected function __construct() {}
 
     /**
      * 批量注册事件

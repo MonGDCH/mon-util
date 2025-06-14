@@ -150,7 +150,7 @@ class UploadFile
                 throw new UploadException('创建文件存储目录失败', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
             }
         }
-        $fileName = empty($fileName) ? uniqid(random_bytes(10)) . '.' . $this->file['ext'] : $fileName;
+        $fileName = empty($fileName) ? uniqid(bin2hex(random_bytes(6))) . '.' . $this->file['ext'] : $fileName;
         $saveName = $savePath . $fileName;
         if (!$replace && is_file($saveName)) {
             throw new UploadException('文件已存在', UploadException::ERROR_UPLOAD_EXISTS);
