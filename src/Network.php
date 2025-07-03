@@ -37,7 +37,8 @@ class Network
         $html = curl_exec($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($html === false || $status != 200) {
-            throw new NetWorkException('发起HTTP请求失败!', 0, null, $ch);
+            $error = curl_error($ch);
+            throw new NetWorkException('发起HTTP请求失败！' . $error, 0, null, $ch);
         }
         // 关闭请求句柄
         curl_close($ch);
@@ -153,8 +154,10 @@ class Network
         $ch = static::getRequest($url, $sendData, 'POST', $header, $timeout, $agent, $ssl_cer, $ssl_key);
         // 发起请求
         $html = curl_exec($ch);
-        if ($html === false) {
-            throw new NetWorkException('发起文件上传请求失败!', 0, null, $ch);
+        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($html === false || $status != 200) {
+            $error = curl_error($ch);
+            throw new NetWorkException('发起文件上传请求失败！' . $error, 0, null, $ch);
         }
         // 关闭请求句柄
         curl_close($ch);
@@ -172,11 +175,13 @@ class Network
      * @param integer $timeOut  超时时间，默认2秒
      * @param integer $readLen  最大能够读取的字节数，默认102400
      * @param boolean $close    是否关闭链接
-     * @return array 结果集
+     * @return mixed 结果集
      */
-    public static function sendTCP(string $ip, int $port, string $cmd, bool $toJson = true, int $timeOut = 2, int $readLen = 102400, bool $close = true): array
+    public static function sendTCP(string $ip, int $port, string $cmd, bool $toJson = true, int $timeOut = 2, int $readLen = 102400, bool $close = true)
     {
-        $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        static $sockets = [];
+        $key = $ip . ':' . $port;
+        $socket = isset($sockets[$key]) ? $sockets[$key] : socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (!$socket) {
             throw new NetWorkException('创建TCP-Socket失败');
         }
@@ -199,11 +204,11 @@ class Network
         if ($close) {
             // 关闭链接，返回结果集
             socket_close($socket);
-            return ['socket' => null, 'result' => $result];
+            unset($sockets[$key]);
         }
 
-        // 不关闭链接，返回链接对象及结果集
-        return ['socket' => $socket, 'result' => $result];
+        // 返回结果集
+        return $result;
     }
 
     /**
@@ -216,11 +221,13 @@ class Network
      * @param integer $timeOut  超时时间，默认2秒
      * @param integer $readLen  最大能够读取的字节数，默认102400
      * @param boolean $close    是否关闭链接
-     * @return array 结果集
+     * @return mixed 结果集
      */
-    public static function sendUDP(string $ip, int $port, string $cmd, bool $toJson = true, int $timeOut = 2, int $readLen = 102400, bool $close = true): array
+    public static function sendUDP(string $ip, int $port, string $cmd, bool $toJson = true, int $timeOut = 2, int $readLen = 102400, bool $close = true)
     {
-        $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+        static $sockets = [];
+        $key = $ip . ':' . $port;
+        $socket = isset($sockets[$key]) ? $sockets[$key] : socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
         if (!$socket) {
             throw new NetWorkException('创建UDP-Socket失败');
         }
@@ -244,11 +251,11 @@ class Network
         if ($close) {
             // 关闭链接，返回结果集
             socket_close($socket);
-            return ['socket' => null, 'result' => $result];
+            unset($sockets[$key]);
         }
 
-        // 不关闭链接，返回链接对象及结果集
-        return ['socket' => $socket, 'result' => $result];
+        // 返回结果集
+        return $result;
     }
 
     /**
