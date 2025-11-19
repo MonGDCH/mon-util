@@ -32,51 +32,105 @@ class Sql
      */
     public static function parseSql(string $content): array
     {
-        if (empty($content)) {
+        if ($content === '') {
             return [];
         }
-        // 纯sql内容
-        $sql = [];
-        // 多行注释标记
-        $comment = false;
-        // 按行分割，兼容多个平台
+
+        // 统一换行
         $content = str_replace(["\r\n", "\r"], "\n", $content);
-        $content = explode("\n", trim($content));
-        // 遍历处理每一行
-        foreach ($content as $key => $line) {
-            // 跳过空行
-            if ($line == '') {
+        $lines = explode("\n", $content);
+
+        $statements = [];
+        $buffer = '';
+        $delimiter = ';'; // 当前分隔符（支持 DELIMITER 指令切换）
+
+        $inString = false;
+        $stringChar = '';
+        $inBlockComment = false;
+
+        foreach ($lines as $line) {
+            $trimLine = ltrim($line);
+            // 检测 DELIMITER 指令（仅在非字符串、非块注释时生效）
+            if (!$inString && !$inBlockComment && preg_match('/^DELIMITER\s+(.+)$/i', $trimLine, $m)) {
+                $delimiter = $m[1];
                 continue;
             }
-            // 跳过以#或者--开头的单行注释
-            if (preg_match("/^(#|--)/", $line)) {
-                continue;
+
+            // 逐字符解析，保留换行以便识别行注释位置
+            $lineWithNL = $line . "\n";
+            $len = strlen($lineWithNL);
+            for ($i = 0; $i < $len; $i++) {
+                $ch = $lineWithNL[$i];
+
+                // 行注释： --   或  #
+                if (!$inString && !$inBlockComment) {
+                    if ($ch === '#') {
+                        // 跳过剩余行
+                        break;
+                    }
+                    if ($ch === '-' && $i + 1 < $len && $lineWithNL[$i + 1] === '-') {
+                        // ensure '--' is at line-start or followed by space
+                        // 跳过剩余行
+                        break;
+                    }
+                }
+
+                // 块注释开始 /* ...
+                if (!$inString && !$inBlockComment && $ch === '/' && $i + 1 < $len && $lineWithNL[$i + 1] === '*') {
+                    $inBlockComment = true;
+                    $i++; // skip '*'
+                    continue;
+                }
+                // 块注释结束 ... */
+                if ($inBlockComment && $ch === '*' && $i + 1 < $len && $lineWithNL[$i + 1] === '/') {
+                    $inBlockComment = false;
+                    $i++; // skip '/'
+                    continue;
+                }
+
+                if ($inBlockComment) {
+                    continue;
+                }
+
+                // 字符串处理，支持 ' " 以及反斜杠转义
+                if (!$inString && ($ch === '"' || $ch === "'")) {
+                    $inString = true;
+                    $stringChar = $ch;
+                    $buffer .= $ch;
+                    continue;
+                } elseif ($inString && $ch === $stringChar) {
+                    // 判断是否被转义（简单判断前一字符是否为反斜杠）
+                    $prev = $i > 0 ? $lineWithNL[$i - 1] : '';
+                    if ($prev !== '\\') {
+                        $inString = false;
+                        $stringChar = '';
+                    }
+                    $buffer .= $ch;
+                    continue;
+                } else {
+                    $buffer .= $ch;
+                }
+
+                // 当不在字符串、块注释时，检测当前缓冲是否以分隔符结尾
+                if (!$inString && !$inBlockComment && $delimiter !== '') {
+                    if (substr($buffer, -strlen($delimiter)) === $delimiter) {
+                        $stmt = substr($buffer, 0, -strlen($delimiter));
+                        $stmt = trim($stmt);
+                        if ($stmt !== '') {
+                            $statements[] = $stmt;
+                        }
+                        $buffer = '';
+                    }
+                }
             }
-            // 跳过以/**/包裹起来的单行注释
-            if (preg_match("/^\/\*(.*?)\*\//", $line)) {
-                continue;
-            }
-            // 多行注释开始
-            if (mb_substr($line, 0, 2, 'UTF-8') == '/*') {
-                $comment = true;
-                continue;
-            }
-            // 多行注释结束
-            if (mb_substr($line, -2, null, 'UTF-8') == '*/') {
-                $comment = false;
-                continue;
-            }
-            // 多行注释没有结束，继续跳过
-            if ($comment) {
-                continue;
-            }
-            // 记录sql语句
-            array_push($sql, $line);
         }
 
-        // 以数组形式返回sql语句
-        $sql = implode("\n", $sql);
-        $sql = explode(";\n", $sql);
-        return $sql;
+        // 结尾残留
+        $left = trim($buffer);
+        if ($left !== '') {
+            $statements[] = $left;
+        }
+
+        return $statements;
     }
 }

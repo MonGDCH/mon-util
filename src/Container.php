@@ -73,7 +73,7 @@ class Container implements ContainerInterface
      */
     public static function gen(string $id, array $val = [], bool $new = false)
     {
-        return static::instance()->get($id, $val, $new);
+        return static::instance()->make($id, $val, $new);
     }
 
     /**
@@ -192,7 +192,7 @@ class Container implements ContainerInterface
      * @throws ReflectionException
      * @return mixed
      */
-    public function invokeMethd($method, array $vars = [])
+    public function invokeMethod($method, array $vars = [])
     {
         // 字符串转数组
         if (is_string($method)) {
@@ -245,7 +245,7 @@ class Container implements ContainerInterface
         if ($callback instanceof Closure) {
             $result = $this->invokeFunction($callback, $vars);
         } else {
-            $result = $this->invokeMethd($callback, $vars);
+            $result = $this->invokeMethod($callback, $vars);
         }
 
         return $result;

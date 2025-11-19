@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace mon\util;
 
+use RuntimeException;
 use DirectoryIterator;
 use InvalidArgumentException;
 use RecursiveIteratorIterator;
@@ -48,7 +49,8 @@ class File
      */
     public static function formatByteText(int $size, int $dec = 2): string
     {
-        return static::formatByte($size, $dec)['size'] . static::formatByte($size, $dec)['type'];
+        $fmt = static::formatByte($size, $dec);
+        return $fmt['size'] . $fmt['type'];
     }
 
     /**
@@ -115,7 +117,7 @@ class File
                     continue;
                 }
 
-                copy($item, $file);
+                copy($item->getPathname(), $file);
             }
         }
     }
@@ -131,15 +133,21 @@ class File
     public static function removeDir(string $dirPath, bool $all = false): bool
     {
         $dirName = static::pathReplace($dirPath);
+        if (!is_dir($dirName)) {
+            return false;
+        }
         $handle = @opendir($dirName);
-        while (($file = @readdir($handle)) !== FALSE) {
-            if ($file != '.' && $file != '..') {
-                $dir = $dirName . '/' . $file;
+        if ($handle === false) {
+            return false;
+        }
+        while (($file = readdir($handle)) !== false) {
+            if ($file !== '.' && $file !== '..') {
+                $child = $dirName . '/' . $file;
                 if ($all) {
-                    is_dir($dir) ? static::removeDir($dir) : static::removeFile($dir);
+                    is_dir($child) ? static::removeDir($child, true) : static::removeFile($child);
                 } else {
-                    if (is_file($dir)) {
-                        static::removeFile($dir);
+                    if (is_file($child)) {
+                        static::removeFile($child);
                     }
                 }
             }
@@ -156,30 +164,37 @@ class File
      */
     public static function getDirInfo(string $dir): array
     {
+        if (!is_dir($dir)) {
+            throw new InvalidArgumentException('dir path is not dir!');
+        }
         $handle = @opendir($dir);
+        if ($handle === false) {
+            throw new RuntimeException('failed to open directory: ' . $dir);
+        }
         $directory_count = 0;
         $total_size = 0;
-        $file_cout = 0;
-        while (false !== ($path = readdir($handle))) {
-            if ($path != '.' && $path != '..') {
-                $next_path = $dir . '/' . $path;
+        $file_count = 0;
+        while (false !== ($entry = readdir($handle))) {
+            if ($entry !== '.' && $entry !== '..') {
+                $next_path = $dir . '/' . $entry;
                 if (is_dir($next_path)) {
                     $directory_count++;
                     $result_value = static::getDirInfo($next_path);
                     $total_size += $result_value['size'];
-                    $file_cout += $result_value['filecount'];
+                    $file_count += $result_value['filecount'];
                     $directory_count += $result_value['dircount'];
                 } elseif (is_file($next_path)) {
                     $total_size += filesize($next_path);
-                    $file_cout++;
+                    $file_count++;
                 }
             }
         }
         closedir($handle);
-        $result_value['size'] = $total_size;
-        $result_value['filecount'] = $file_cout;
-        $result_value['dircount'] = $directory_count;
-        return $result_value;
+        return [
+            'size' => $total_size,
+            'filecount' => $file_count,
+            'dircount' => $directory_count,
+        ];
     }
 
     /**
@@ -409,6 +424,9 @@ class File
     {
         // 默认类型
         $mimeType = $default;
+        if (!file_exists($file)) {
+            return $mimeType;
+        }
         if (empty($mimeTypes) && function_exists('mime_content_type')) {
             // 使用 mime_content_type 函数，需要安装 Fileinfo 扩展
             $mimeType = mime_content_type($file);
@@ -528,9 +546,14 @@ class File
                 $mimeType = $mime_types[$ext];
             } elseif (function_exists('finfo_file')) {
                 // 使用 finfo_file 函数，性能较差，做最后选择
-                $finfo = finfo_open(FILEINFO_MIME);
-                $mimeType = finfo_file($finfo, $file);
-                finfo_close($finfo);
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                if ($finfo !== false) {
+                    $m = finfo_file($finfo, $file);
+                    if ($m !== false) {
+                        $mimeType = $m;
+                    }
+                    finfo_close($finfo);
+                }
             }
         }
 
@@ -570,7 +593,7 @@ class File
             $name = $child->getBasename();
             if ($child->isDir()) {
                 $subit = new DirectoryIterator($child->getPathname());
-                $result[$name] = static::DirectoryIteratorToArray($subit);
+                $result[$name] = static::directoryIteratorToArray($subit);
             } else {
                 $result[] = $name;
             }

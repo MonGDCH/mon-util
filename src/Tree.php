@@ -47,13 +47,27 @@ class Tree
     ];
 
     /**
+     * id => node 映射，便于快速查找父子关系
+     *
+     * @var array
+     */
+    protected $map = [];
+
+    /**
+     * pid => [nodes...] 索引，便于快速获取子节点
+     *
+     * @var array
+     */
+    protected $index = [];
+
+    /**
      * 构造方法
      *
      * @param array $config 配置信息
      */
-    public function __construct(?array $config = [])
+    public function __construct(array $config = [])
     {
-        $this->config = array_merge($this->config, (array)$config);
+        $this->config = array_merge($this->config, $config);
     }
 
     /**
@@ -79,6 +93,18 @@ class Tree
     public function data(array $arr): Tree
     {
         $this->data = $arr;
+        // 重建索引：map 和 parent->children 索引
+        $this->map = [];
+        $this->index = [];
+        foreach ($this->data as $k => &$v) {
+            $id = $v[$this->config['id']] ?? null;
+            $pid = $v[$this->config['pid']] ?? null;
+            if ($id !== null) {
+                $this->map[$id] = &$this->data[$k];
+            }
+            // 支持 pid 为 0 或 '0'
+            $this->index[$pid][] = &$this->data[$k];
+        }
         return $this;
     }
 
@@ -90,18 +116,7 @@ class Tree
      */
     public function getChild($pid): array
     {
-        $result = [];
-        foreach ($this->data as $value) {
-            if (!isset($value[$this->config['pid']])) {
-                // 不存在对应子键，跳过
-                continue;
-            }
-            if ($value[$this->config['pid']] == $pid) {
-                $result[] = $value;
-            }
-        }
-
-        return $result;
+        return isset($this->index[$pid]) ? $this->index[$pid] : [];
     }
 
     /**
@@ -114,18 +129,19 @@ class Tree
     public function getChildren($pid, bool $self = false): array
     {
         $result = [];
-        foreach ($this->data as $value) {
-            if (!isset($value[$this->config['pid']])) {
-                // 不存在对应子键，跳过
-                continue;
-            }
-
-            if ($value[$this->config['pid']] == $pid) {
-                $result[] = $value;
-                // 递归获取
-                $result = array_merge($result, $this->getChildren($value['id']));
-            } elseif ($self && $value[$this->config['id']] == $pid) {
-                $result[] = $value;
+        // 包含自身
+        if ($self && isset($this->map[$pid])) {
+            $result[] = $this->map[$pid];
+        }
+        $children = $this->getChild($pid);
+        if (empty($children)) {
+            return $result;
+        }
+        foreach ($children as $child) {
+            $result[] = $child;
+            $cid = $child[$this->config['id']] ?? null;
+            if ($cid !== null) {
+                $result = array_merge($result, $this->getChildren($cid));
             }
         }
 
@@ -144,7 +160,9 @@ class Tree
         $result = [];
         $list = $this->getChildren($pid, $self);
         foreach ($list as $item) {
-            $result[] = $item[$this->config['id']];
+            if (isset($item[$this->config['id']])) {
+                $result[] = $item[$this->config['id']];
+            }
         }
 
         return $result;
@@ -158,35 +176,14 @@ class Tree
      */
     public function getParent($id): array
     {
-        $result = [];
-        $pid = 0;
-        foreach ($this->data as $value) {
-            if (!isset($value[$this->config['id']]) || !isset($value[$this->config['pid']])) {
-                // 不存在对应节点，跳过
-                continue;
-            }
-            if ($value[$this->config['id']] == $id) {
-                // 获取当前节点父节点ID
-                $pid = $value[$this->config['pid']];
-                break;
-            }
+        if (!isset($this->map[$id])) {
+            return [];
         }
-        // 存在父级节点
-        if ($pid) {
-            foreach ($this->data as $item) {
-                if (!isset($item[$this->config['id']])) {
-                    // 不存在对应节点，跳过
-                    continue;
-                }
-                if ($item[$this->config['id']] == $pid) {
-                    // 获取当前节点父节点ID
-                    $result = $item;
-                    break;
-                }
-            }
+        $pid = $this->map[$id][$this->config['pid']] ?? null;
+        if ($pid === null) {
+            return [];
         }
-
-        return $result;
+        return $this->map[$pid] ?? [];
     }
 
     /**
@@ -199,26 +196,16 @@ class Tree
     public function getParents($id, bool $self = false): array
     {
         $result = [];
-        $pid = 0;
-        foreach ($this->data as $value) {
-            if (!isset($value[$this->config['id']]) || !isset($value[$this->config['pid']])) {
-                // 不存在对应节点，跳过
-                continue;
-            }
-            if ($value[$this->config['id']] == $id) {
-                if ($self) {
-                    // 包含自身
-                    $result[] = $value;
-                }
-                // 获取父级ID
-                $pid = $value[$this->config['pid']];
-                break;
-            }
+        if (!isset($this->map[$id])) {
+            return $result;
         }
-
-        // 存在父级节点
-        if ($pid) {
-            $result = array_merge($this->getParents($pid, true), $result);
+        if ($self) {
+            $result[] = $this->map[$id];
+        }
+        $pid = $this->map[$id][$this->config['pid']] ?? null;
+        while ($pid !== null && isset($this->map[$pid])) {
+            array_unshift($result, $this->map[$pid]);
+            $pid = $this->map[$pid][$this->config['pid']] ?? null;
         }
 
         return $result;
@@ -236,7 +223,9 @@ class Tree
         $result = [];
         $list = $this->getParents($id, $self);
         foreach ($list as $item) {
-            $result[] = $item[$this->config['id']];
+            if (isset($item[$this->config['id']])) {
+                $result[] = $item[$this->config['id']];
+            }
         }
 
         return $result;
@@ -427,7 +416,8 @@ class Tree
                 $spacer = $itemprefix ? $itemprefix . $j : '';
                 $value['spacer'] = $spacer;
                 $data[$n] = $value;
-                $data[$n][$mark] = $this->getTreeArray($value['id'], $itemprefix . $k . $this->config['nbsp'], $mark);
+                $cid = $value[$this->config['id']] ?? null;
+                $data[$n][$mark] = $cid !== null ? $this->getTreeArray($cid, $itemprefix . $k . $this->config['nbsp'], $mark) : [];
                 $n++;
                 $number++;
             }

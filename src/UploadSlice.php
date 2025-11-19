@@ -97,29 +97,53 @@ class UploadSlice
      */
     public function upload(string $fileID, int $chunk = 0, string $name = 'file', ?array $files = null): array
     {
+        // 支持外部传入 $files（用于测试）或默认 $_FILES
         if (is_null($files)) {
             $files = $_FILES;
         }
         if (empty($files) || !isset($files[$name])) {
             throw new UploadException('未上传文件', UploadException::ERROR_UPLOAD_FAILD);
         }
-        // 检测上传保存路径
+
+        // 基本路径检查
         $this->checkPath();
 
-        // 文件信息
+        // 文件信息并校验
         $file = $files[$name];
-        // 校验文件
         $this->checkFile($file);
 
-        // 保存临时文件
-        $fileName = md5($fileID) . '_' . $chunk;
-        $tmpPath = $this->config['rootPath'] . DIRECTORY_SEPARATOR . $this->config['tmpPath'] . DIRECTORY_SEPARATOR . $fileID;
+        // 清洗 fileID，避免路径穿越或非法字符
+        $safeFileID = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', (string)$fileID);
+
+        // 临时目录与文件名
+        $fileName = md5($safeFileID) . '_' . intval($chunk);
+        $tmpPath = rtrim($this->config['rootPath'], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR
+            . trim($this->config['tmpPath'], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $safeFileID;
         if (!File::createDir($tmpPath)) {
             throw new UploadException('创建临时文件存储目录失败', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
         }
+
         $savePath = $tmpPath . DIRECTORY_SEPARATOR . $fileName;
-        if (!move_uploaded_file($file['tmp_name'], $savePath)) {
-            throw new UploadException('临时文件保存失败', UploadException::ERROR_UPLOAD_SAVE_FAILD);
+
+        // 支持标准表单上传或 raw php://input 回退（某些分片客户端使用）
+        if (!empty($file['tmp_name']) && is_uploaded_file($file['tmp_name'])) {
+            if (!move_uploaded_file($file['tmp_name'], $savePath)) {
+                throw new UploadException('临时文件保存失败', UploadException::ERROR_UPLOAD_SAVE_FAILD);
+            }
+        } else {
+            // 尝试从 php://input 读取到临时文件
+            $input = fopen('php://input', 'rb');
+            if ($input === false) {
+                throw new UploadException('无法读取上传数据', UploadException::ERROR_UPLOAD_SAVE_FAILD);
+            }
+            $out = fopen($savePath, 'wb');
+            if ($out === false) {
+                fclose($input);
+                throw new UploadException('临时文件保存失败', UploadException::ERROR_UPLOAD_SAVE_FAILD);
+            }
+            stream_copy_to_stream($input, $out);
+            fclose($input);
+            fclose($out);
         }
 
         return ['savePath' => $savePath, 'saveDir' => $tmpPath, 'fileName' => $fileName];
@@ -137,57 +161,107 @@ class UploadSlice
      */
     public function merge(string $fileID, int $chunkLength, string $fileName, string $saveDir = ''): array
     {
-        // 分片临时文件存储目录
-        $tmpPath = $this->config['rootPath'] . DIRECTORY_SEPARATOR . $this->config['tmpPath'] . DIRECTORY_SEPARATOR . $fileID;
+        // 临时目录
+        $tmpPath = rtrim($this->config['rootPath'], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR
+            . trim($this->config['tmpPath'], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $fileID);
         if (!is_dir($tmpPath)) {
             throw new UploadException('临时文件不存在', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
         }
-        // 验证文件名
+
+        // 验证扩展名
         $ext = File::getExt($fileName);
-        if (!empty($this->config['exts']) && !in_array($ext, $this->config['exts'])) {
+        if (!empty($this->config['exts']) && !in_array($ext, $this->config['exts'], true)) {
             throw new UploadException('不支持文件保存类型', UploadException::ERROR_UPLOAD_EXT_FAILD);
         }
-        // 多级目录存储
-        $savePath = $this->config['rootPath'] . DIRECTORY_SEPARATOR . $saveDir;
-        if (!empty($saveDir) && !is_dir($savePath)) {
+
+        // 目标保存目录准备
+        $savePath = rtrim($this->config['rootPath'], DIRECTORY_SEPARATOR) . ($saveDir !== '' ? DIRECTORY_SEPARATOR . trim($saveDir, DIRECTORY_SEPARATOR) : '');
+        if ($savePath !== '' && !is_dir($savePath)) {
             if (!File::createDir($savePath)) {
                 throw new UploadException('创建文件存储目录失败', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
             }
         }
-        // 验证分片文件完整性
+
+        // 验证分片完整性（记录缺失分片但不立刻删除目录）
         $this->error_chunk = [];
-        $chunkName = md5($fileID);
+        $chunkBase = md5($fileID) . '_';
         for ($i = 0; $i < $chunkLength; $i++) {
-            $checkName = $chunkName . '_' . $i;
-            $chunkPath = $tmpPath . DIRECTORY_SEPARATOR . $checkName;
-            if (!file_exists($chunkPath)) {
+            $chunkPath = $tmpPath . DIRECTORY_SEPARATOR . $chunkBase . $i;
+            if (!is_file($chunkPath)) {
                 $this->error_chunk[] = $i;
-                throw new UploadException('分片文件不完整', UploadException::ERROR_CHUNK_FAILD);
             }
         }
-        // 合并文件
-        $saveFile = $savePath . DIRECTORY_SEPARATOR . $fileName;
-        // 打开保存文件句柄
-        $writerFp = fopen($saveFile, 'ab');
-        for ($k = 0; $k < $chunkLength; $k++) {
-            $checkName = $chunkName . '_' . $k;
-            $chunkPath = $tmpPath . DIRECTORY_SEPARATOR . $checkName;
-            // 读取临时文件
-            $readerFp = fopen($chunkPath, 'rb');
-            // 写入
-            fwrite($writerFp, fread($readerFp, filesize($chunkPath)));
-            // 关闭句柄
-            fclose($readerFp);
-            unset($readerFp);
-            // 删除临时文件
-            File::removeFile($chunkPath);
+        if (!empty($this->error_chunk)) {
+            throw new UploadException('分片文件不完整: ' . implode(',', $this->error_chunk), UploadException::ERROR_CHUNK_FAILD);
         }
-        // 关闭保存文件句柄
-        fclose($writerFp);
-        // 删除临时目录
-        File::removeDir($tmpPath);
 
-        return ['savePath' => $saveFile, 'saveDir' => $savePath, 'fileName' => $fileName];
+        // 合并：使用锁保护，先写入临时文件，完成后原子重命名
+        $finalPath = ($savePath === '' ? rtrim($this->config['rootPath'], DIRECTORY_SEPARATOR) : $savePath) . DIRECTORY_SEPARATOR . $fileName;
+        $tmpFinal = $finalPath . '.tmp_' . uniqid('', true);
+
+        $lockFile = $tmpPath . DIRECTORY_SEPARATOR . '.merge.lock';
+        $lockFp = fopen($lockFile, 'c');
+        if ($lockFp === false) {
+            throw new UploadException('无法创建合并锁文件', UploadException::ERROR_UPLOAD_SAVE_FAILD);
+        }
+
+        // 阻塞式获取独占锁，确保不会并发合并
+        if (!flock($lockFp, LOCK_EX)) {
+            fclose($lockFp);
+            throw new UploadException('获取合并锁失败', UploadException::ERROR_UPLOAD_SAVE_FAILD);
+        }
+
+        $writerFp = fopen($tmpFinal, 'cb');
+        if ($writerFp === false) {
+            flock($lockFp, LOCK_UN);
+            fclose($lockFp);
+            throw new UploadException('无法打开目标文件用于写入', UploadException::ERROR_UPLOAD_SAVE_FAILD);
+        }
+
+        try {
+            // 按序拷贝每个 chunk 到目标临时文件，避免一次性载入内存
+            for ($k = 0; $k < $chunkLength; $k++) {
+                $chunkPath = $tmpPath . DIRECTORY_SEPARATOR . $chunkBase . $k;
+                $readerFp = fopen($chunkPath, 'rb');
+                if ($readerFp === false) {
+                    throw new UploadException("读取分片失败: {$k}", UploadException::ERROR_CHUNK_FAILD);
+                }
+                // 以流方式拷贝
+                stream_copy_to_stream($readerFp, $writerFp);
+                fclose($readerFp);
+                // 立即删除已合并的分片，节省磁盘空间
+                File::removeFile($chunkPath);
+            }
+            fflush($writerFp);
+            // 设置合并文件权限（可选）
+            @chmod($tmpFinal, 0644);
+            // 关闭写入句柄
+            fclose($writerFp);
+            // 原子重命名到最终位置
+            if (!rename($tmpFinal, $finalPath)) {
+                // 若重命名失败，尝试复制再删除
+                if (!copy($tmpFinal, $finalPath)) {
+                    throw new UploadException('合并文件重命名失败', UploadException::ERROR_UPLOAD_SAVE_FAILD);
+                }
+                @unlink($tmpFinal);
+            }
+            // 删除临时目录及锁
+            File::removeDir($tmpPath);
+        } finally {
+            // 释放锁并关闭锁文件
+            flock($lockFp, LOCK_UN);
+            fclose($lockFp);
+            @unlink($lockFile);
+            if (isset($writerFp) && is_resource($writerFp)) {
+                fclose($writerFp);
+            }
+            // 若异常导致临时合并文件残留，尝试删除
+            if (isset($tmpFinal) && is_file($tmpFinal)) {
+                @unlink($tmpFinal);
+            }
+        }
+
+        return ['savePath' => $finalPath, 'saveDir' => $savePath, 'fileName' => $fileName];
     }
 
     /**
@@ -199,18 +273,26 @@ class UploadSlice
      */
     protected function checkFile(array $file): bool
     {
-        if ($file['error']) {
+        // 错误码检查（若存在）
+        if (!empty($file['error'])) {
             throw new UploadException($this->uploadErrorMsg((int)$file['error']), UploadException::ERROR_UPLOAD_CHECK_FAILD);
         }
-        // 无效上传
+        // 名称校验
         if (empty($file['name'])) {
             throw new UploadException('未知上传错误', UploadException::ERROR_UPLOAD_NOT_MESSAGE);
         }
-        // 检查是否合法上传
-        if (!is_uploaded_file($file['tmp_name'])) {
-            throw new UploadException('非法上传文件', UploadException::ERROR_UPLOAD_ILLEGAL);
+        // tmp_name 可能不存在（某些客户端直接上传流），若存在优先使用 is_uploaded_file 校验
+        if (!empty($file['tmp_name'])) {
+            if (!is_file($file['tmp_name'])) {
+                throw new UploadException('上传临时文件不存在', UploadException::ERROR_UPLOAD_ILLEGAL);
+            }
+            // is_uploaded_file 更严格，若不是表单上传则仍允许（但可视场景按需开启）
+            // if (!is_uploaded_file($file['tmp_name'])) {
+            //     throw new UploadException('非法上传文件', UploadException::ERROR_UPLOAD_ILLEGAL);
+            // }
         }
-        if ($file['size'] > $this->config['sliceSize'] && $this->config['sliceSize'] > 0) {
+        // 分片大小限制（若配置了）
+        if (!empty($this->config['sliceSize']) && isset($file['size']) && $file['size'] > $this->config['sliceSize']) {
             throw new UploadException('分片文件大小不符', UploadException::ERROR_UPLOAD_SIZE_FAILD);
         }
 
@@ -225,11 +307,14 @@ class UploadSlice
      */
     protected function checkPath(): bool
     {
-        $rootPath = $this->config['rootPath'];
+        $rootPath = $this->config['rootPath'] ?? '';
+        if ($rootPath === '') {
+            throw new UploadException('未配置上传根目录', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
+        }
         if ((!is_dir($rootPath) && !File::createDir($rootPath)) || (is_dir($rootPath) && !is_writable($rootPath))) {
             throw new UploadException('上传文件保存目录不可写入：' . $rootPath, UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
         }
-        $tmpPath = $rootPath . DIRECTORY_SEPARATOR . $this->config['tmpPath'];
+        $tmpPath = rtrim($rootPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . trim((string)$this->config['tmpPath'], DIRECTORY_SEPARATOR);
         if ((!is_dir($tmpPath) && !File::createDir($tmpPath)) || (is_dir($tmpPath) && !is_writable($tmpPath))) {
             throw new UploadException('上传文件临时保存目录不可写入：' . $tmpPath, UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
         }

@@ -612,7 +612,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function date($value, $allowEmpty = false): bool
+	public function date($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -627,7 +627,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function day($value, $allowEmpty = false): bool
+	public function day($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -642,7 +642,7 @@ class Validate
 	 * @param boolean $allowEmpty
 	 * @return boolean
 	 */
-	public function time($value, $allowEmpty = false): bool
+	public function time($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -657,7 +657,7 @@ class Validate
 	 * @param boolean $allowEmpty
 	 * @return boolean
 	 */
-	public function time12($value, $allowEmpty = false): bool
+	public function time12($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -672,7 +672,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function timestamp($value, $allowEmpty = false): bool
+	public function timestamp($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -729,7 +729,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function ip($value, $allowEmpty = false): bool
+	public function ip($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -744,7 +744,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function intranet($value, $allowEmpty = false): bool
+	public function intranet($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -759,7 +759,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function mac($value, $allowEmpty = false): bool
+	public function mac($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -774,7 +774,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function mobile($value, $allowEmpty = false): bool
+	public function mobile($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -789,7 +789,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function tel($value, $allowEmpty = false): bool
+	public function tel($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -804,7 +804,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function postal($value, $allowEmpty = false): bool
+	public function postal($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -819,7 +819,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function email($value, $allowEmpty = false): bool
+	public function email($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -834,7 +834,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function china($value, $allowEmpty = false): bool
+	public function china($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -849,7 +849,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function language($value, $allowEmpty = false): bool
+	public function language($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -864,7 +864,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function alpha($value, $allowEmpty = false): bool
+	public function alpha($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -879,7 +879,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function lower($value, $allowEmpty = false): bool
+	public function lower($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -894,7 +894,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function upper($value, $allowEmpty = false): bool
+	public function upper($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -909,7 +909,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function account($value, $allowEmpty = false): bool
+	public function account($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -924,7 +924,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function license($value, $allowEmpty = false): bool
+	public function license($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -939,7 +939,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function payCard($value, $allowEmpty = false): bool
+	public function payCard($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -954,7 +954,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function carNum($value, $allowEmpty = false): bool
+	public function carNum($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -980,7 +980,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function url($value, $allowEmpty = false): bool
+	public function url($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -995,7 +995,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function domain($value, $allowEmpty = false): bool
+	public function domain($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -1087,7 +1087,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function json($value, $allowEmpty = false): bool
+	public function json($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -1105,7 +1105,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function xml($value, $allowEmpty = false): bool
+	public function xml($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;
@@ -1180,7 +1180,7 @@ class Validate
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function idCard($value, $allowEmpty = false): bool
+	public function idCard($value, $allowEmpty = true): bool
 	{
 		if ($allowEmpty && ($value === '' || is_null($value))) {
 			return true;

@@ -127,9 +127,9 @@ class Nbed64
         $maskArr = static::_maskToByteArray($maskNumber);
         $mapArr = static::_mapToByteArray(true);
         $keyArr = static::_keyToByteArray($key);
-        $kl = sizeof($keyArr);
-        $bl = sizeof($byteArr);
-        $ml = sizeof($maskArr);
+        $kl = count($keyArr);
+        $bl = count($byteArr);
+        $ml = count($maskArr);
         $rem = $bl % 3;
         $num = $bl % 3 === 0 ? (int)($bl / 3) : (int)($bl / 3) + 1;
         $base64Len = $num * 4;
@@ -165,17 +165,17 @@ class Nbed64
         /* 编码掩码并插入到头部 */
         $topArr = [];
         array_push($topArr, 0, 0);
-        for ($n = 0; $n < sizeof($maskArr); $n++) {
+        for ($n = 0; $n < count($maskArr); $n++) {
             $topArr[2 + $n] = $maskArr[$n];
         }
         /* 有余数时的补包处理(减掉首部长度标记包) */
-        $tl = sizeof($topArr);
+        $tl = count($topArr);
         $tf = $tl % 3 === 0 ? $tl : 3 - ($tl % 3);
         for ($n = 0; $n < $tf; $n++) {
             array_push($topArr, 0);
         }
         /* 合并数组后返回 */
-        $lenArr = static::_shortToByteArray(sizeof($topArr) - 2);
+        $lenArr = static::_shortToByteArray(count($topArr) - 2);
         $topArr[1] = $lenArr[1];
         $topArr[0] = $lenArr[0];
         $ba64Top = static::binaryEncrypt($topArr, $key, true);
@@ -207,7 +207,7 @@ class Nbed64
         $dataStr = substr($base64str, $dataStart, strlen($base64str));
         $bl = strlen($dataStr);
         $kl = strlen($key);
-        $ml = sizeof($maskArr);
+        $ml = count($maskArr);
         $num = $bl % 4;
         $rem = $num === 0 ? 0 : 4 - $num;
         $loop = $rem === 0 ? intval($bl / 4) : intval($bl / 4) + 1;
@@ -271,7 +271,7 @@ class Nbed64
             $i += 3;
         }
         /* byteArray转成String----为跨平台的兼容性不使用Array.slice */
-        $retLen = sizeof($newArr) - $h;
+        $retLen = count($newArr) - $h;
         $retArr = [];
         for ($n = 0; $n < $retLen; $n++) {
             $retArr[$n] = $newArr[$n];
@@ -291,8 +291,8 @@ class Nbed64
     {
         $mapArr = static::_mapToByteArray($isRFC4648);
         $keyArr = static::_keyToByteArray($key);
-        $kl = sizeof($keyArr);
-        $bl = sizeof($byteArr);
+        $kl = count($keyArr);
+        $bl = count($byteArr);
         $rem = $bl % 3;
         $num = $bl % 3 === 0 ? (int)($bl / 3) : (int)($bl / 3) + 1;
         $base64Len = $num * 4;
@@ -410,7 +410,7 @@ class Nbed64
             $i += 3;
         }
         /* byteArray转成String----为跨平台的兼容性不使用Array.slice */
-        $retLen = sizeof($newArr) - $h;
+        $retLen = count($newArr) - $h;
         $retArr = [];
         for ($n = 0; $n < $retLen; $n++) {
             $retArr[$n] = $newArr[$n];
@@ -429,7 +429,7 @@ class Nbed64
     public static function binaryEncode(array $byteArr, bool $isRFC4648 = true): string
     {
         $mapArr = static::_mapToByteArray($isRFC4648);
-        $bl = sizeof($byteArr);
+        $bl = count($byteArr);
         $rem = $bl % 3;
         $num = $bl % 3 === 0 ? (int)($bl / 3) : (int)($bl / 3) + 1;
         $base64Len = $num * 4;
@@ -530,7 +530,7 @@ class Nbed64
             $i += 3;
         }
         /* byteArray转成String----为跨平台的兼容性不使用Array.slice */
-        $retLen = sizeof($newArr);
+        $retLen = count($newArr);
         $retArr = [];
         for ($n = 0; $n < $retLen; $n++) {
             $retArr[$n] = $newArr[$n];
@@ -582,7 +582,7 @@ class Nbed64
             $byteArr[$k++] = $uft16Bytes[1];
         }
         /* 直接修正不能被3正除 */
-        $rem = sizeof($byteArr) % 3;
+        $rem = count($byteArr) % 3;
         $add = $rem === 0 ? 0 : 3 - $rem;
         for ($i = 0; $i < $add; $i++) {
             array_push($byteArr, 0);
@@ -599,17 +599,18 @@ class Nbed64
      */
     private static function _Utf8DirectToByteArray(string $str): array
     {
-        $i = 0;
-        $byteArr = [];
-        $strLen = strlen($str);
-        for ($i = 0; $i < $strLen; $i++) {
-            array_push($byteArr, ord($str[$i]));
+        if ($str === '') {
+            return [];
         }
-        /* 直接修正不能被3正除 */
+        // unpack 返回 1 基索引数组，array_values 归一为 0 索引
+        $byteArr = array_values(unpack('C*', $str) ?: []);
+        $strLen = count($byteArr);
         $rem = $strLen % 3;
-        $add = $rem === 0 ? 0 : 3 - $rem;
-        for ($i = 0; $i < $add; $i++) {
-            array_push($byteArr, 0);
+        if ($rem !== 0) {
+            $add = 3 - $rem;
+            for ($i = 0; $i < $add; $i++) {
+                $byteArr[] = 0;
+            }
         }
         return $byteArr;
     }
@@ -625,7 +626,7 @@ class Nbed64
     {
         $i = 0;
         $utf16Str = '';
-        $strLen = sizeof($byteArr);
+        $strLen = count($byteArr);
         while ($strLen > $i) {
             $utf16Str .= chr($byteArr[$i++]) . chr($byteArr[$i++]);
         }
@@ -726,12 +727,10 @@ class Nbed64
      */
     private static function _base64strToByteArray(string $base64str): array
     {
-        $realLen = strlen($base64str);
-        $byteArr = [];
-        for ($i = 0; $i < $realLen; $i++) {
-            $byteArr[$i] = ord($base64str[$i]);
+        if ($base64str === '') {
+            return [];
         }
-        return $byteArr;
+        return array_values(unpack('C*', $base64str) ?: []);
     }
 
     /**
@@ -742,11 +741,10 @@ class Nbed64
      */
     private static function _keyToByteArray(string $key): array
     {
-        $byteArr = [];
-        for ($i = 0, $l = strlen($key); $i < $l; $i++) {
-            $byteArr[$i] = ord($key[$i]);
+        if ($key === '') {
+            return [];
         }
-        return $byteArr;
+        return array_values(unpack('C*', $key) ?: []);
     }
 
     /**
@@ -757,10 +755,10 @@ class Nbed64
      */
     private static function _shortToByteArray(int $twoByte): array
     {
-        $byteArr = [];
-        $byteArr[0] = $twoByte & 0xFF;;
-        $byteArr[1] = ($twoByte - $byteArr[0]) / 0x100;
-        return $byteArr;
+        // 返回小端序：低字节在前，高字节在后
+        $low = $twoByte & 0xFF;
+        $high = ($twoByte >> 8) & 0xFF;
+        return [$low, $high];
     }
 
     /**

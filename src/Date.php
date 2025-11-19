@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace mon\util;
 
+use DateTime;
 use RuntimeException;
 
 /**
@@ -87,13 +88,24 @@ class Date
     /**
      * 构造方法
      *
-     * @param string $date 日期
+     * @param mixed $date 日期
      * @return void
      */
     public function __construct($date = null)
     {
         $this->date = $this->parse($date);
         $this->setDate($this->date);
+    }
+
+    /**
+     * 生成日期工具类
+     *
+     * @param mixed $date 日期
+     * @return Date
+     */
+    public static function gen($date = null): Date
+    {
+        return new self($date);
     }
 
     /**
@@ -650,6 +662,39 @@ class Date
         }
 
         return $result;
+    }
+
+    /**
+     * 生成开始日期和结束日期之间的所有日期
+     * 
+     * @param string $startDate 开始日期，格式为'Y-m-d'
+     * @param string $endDate 结束日期，格式为'Y-m-d'
+     * @return array 包含所有日期的数组，每个元素为'Y-m-d'格式的日期字符串
+     */
+    public function getDateBetween(string $startDate, string $endDate): array
+    {
+        $dates = [];
+
+        try {
+            $start = new DateTime($startDate);
+            $end = new DateTime($endDate);
+        } catch (\Exception $e) {
+            // 日期格式错误
+            return $dates;
+        }
+
+        if ($start > $end) {
+            return $dates;
+        }
+
+        $current = clone $start;
+        while ($current <= $end) {
+            $dates[] = $current->format('Y-m-d');
+            // 增加一天，自动处理时区和特殊日期
+            $current->modify('+1 day');
+        }
+
+        return $dates;
     }
 
     /**

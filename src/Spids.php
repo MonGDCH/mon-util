@@ -286,7 +286,7 @@ class Spids
                         return true;
                     }
                 } elseif (preg_match('/~[0-9]+~/', (string) $word)) {
-                    if (str_starts_with($id, (string) $word) || strrpos($id, (string) $word) === strlen($id) - strlen((string) $word)) {
+                    if (mb_strpos($id, (string) $word) === 0 || substr_compare($id, (string) $word, -strlen((string)$word)) === 0) {
                         return true;
                     }
                 } elseif ($this->str_contains($id, (string) $word)) {

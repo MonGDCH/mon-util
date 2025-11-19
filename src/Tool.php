@@ -122,9 +122,8 @@ class Tool
      */
     public static function isWechat(string $ua = ''): bool
     {
-        $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
-
-        return mb_strpos($ua, 'MicroMessenger') !== false;
+        $ua = $ua ?: (isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '');
+        return stripos($ua, 'MicroMessenger') !== false;
     }
 
     /**
@@ -135,9 +134,8 @@ class Tool
      */
     public static function isAndroid(string $ua = ''): bool
     {
-        $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
-
-        return mb_strpos($ua, 'Android') !== false;
+        $ua = $ua ?: (isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '');
+        return stripos($ua, 'Android') !== false;
     }
 
     /**
@@ -148,9 +146,8 @@ class Tool
      */
     public static function isIOS(string $ua = ''): bool
     {
-        $ua = $ua ?: $_SERVER['HTTP_USER_AGENT'];
-
-        return (mb_strpos($ua, 'iPhone') !== false || mb_strpos($ua, 'iPad') !== false);
+        $ua = $ua ?: (isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '');
+        return (stripos($ua, 'iPhone') !== false || stripos($ua, 'iPad') !== false);
     }
 
     /**
@@ -806,6 +803,9 @@ class Tool
      */
     protected static function compressZip(ZipArchive $zip, $fileResource, string $sourcePath, string $compressPath = '')
     {
+        if ($fileResource === false) {
+            return;
+        }
         while (($file = readdir($fileResource)) != false) {
             if ($file == "." || $file == "..") {
                 continue;
@@ -815,11 +815,18 @@ class Tool
             $newTemp = $compressPath == '' ? $file : $compressPath . '/' . $file;
             if (is_dir($sourceTemp)) {
                 $zip->addEmptyDir($newTemp);
-                static::compressZip($zip, opendir($sourceTemp), $sourceTemp, $newTemp);
+                $dh = opendir($sourceTemp);
+                static::compressZip($zip, $dh, $sourceTemp, $newTemp);
+                if ($dh !== false) {
+                    closedir($dh);
+                }
             }
             if (is_file($sourceTemp)) {
                 $zip->addFile($sourceTemp, $newTemp);
             }
+        }
+        if (is_resource($fileResource)) {
+            closedir($fileResource);
         }
     }
 
@@ -843,7 +850,8 @@ class Tool
         // 初始化Zip并打开
         $zip = new ZipArchive();
         // 打开并解压
-        if ($zip->open($zipName)) {
+        $openRes = $zip->open($zipName);
+        if ($openRes === true) {
             $zip->extractTo($dest);
             $zip->close();
             return true;
@@ -879,9 +887,9 @@ class Tool
         // 响应头信息
         $headers = [
             'Cache-Control: max-age=' . $expire,
-            'Expires: ' . gmdate("D, d M Y H:i:s", time() + $expire) . 'GMT',
-            'Last-Modified: ' . gmdate("D, d M Y H:i:s", $mtime) . 'GMT',
-            'Content-Disposition: attachment; filename=' . $showname,
+            'Expires: ' . gmdate("D, d M Y H:i:s", time() + $expire) . ' GMT',
+            'Last-Modified: ' . gmdate("D, d M Y H:i:s", $mtime) . ' GMT',
+            'Content-Disposition: attachment; filename="' . rawurlencode($showname) . '"',
             'Content-Length: ' . $length,
             'Content-type: ' . $mimeType
         ];
@@ -941,7 +949,7 @@ class Tool
      */
     public static function download(string $url, string $savePath, string $filename = '', bool $createDir = true): string
     {
-        $path = $createDir ? ($savePath . '/' . date('Ym') . '/') : ($savePath . '/');
+        $path = rtrim($savePath, DIRECTORY_SEPARATOR) . ($createDir ? ('/' . date('Ym') . '/') : '/');
         if (!is_dir($path)) {
             $create = mkdir($path, 0777, true);
             if (!$create) {
@@ -954,23 +962,28 @@ class Tool
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 300);
-        // 判断是否为https请求
-        $ssl = strtolower(mb_substr($url, 0, 8, 'UTF-8')) == "https://" ? true : false;
-        if ($ssl) {
-            curl_setopt($ch, CURLOPT_SSLVERSION, false);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 300);
+        // https handling
+        if (stripos($url, 'https://') === 0) {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // 若生产使用请开启并提供证书
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         }
 
         $file = curl_exec($ch);
+        $err = curl_error($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        $filename = empty($filename) ? pathinfo($url, PATHINFO_BASENAME) : $filename;
-        $resource = fopen($path . $filename, 'a');
-
-        fwrite($resource, $file);
-        fclose($resource);
-        return $path . $filename;
+        if ($file === false || $httpCode >= 400) {
+            throw new RuntimeException('下载失败: ' . ($err ?: 'HTTP ' . $httpCode));
+        }
+        $filename = empty($filename) ? pathinfo(parse_url($url, PHP_URL_PATH) ?: $url, PATHINFO_BASENAME) : $filename;
+        $full = $path . $filename;
+        if (file_put_contents($full, $file) === false) {
+            throw new RuntimeException('写入文件失败: ' . $full);
+        }
+        return $full;
     }
 
     /**
@@ -981,36 +994,24 @@ class Tool
      */
     public static function rgbToHex($rgb): string
     {
-        if (is_array($rgb)) {
-            $match = $rgb;
-        } else if (mb_strpos($rgb, 'rgb(') === 0) {
-            // 判断是否为rgb开头
-            $regexp = "/^rgb\(([0-9]{0,3})\,\s*([0-9]{0,3})\,\s*([0-9]{0,3})\)/";
-            preg_match($regexp, $rgb, $match);
-            $re = array_shift($match);
-        } else {
-            // 直接传入rgb的值
-            $match = explode(',', $rgb);
-        }
-
-        $hex_color = "#";
-        $hex = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];
-        for ($i = 0; $i < 3; $i++) {
-            $r = null;
-            $c = $match[$i];
-            $hex_array = [];
-            while ($c > 16) {
-                $r = $c % 16;
-                $c = ($c / 16) >> 0;
-                array_push($hex_array, $hex[$r]);
+        if (is_string($rgb) && stripos($rgb, 'rgb(') === 0) {
+            if (!preg_match('/rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)/i', $rgb, $m)) {
+                throw new InvalidArgumentException('invalid rgb string');
             }
-            array_push($hex_array, $hex[$c]);
-            $ret = array_reverse($hex_array);
-            $item = implode('', $ret);
-            $item = str_pad($item, 2, '0', STR_PAD_LEFT);
-            $hex_color .= $item;
+            $parts = [(int)$m[1], (int)$m[2], (int)$m[3]];
+        } elseif (is_string($rgb)) {
+            $parts = array_map('intval', array_map('trim', explode(',', $rgb)));
+        } elseif (is_array($rgb)) {
+            $parts = array_values($rgb);
+        } else {
+            throw new InvalidArgumentException('invalid rgb input');
         }
-        return $hex_color;
+        $hex = '#';
+        foreach (array_slice($parts, 0, 3) as $c) {
+            $c = max(0, min(255, (int)$c));
+            $hex .= strtoupper(str_pad(dechex($c), 2, '0', STR_PAD_LEFT));
+        }
+        return $hex;
     }
 
     /**
@@ -1021,25 +1022,19 @@ class Tool
      */
     public static function hexToRgb(string $hex_color): array
     {
-        $color = str_replace('#', '', $hex_color);
-        if (strlen($color) > 3) {
-            $rgb = [
-                'r' => hexdec(mb_substr($color, 0, 2, 'UTF-8')),
-                'g' => hexdec(mb_substr($color, 2, 2, 'UTF-8')),
-                'b' => hexdec(mb_substr($color, 4, 2, 'UTF-8'))
-            ];
+        $color = ltrim($hex_color, '#');
+        if (strlen($color) === 3) {
+            $r = str_repeat($color[0], 2);
+            $g = str_repeat($color[1], 2);
+            $b = str_repeat($color[2], 2);
+        } elseif (strlen($color) === 6) {
+            $r = substr($color, 0, 2);
+            $g = substr($color, 2, 2);
+            $b = substr($color, 4, 2);
         } else {
-            $color = $hex_color;
-            $r = mb_substr($color, 0, 1, 'UTF-8') . mb_substr($color, 0, 1, 'UTF-8');
-            $g = mb_substr($color, 1, 1, 'UTF-8') . mb_substr($color, 1, 1, 'UTF-8');
-            $b = mb_substr($color, 2, 1, 'UTF-8') . mb_substr($color, 2, 1, 'UTF-8');
-            $rgb = [
-                'r' => hexdec($r),
-                'g' => hexdec($g),
-                'b' => hexdec($b)
-            ];
+            throw new InvalidArgumentException('invalid hex color');
         }
-        return $rgb;
+        return ['r' => hexdec($r), 'g' => hexdec($g), 'b' => hexdec($b)];
     }
 
     /**
@@ -1051,8 +1046,14 @@ class Tool
      */
     public static function base64ToImg(string $base64, string $path): bool
     {
-        $base64Info = explode(',', $base64);
-        $content = base64_decode($base64Info[1]);
+        $parts = explode(',', $base64, 2);
+        if (count($parts) !== 2) {
+            throw new InvalidArgumentException('invalid base64 image string');
+        }
+        $content = base64_decode($parts[1], true);
+        if ($content === false) {
+            throw new InvalidArgumentException('base64 decode failed');
+        }
         return (bool)File::createFile($content, $path, false);
     }
 
@@ -1084,13 +1085,11 @@ class Tool
     {
         static $import_files = [];
         if (!isset($import_files[$file])) {
-            if (!file_exists($file)) {
-                throw new RuntimeException('Require file not extsis! file: ' . $file);
+            if (!is_readable($file)) {
+                throw new RuntimeException('Require file not exists or unreadable: ' . $file);
             }
-
-            $import_files[$file] = require_once($file);
+            $import_files[$file] = require $file;
         }
-
         return $import_files[$file];
     }
 
@@ -1105,13 +1104,11 @@ class Tool
     {
         static $import_files = [];
         if (!isset($import_files[$file])) {
-            if (!file_exists($file)) {
-                throw new RuntimeException('Include file not extsis! file: ' . $file);
+            if (!is_readable($file)) {
+                throw new RuntimeException('Include file not exists or unreadable: ' . $file);
             }
-
-            $import_files[$file] = include_once($file);
+            $import_files[$file] = include $file;
         }
-
         return $import_files[$file];
     }
 }

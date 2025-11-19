@@ -53,6 +53,17 @@ class Image
     }
 
     /**
+     * 生成图像
+     *
+     * @param string $img 图片地址
+     * @return Image
+     */
+    public static function gen(string $img): Image
+    {
+        return new self($img);
+    }
+
+    /**
      * 打开一张图片
      *
      * @param string $imgname 图片路径
@@ -92,6 +103,9 @@ class Image
                 throw new ImgException('不支持的图片类型', ImgException::ERROR_IMG_TYPE_NOT_SUPPORT);
             }
             $this->img = call_user_func($fun, $imgname);
+        }
+        if ($this->img === false) {
+            throw new ImgException('图像创建失败', ImgException::ERROR_IMG_FAILD);
         }
 
         return $this;
@@ -278,8 +292,9 @@ class Image
         empty($width)  && $width  = $w;
         empty($height) && $height = $h;
         do {
-            // 创建新图像
+            // 创建新图像并保留透明通道（PNG/GIF）
             $img = imagecreatetruecolor($width, $height);
+            $this->preserveTransparency($img);
             // 调整默认颜色
             $color = imagecolorallocate($img, 255, 255, 255);
             imagefill($img, 0, 0, $color);
@@ -369,14 +384,10 @@ class Image
                 $posy = ($height - $h * $scale) / 2;
                 $x = $y = 0;
                 do {
-                    // 创建新图像
                     $img = imagecreatetruecolor($width, $height);
-                    // 调整默认颜色
-                    $color = imagecolorallocate($img, 255, 255, 255);
-                    imagefill($img, 0, 0, $color);
-                    // 裁剪
+                    $this->preserveTransparency($img);
                     imagecopyresampled($img, $this->img, $posx, $posy, $x, $y, $neww, $newh, $w, $h);
-                    imagedestroy($this->img); //销毁原图
+                    imagedestroy($this->img);
                     $this->img = $img;
                 } while (!empty($this->gif) && $this->gifNext());
 
@@ -479,15 +490,17 @@ class Image
         }
 
         do {
-            // 添加水印
+            // 创建临时画布并保留透明（以便正确合成）
             $src = imagecreatetruecolor($info[0], $info[1]);
-            // 调整默认颜色
-            $color = imagecolorallocate($src, 255, 255, 255);
-            imagefill($src, 0, 0, $color);
+            $this->preserveTransparency($src);
+            // 将目标区域复制到临时画布
             imagecopy($src, $this->img, 0, 0, $x, $y, $info[0], $info[1]);
+            // 根据水印自身是否有 alpha 来选择拷贝方式，优先保留 alpha
+            imagealphablending($water, true);
+            imagesavealpha($water, true);
             imagecopy($src, $water, 0, 0, 0, 0, $info[0], $info[1]);
-            imagecopymerge($this->img, $src, $x, $y, 0, 0, $info[0], $info[1], 100);
-            //销毁零时图片资源
+            // 将合成结果回写到目标图像（保留目标 alpha）
+            imagecopy($this->img, $src, $x, $y, 0, 0, $info[0], $info[1]);
             imagedestroy($src);
         } while (!empty($this->gif) && $this->gifNext());
         // 销毁水印资源
@@ -604,7 +617,7 @@ class Image
 
         do {
             // 写入文字
-            $col = imagecolorallocatealpha($this->img, $color[0], $color[1], $color[2], $color[3]);
+            $col = imagecolorallocatealpha($this->img, (int)$color[0], (int)$color[1], (int)$color[2], (int)$color[3]);
             imagettftext($this->img, $size, $angle, $x + $ox, $y + $oy, $col, realpath($font), $text);
         } while (!empty($this->gif) && $this->gifNext());
 
@@ -633,6 +646,22 @@ class Image
             $this->img = imagecreatefromstring($this->gif->image());
             return false;
         }
+    }
+
+    /**
+     * 在新创建的真彩色画布上保留透明（用于 PNG/GIF）
+     *
+     * @param resource|\GdImage $img
+     * @return void
+     */
+    protected function preserveTransparency($img): void
+    {
+        if (!is_resource($img) && !($img instanceof \GdImage)) {
+            return;
+        }
+        imagesavealpha($img, true);
+        $transparent = imagecolorallocatealpha($img, 0, 0, 0, 127);
+        imagefill($img, 0, 0, $transparent);
     }
 
     /**

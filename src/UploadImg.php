@@ -84,29 +84,32 @@ class UploadImg
      */
     public function upload(string $data, string $path = '', string $name = '', int $maxSize = 0): string
     {
-        $img_base64 = explode('base64,', $data);
-        if (!$img_base64) {
-            throw new UploadException('未获取到图片数据', UploadException::ERROR_UPLOAD_FAILD);
+        // 严格解析 data URI: data:{mime};base64,{data}
+        if (!preg_match('/^data:(image\/[a-z0-9\-\+\.]+);base64,(.+)$/is', trim($data), $matches)) {
+            throw new UploadException('未获取到合法的图片数据', UploadException::ERROR_UPLOAD_FAILD);
+        }
+        $mime = strtolower($matches[1]);
+        $b64  = $matches[2];
+
+        // 严格 base64 解码
+        $img = base64_decode($b64, true);
+        if ($img === false) {
+            throw new UploadException('base64 解码失败', UploadException::ERROR_UPLOAD_FAILD);
         }
 
-        $img = base64_decode(trim($img_base64[1]));
-        $img_type = explode('/', trim($img_base64[0], ';'));
-        switch (strtolower($img_type[1])) {
-            case 'jpeg':
-            case 'jpg':
-                $img_suffix = 'jpg';
-                break;
-            case 'png':
-                $img_suffix = 'png';
-                break;
-            case 'gif':
-                $img_suffix = 'gif';
-                break;
-            default:
-                throw new UploadException('图片类型错误', UploadException::ERROR_UPLOAD_NOT_IMG);
+        // 后缀判断
+        $parts = explode('/', $mime);
+        $img_suffix = $parts[1] ?? '';
+        if (!in_array($img_suffix, ['jpeg', 'jpg', 'png', 'gif'], true)) {
+            throw new UploadException('图片类型错误', UploadException::ERROR_UPLOAD_NOT_IMG);
+        }
+        // 统一扩展名
+        if ($img_suffix === 'jpeg') {
+            $img_suffix = 'jpg';
         }
 
-        if ($maxSize > 0 && mb_strlen($data, 'UTF-8') > $maxSize) {
+        // 大小按字节判断
+        if ($maxSize > 0 && strlen($img) > $maxSize) {
             throw new UploadException('文件大小超出', UploadException::ERROR_UPLOAD_SIZE_FAILD);
         }
 
@@ -127,14 +130,32 @@ class UploadImg
     {
         $path = empty($path) ? $this->path : $path;
         $name = empty($name) ? $this->name : $name;
-        // 检测目录是否存在, 不存在则创建
+        $path = rtrim($path, DIRECTORY_SEPARATOR);
+        if ($path === '') {
+            throw new UploadException('保存目录未设置', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
+        }
+        // 检测或创建目录
         if (!is_dir($path) && !mkdir($path, 0755, true)) {
-            throw new UploadException('保存图片失败，文件目录不存在', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
+            throw new UploadException('保存图片失败，文件目录无法创建', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
+        }
+        if (!is_writable($path)) {
+            throw new UploadException('保存目录不可写', UploadException::ERROR_UPLOAD_DIR_NOT_FOUND);
         }
 
-        $file_name = $this->buildName($name) . '.' . $suffix;
-        $path = $path . DIRECTORY_SEPARATOR . $file_name;
-        $save = File::createFile($img, $path, false);
+        // 安全文件名
+        if (!empty($name)) {
+            $file_name = basename($name);
+            $file_name = preg_replace('/[^\w\.\-]/u', '_', $file_name);
+            // 保证带后缀
+            if (!preg_match('/\.' . preg_quote($suffix, '/') . '$/i', $file_name)) {
+                $file_name .= '.' . $suffix;
+            }
+        } else {
+            $file_name = $this->buildName('') . '.' . $suffix;
+        }
+
+        $full = $path . DIRECTORY_SEPARATOR . $file_name;
+        $save = File::createFile($img, $full, false);
         if ($save === false) {
             throw new UploadException('保存图片失败', UploadException::ERROR_UPLOAD_SAVE_FAILD);
         }
@@ -150,6 +171,13 @@ class UploadImg
      */
     protected function buildName(string $name): string
     {
-        return empty($name) ? uniqid('img_' . bin2hex(random_bytes(6))) : $name;
+        if (!empty($name)) {
+            return $name;
+        }
+        try {
+            return 'img_' . bin2hex(random_bytes(8)) . '_' . uniqid();
+        } catch (\Throwable $e) {
+            return 'img_' . uniqid();
+        }
     }
 }

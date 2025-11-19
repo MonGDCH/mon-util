@@ -62,7 +62,9 @@ class Lang
         }
 
         if (is_array($name)) {
-            $this->lang[$range] = array_change_key_case($name) + $this->lang[$range];
+            // 统一键为小写后合并（外部键可能包含大写）
+            $name = array_change_key_case($name, CASE_LOWER);
+            $this->lang[$range] = $name + $this->lang[$range];
         } else {
             $this->lang[$range][strtolower($name)] = $value;
         }
@@ -140,7 +142,7 @@ class Lang
 
         // 空参数返回所有定义
         if (empty($name)) {
-            return $this->lang[$range];
+            return $this->lang[$range] ?? [];
         }
 
         $key = strtolower($name);
@@ -154,16 +156,21 @@ class Lang
              * 数字索引采用的是系统的 sprintf 函数替换，用法请参考 sprintf 函数
              */
             if (key($vars) === 0) {
-                // 数字索引解析
-                array_unshift($vars, $value);
-                $value = call_user_func_array('sprintf', $vars);
+                // 数字索引解析：使用 vsprintf，避免参数污染
+                $value = @vsprintf($value, $vars) ?: $value;
             } else {
-                // 关联索引解析
-                $replace = array_keys($vars);
-                foreach ($replace as &$v) {
-                    $v = "{$v}";
+                // 关联索引解析，支持 {name} 占位符或原样 key 替换
+                $search = $replace = [];
+                foreach ($vars as $k => $v) {
+                    $search[] = '{' . $k . '}';
+                    $replace[] = (string)$v;
                 }
-                $value = str_replace($replace, $vars, $value);
+                // 优先替换带大括号的占位符
+                $value = str_replace($search, $replace, $value);
+                // 若模板中未使用 {key}，尝试直接 key 替换（兼容旧用法）
+                // if (strpos($value, '{') === false) {
+                //     $value = str_replace(array_keys($vars), $replace, $value);
+                // }
             }
         }
 
@@ -181,7 +188,7 @@ class Lang
             // 自动侦测浏览器语言
             preg_match('/^([a-z\d\-]+)/i', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $matches);
             $lang = strtolower($matches[1]);
-            if (isset($this->lang[$lang])) {
+            if ($lang && isset($this->lang[$lang])) {
                 $this->range = $this->lang[$lang];
             }
         }

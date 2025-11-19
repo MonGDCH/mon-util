@@ -462,8 +462,9 @@ class View implements ArrayAccess
         if (file_exists($view)) {
             // 开启缓存，利用缓存获取视图内容
             ob_start();
-            // $data = array_merge($this->data, (array) $data);
-            $data = !empty($data) ?: $this->data;
+            // $data = !empty($data) ?: $this->data;
+            // 合并已有视图数据与传入数据，传入数据优先
+            $data = array_merge($this->data, $data);
             // 数组变量分割
             extract($data);
 

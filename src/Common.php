@@ -26,13 +26,23 @@ class Common
      */
     public static function randomNumberForArray(int $min, int $max, int $count, array $filter = []): array
     {
+        if ($min > $max) {
+            throw new InvalidArgumentException('min must be <= max');
+        }
+        $filter = array_values(array_unique($filter));
+        // 可用数目
+        $available = ($max - $min + 1) - count(array_filter($filter, function ($v) use ($min, $max) {
+            return is_int($v) || ctype_digit((string)$v) ? ($v >= $min && $v <= $max) : false;
+        }));
+        if ($available < $count) {
+            throw new InvalidArgumentException('not enough unique numbers in range to satisfy count');
+        }
         $i = 0;
         $result = [];
         while ($i < $count) {
             $num = random_int($min, $max);
-            if (!in_array($num, $filter)) {
+            if (!in_array($num, $filter, true) && !in_array($num, $result, true)) {
                 $result[] = $num;
-                $filter[] = $num;
                 $i++;
             }
         }
@@ -114,7 +124,7 @@ class Common
         $len = mb_strlen($src, 'UTF-8');
         for ($i = 0; $i < $len; $i++) {
             $sChar = static::mSubstr($src, $i, 1);
-            if ($sChar == '%' && $i < ($len - 2) && static::IsXDigit(static::mSubstr($src, $i + 1, 1)) && static::IsXDigit(static::mSubstr($src, $i + 2, 1))) {
+            if ($sChar === '%' && $i < ($len - 2) && static::isXDigit(static::mSubstr($src, $i + 1, 1)) && static::isXDigit(static::mSubstr($src, $i + 2, 1))) {
                 $chDecode = static::mSubstr($src, $i + 1, 2);
                 $result .= pack("H*", $chDecode);
                 $i += 2;
@@ -152,43 +162,12 @@ class Common
      */
     public static function isUTF8(string $str): bool
     {
-        $c = 0;
-        $b = 0;
-        $bits = 0;
-        $len = mb_strlen($str, 'UTF-8');
-        for ($i = 0; $i < $len; $i++) {
-            $c = ord($str[$i]);
-            if ($c > 128) {
-                if (($c >= 254)) {
-                    return false;
-                } elseif ($c >= 252) {
-                    $bits = 6;
-                } elseif ($c >= 248) {
-                    $bits = 5;
-                } elseif ($c >= 240) {
-                    $bits = 4;
-                } elseif ($c >= 224) {
-                    $bits = 3;
-                } elseif ($c >= 192) {
-                    $bits = 2;
-                } else {
-                    return false;
-                }
-
-                if (($i + $bits) > $len) {
-                    return false;
-                }
-                while ($bits > 1) {
-                    $i++;
-                    $b = ord($str[$i]);
-                    if ($b < 128 || $b > 191) {
-                        return false;
-                    }
-                    $bits--;
-                }
-            }
+        // 更可靠且高效的方法
+        if (function_exists('mb_check_encoding')) {
+            return mb_check_encoding($str, 'UTF-8');
         }
-        return true;
+        // 退回到正则判断 UTF-8 合法性
+        return (bool) @preg_match('//u', $str);
     }
 
     /**
@@ -212,7 +191,19 @@ class Common
      */
     public static function ipToLong(string $ip): string
     {
-        return sprintf('%u', ip2long($ip));
+        // IPv6 返回 hex 表示，IPv4 返回无符号整型字符串
+        if (strpos($ip, ':') !== false) {
+            $packed = @inet_pton($ip);
+            if ($packed === false) {
+                throw new InvalidArgumentException('invalid IPv6 address');
+            }
+            return bin2hex($packed);
+        }
+        $long = ip2long($ip);
+        if ($long === false) {
+            throw new InvalidArgumentException('invalid IPv4 address');
+        }
+        return sprintf('%u', $long);
     }
 
     /**
@@ -323,6 +314,7 @@ class Common
      */
     public static function uniqueArray2D(array $arr): array
     {
+        $result = [];
         foreach ($arr as $v) {
             // 降维,将一维数组转换为用","连接的字符串.
             $v = implode(",", $v);
@@ -487,11 +479,17 @@ class Common
         } elseif (function_exists('iconv_substr')) {
             $slice = iconv_substr($str, $start, $length, $charset);
         } else {
-            $re['utf-8']  = '/[\x01-\x7f]|[\xc2-\xdf][\x80-\xbf]|[\xe0-\xef][\x80-\xbf]{2}|[\xf0-\xff][\x80-\xbf]{3}/';
-            $re['gb2312'] = '/[\x01-\x7f]|[\xb0-\xf7][\xa0-\xfe]/';
-            $re['gbk']    = '/[\x01-\x7f]|[\x81-\xfe][\x40-\xfe]/';
-            $re['big5']   = '/[\x01-\x7f]|[\x81-\xfe]([\x40-\x7e]|\xa1-\xfe])/';
-            preg_match_all($re[$charset], $str, $match);
+            $re = [
+                'utf-8'  => '/[\x01-\x7f]|[\xc2-\xdf][\x80-\xbf]|[\xe0-\xef][\x80-\xbf]{2}|[\xf0-\xff][\x80-\xbf]{3}/',
+                'gb2312' => '/[\x01-\x7f]|[\xb0-\xf7][\xa0-\xfe]/',
+                'gbk'    => '/[\x01-\x7f]|[\x81-\xfe][\x40-\xfe]/',
+                'big5'   => '/[\x01-\x7f]|[\x81-\xfe]([\x40-\x7e]|\xa1-\xfe])/',
+            ];
+            $key = strtolower($charset);
+            if (!isset($re[$key])) {
+                $key = 'utf-8';
+            }
+            preg_match_all($re[$key], $str, $match);
             $slice = implode('', array_slice($match[0], $start, $length));
         }
 

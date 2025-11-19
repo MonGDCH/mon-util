@@ -36,6 +36,29 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
+     * 创建集合实例
+     *
+     * @param array $data
+     * @return Collection
+     */
+    public static function gen(array $data = []): Collection
+    {
+        return new self($data);
+    }
+
+    /**
+     * 设置集合数据
+     *
+     * @param array $data
+     * @return Collection
+     */
+    public function setData(array $data = []): Collection
+    {
+        $this->data = $data;
+        return $this;
+    }
+
+    /**
      * 获取集合数据
      *
      * @return array

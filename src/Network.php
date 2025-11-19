@@ -74,7 +74,7 @@ class Network
             // 写入批量请求
             curl_multi_add_handle($master, $ch);
             // 记录队列
-            $key = (string)$ch;
+            $key = is_object($ch) ? spl_object_hash($ch) : (string)$ch;
             $curls[$key] = [
                 'index' => $i,
                 'data'  => $item,
@@ -96,36 +96,40 @@ class Network
                     // 获取返回内容
                     $output = curl_multi_getcontent($done['handle']);
                     // 请求成功，存在回调函数，执行回调函数
-                    $key = (string) $done['handle'];
+                    $key = is_object($done['handle']) ? spl_object_hash($done['handle']) : (string)$done['handle'];
                     if (isset($curls[$key]) && isset($curls[$key]['data']['callback']) && !empty($curls[$key]['data']['callback'])) {
                         $output = Container::instance()->invoke($curls[$key]['data']['callback'], [$output, $curls[$key], $done['handle']]);
                     }
                     $result[] = $output;
                 } else {
                     // 请求失败，执行错误处理
-                    $key = (string) $done['handle'];
+                    $key = is_object($done['handle']) ? spl_object_hash($done['handle']) : (string)$done['handle'];
                     $errors[] = [
                         'ch'    => $done['handle'],
-                        'item'  => $curls[$key]
+                        'item'  => ($curls[$key] ?? null),
+                        'http_code' => $info['http_code'],
+                        'error' => curl_error($done['handle']),
                     ];
                 }
 
-                // 发起新请求（在删除旧请求之前，请务必先执行此操作）, 当$i等于$urls数组大小时不用再增加了
-                if ($i < count($queryList)) {
-                    $ch = static::getCh($queryList[$i++]);
+                // 执行下一个句柄
+                if ($i < $queryListCount) {
+                    $nextItem = $queryList[$i++];
+                    $ch = static::getCh($nextItem, $header, $timeOut, $agent, $ssl_cer, $ssl_key);
                     curl_multi_add_handle($master, $ch);
-                    // 记录队列
-                    $key = (string)$ch;
-                    $curls[$key] = [
-                        'index' => $i,
-                        'data'  => $item,
+                    $key2 = is_object($ch) ? spl_object_hash($ch) : (string)$ch;
+                    $curls[$key2] = [
+                        'index' => $i - 1,
+                        'data'  => $nextItem,
                     ];
                 }
-                // 执行下一个句柄
+                // 移除并关闭已完成句柄
                 curl_multi_remove_handle($master, $done['handle']);
+                curl_close($done['handle']);
             }
         } while ($running);
 
+        curl_multi_close($master);
         return ['success' => $result, 'error' => $errors];
     }
 
@@ -150,7 +154,17 @@ class Network
         // 处理文件上传数据集
         $filename = empty($filename) ? basename($path) : $filename;
         $sendData = array_merge($data, [$name => new \CURLFile(realpath($path), File::getMimeType($path), $filename)]);
-        $header['Content-Type'] = 'multipart/form-data';
+        // $header['Content-Type'] = 'multipart/form-data';
+        // 不要手动设置 Content-Type: multipart/form-data（cURL 会自动设置 boundary）
+        $lowerHeaders = array_change_key_case($header, CASE_LOWER);
+        if (isset($lowerHeaders['content-type']) && stripos($lowerHeaders['content-type'], 'multipart/form-data') !== false) {
+            // 删除用户传入的 multipart content-type，避免 boundary 问题
+            foreach ($header as $k => $v) {
+                if (strtolower($k) === 'content-type') {
+                    unset($header[$k]);
+                }
+            }
+        }
         $ch = static::getRequest($url, $sendData, 'POST', $header, $timeout, $agent, $ssl_cer, $ssl_key);
         // 发起请求
         $html = curl_exec($ch);
@@ -181,7 +195,7 @@ class Network
     {
         static $sockets = [];
         $key = $ip . ':' . $port;
-        $socket = isset($sockets[$key]) ? $sockets[$key] : socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        $socket = $sockets[$key] ?? socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (!$socket) {
             throw new NetWorkException('创建TCP-Socket失败');
         }
@@ -191,6 +205,9 @@ class Network
         if (socket_connect($socket, $ip, $port) == false) {
             throw new NetWorkException('链接TCP-Socket失败');
         }
+        // 缓存已连接 socket，便于复用
+        $sockets[$key] = $socket;
+
         $send_len = mb_strlen($cmd, 'UTF-8');
         $sent = socket_write($socket, $cmd, $send_len);
         if ($sent != $send_len) {
@@ -227,7 +244,7 @@ class Network
     {
         static $sockets = [];
         $key = $ip . ':' . $port;
-        $socket = isset($sockets[$key]) ? $sockets[$key] : socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+        $socket = $sockets[$key] ?? socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
         if (!$socket) {
             throw new NetWorkException('创建UDP-Socket失败');
         }
@@ -238,6 +255,8 @@ class Network
             // 执行链接Socket失败钩子
             throw new NetWorkException('链接UDP-Socket失败');
         }
+        $sockets[$key] = $socket;
+
         $send_len = mb_strlen($cmd, 'UTF-8');
         $sent = socket_write($socket, $cmd, $send_len);
         if ($sent != $send_len) {
@@ -299,17 +318,24 @@ class Network
         // 设置请求URL
         curl_setopt($ch, CURLOPT_URL, $url);
         // 设置ssl证书
-        if (!empty($ssl_cer)) if (file_exists($ssl_cer)) {
+        if (!empty($ssl_cer)) {
+            if (!file_exists($ssl_cer)) {
+                throw new NetWorkException('ssl_cer 文件不存在');
+            }
             curl_setopt($ch, CURLOPT_SSLCERTTYPE, 'PEM');
             curl_setopt($ch, CURLOPT_SSLCERT, $ssl_cer);
-        } else throw new NetWorkException('ssl_cer 文件不存在');
-        if (!empty($ssl_key)) if (file_exists($ssl_key)) {
+        }
+        if (!empty($ssl_key)) {
+            if (!file_exists($ssl_key)) {
+                throw new NetWorkException('ssl_key 文件不存在');
+            }
             curl_setopt($ch, CURLOPT_SSLKEYTYPE, 'PEM');
             curl_setopt($ch, CURLOPT_SSLKEY, $ssl_key);
-        } else throw new NetWorkException("ssl_key 文件不存在");
+        }
 
-        // 判断是否为https请求
-        if (strtolower(mb_substr($url, 0, 8, 'UTF-8')) == 'https://') {
+        // 
+        $isHttps = stripos($url, 'https://') === 0 || (parse_url($url, PHP_URL_SCHEME) === 'https');
+        if ($isHttps) {
             // 跳过证书检查
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             // 从证书中检查SSL加密算法是否存在

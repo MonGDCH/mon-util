@@ -306,22 +306,26 @@ class Dictionary
     {
         if (!$this->db) {
             // 生成mysql连接dsn
-            $is_port = (isset($this->config['port']) && is_int($this->config['port'] * 1));
-            $dsn = 'mysql:host=' . $this->config['host'] . ($is_port ? ';port=' . $this->config['port'] : '') . ';dbname=' . $this->config['database'];
+            $portPart = '';
+            if (isset($this->config['port']) && $this->config['port'] !== '') {
+                // 允许字符串端口但需为数字
+                if (is_numeric($this->config['port'])) {
+                    $portPart = ';port=' . intval($this->config['port']);
+                }
+            }
+            $dsn = 'mysql:host=' . $this->config['host'] . $portPart . ';dbname=' . $this->config['database'];
             if (!empty($this->config['charset'])) {
                 $dsn .= ';charset=' . $this->config['charset'];
             }
             // 数据库连接参数
-            $params = [
+            $defaultParams = [
                 PDO::ATTR_CASE              => PDO::CASE_NATURAL,
                 PDO::ATTR_ERRMODE           => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_ORACLE_NULLS      => PDO::NULL_NATURAL,
                 PDO::ATTR_STRINGIFY_FETCHES => false,
                 PDO::ATTR_EMULATE_PREPARES  => false,
             ];
-            if (isset($config['params']) && is_array($config['params'])) {
-                $params = $config['params'] + $params;
-            }
+            $params = (isset($this->config['params']) && is_array($this->config['params'])) ? ($this->config['params'] + $defaultParams) : $defaultParams;
             // 链接
             $this->db = new PDO(
                 $dsn,
