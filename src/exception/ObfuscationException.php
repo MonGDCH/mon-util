@@ -7,6 +7,6 @@ namespace mon\util\exception;
 use Exception;
 
 /**
- * 二维码生成异常
+ * 代码混淆异常
  */
-class QRcodeException extends Exception {}
+class ObfuscationException extends Exception {}
