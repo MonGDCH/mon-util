@@ -11,6 +11,7 @@ use mon\util\exception\ObfuscationException;
 /**
  * PHP代码混淆器
  * 
+ * @todo 混淆变量名不支持PHP8命名参数的风格，如：a('aa', A: 'abc') 这种风格
  * @author monLam <985558837@qq.com>
  * @version 1.0.0
  */
@@ -43,7 +44,7 @@ class Obfuscator
      * @var array
      */
     protected $config = [
-        // 是否对变量名进行混淆（默认 true）
+        // 是否对变量名进行混淆（默认 true），暂不支持PHP8命名参数风格代码混淆
         'renameVariables' => true,
         // 是否保留注释（默认 false，保留=false 表示会移除注释）
         'preserveComments' => false,
@@ -55,6 +56,7 @@ class Obfuscator
      * 构造函数
      *
      * @param array $config 配置项
+     * @param array $fillterVars 过滤变量名
      */
     public function __construct(array $config = [], array $fillterVars = [])
     {
@@ -95,7 +97,6 @@ class Obfuscator
                     continue;
                 }
                 if ($t[0] !== T_OPEN_TAG) {
-                    dd($t);
                     throw new ObfuscationException('Invalid PHP code: missing opening <?php tag! file');
                 }
                 break;
@@ -103,10 +104,38 @@ class Obfuscator
                 throw new ObfuscationException('Invalid PHP code');
             }
         }
+
         $out = '';
         // 变量名映射：原始变量名 => 混淆后名称（每个文件单独映射）
         $varMap = [];
         $varCounter = 0;
+
+        // 常见超全局与特殊变量黑名单（不进行混淆）
+        $blacklist = $this->fillterVars;
+
+        // 扫描 tokens，收集由 `global` 语句声明的变量，这些全局变量应保留原名，不进行混淆
+        $globalVars = [];
+        for ($gi = 0; $gi < count($tokens); $gi++) {
+            $tk = $tokens[$gi];
+            if (is_array($tk) && $tk[0] === T_GLOBAL) {
+                // 向后扫描直到遇到分号结束 global 语句
+                for ($gj = $gi + 1; $gj < count($tokens); $gj++) {
+                    $nt = $tokens[$gj];
+                    if (is_string($nt) && $nt === ';') {
+                        break;
+                    }
+                    if (is_array($nt) && $nt[0] === T_VARIABLE) {
+                        $globalVars[$nt[1]] = true;
+                    }
+                }
+            }
+        }
+        if (!empty($globalVars)) {
+            foreach ($globalVars as $g => $_) {
+                $blacklist[] = $g;
+            }
+        }
+
         // 处理 Heredoc/Nowdoc：区分 nowdoc（不插值）和 heredoc（会进行变量插值）
         $inHeredoc = false;
         $inNowdoc = false;
@@ -117,7 +146,11 @@ class Obfuscator
         for ($i = 0; $i < $count; $i++) {
             $token = $tokens[$i];
 
-            // 辅助函数：判断当前位置的变量是否处于类属性声明或属性访问的上下文
+            // （注意）以前用于查找前一个显著 token 的匿名函数已移除，
+            // 现在使用更局部的上下文检查逻辑（位于 $isPropertyContext 内）来决定
+            // 是否处于属性/可见性上下文，因此无需全局 getPrevSignificant 辅助函数。
+
+            // 辅助：判断当前位置的变量是否处于类属性声明或属性访问的上下文
             $isPropertyContext = function ($idx) use ($tokens) {
                 $prev = null;
                 $prevIdx = null;
@@ -136,7 +169,7 @@ class Obfuscator
                     $prevIdx = $j;
                     break;
                 }
-                // 如果前一个显著 token 是对象操作符或作用域解析符，则视为属性访问
+                // 如果前一个显著 token 是对象操作符或作用域解析符，则通常视为属性访问
                 // 特例：对于对象操作符 "->"，若当前 token 本身是一个变量（$var），
                 // 则它是可变属性访问（$obj->$var），此处的 $var 应该被视为普通变量并允许混淆。
                 if ($prev === '->' || $prev === '::') {
@@ -223,6 +256,7 @@ class Obfuscator
                     $ttext = $token[1];
 
                     // 不对 heredoc 中的属性名（T_STRING）进行替换，确保类属性名保持原样
+
                     if (!$inNowdoc && $tid === T_VARIABLE) {
                         // 若全局配置禁用变量重命名，则 heredoc 中也不进行任何重命名/替换
                         if (empty($opts['renameVariables'])) {
@@ -239,7 +273,7 @@ class Obfuscator
                             // - 含有复杂插值（{ 或 [ ）的不改动
                             // - 仅对长度大于1的变量名进行混淆（保留如 $a 的短变量）
                             $name = $ttext;
-                            if (in_array($name, $this->fillterVars, true)) {
+                            if (in_array($name, $blacklist, true)) {
                                 $out .= $name;
                             } else {
                                 if (strpos($name, '{') !== false || strpos($name, '[') !== false) {
@@ -276,6 +310,7 @@ class Obfuscator
                 $text = $token[1];
 
                 // 不对普通代码中的 T_STRING（属性名）做替换，保持类属性名原样
+
                 if ($id === T_START_HEREDOC) {
                     $inHeredoc = true;
                     $inNowdoc = (strpos($text, "<<<'") !== false);
@@ -338,8 +373,8 @@ class Obfuscator
                         continue;
                     }
 
-                    $name = $text;
-                    if (in_array($name, $this->fillterVars, true)) {
+                    $name = $text; // includes $
+                    if (in_array($name, $blacklist, true)) {
                         $out .= $name;
                         continue;
                     }
@@ -370,11 +405,34 @@ class Obfuscator
 
         // 最终清理：只清理空格并保留换行，避免破坏 heredoc/nowdoc
         // 仅移除运算符周围的水平空白（空格/制表符），不触及换行符
-        $out = preg_replace(
-            ['/[ \t]*([;{}(),.=+\-<>\/*%&|!?:])[ \t]*/', '/[ \t]{2,}/'],
-            ['\\1', ' '],
+        // 注意：直接对整个 $out 运行正则会影响字符串字面量（如 "%s in %s"）中的空格，
+        // 因此先把单/双引号字符串替换为占位符，清理完成后再还原。
+        $placeholders = [];
+        $index = 0;
+        $outProtected = preg_replace_callback(
+            '/(\'"(?:\\\\.|[^\\\\\"])*\'"|\'(?:\\\\.|[^\\\\\'])*\')/s',
+            function ($m) use (&$placeholders, &$index) {
+                $ph = '__OBF_STR_' . $index . '__';
+                $placeholders[$ph] = $m[0];
+                $index++;
+                return $ph;
+            },
             $out
         );
+
+        // 执行原有的空白/运算符周围空格清理（作用域仅在占位符之外）
+        $outProtected = preg_replace(
+            ['/[ \t]*([;{}(),.=+\-<>\/*%&|!?:])[ \t]*/', '/[ \t]{2,}/'],
+            ['\\1', ' '],
+            $outProtected
+        );
+
+        // 还原被保护的字符串字面量
+        if (!empty($placeholders)) {
+            $out = strtr($outProtected, $placeholders);
+        } else {
+            $out = $outProtected;
+        }
 
         return trim($out);
     }
@@ -400,7 +458,7 @@ class Obfuscator
         try {
             $obfuscated = $this->encode($code, $config);
         } catch (ObfuscationException $e) {
-            throw new ObfuscationException("Failed to obfuscate file: $inputFile. " . $e->getMessage());
+            throw new ObfuscationException("Failed to obfuscate file: $inputFile. " . $e->getMessage(), $e->getCode(), $e);
         }
         $result = File::createFile($obfuscated, $outputFile, false);
         if (!$result) {
@@ -434,7 +492,7 @@ class Obfuscator
                 try {
                     $obfuscated = $this->encode($content, $config);
                 } catch (ObfuscationException $e) {
-                    throw new ObfuscationException("Failed to obfuscate file: $item. " . $e->getMessage());
+                    throw new ObfuscationException("Failed to obfuscate file: $item. " . $e->getMessage(), $e->getCode(), $e);
                 }
                 $save = File::createFile($obfuscated, $file, false);
                 if (!$save) {
