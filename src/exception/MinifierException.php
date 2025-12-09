@@ -7,6 +7,6 @@ namespace mon\util\exception;
 use Exception;
 
 /**
- * 代码混淆异常
+ * 代码压缩异常
  */
-class ObfuscationException extends Exception {}
+class MinifierException extends Exception {}

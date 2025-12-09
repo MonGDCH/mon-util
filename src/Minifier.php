@@ -9,78 +9,195 @@ use RecursiveDirectoryIterator;
 use mon\util\exception\MinifierException;
 
 /**
- * PHP代码混淆器
+ * HTML、JS、CSS、VUE、PHP文件代码压缩工具
  * 
- * @todo 待后续废弃该类
- * @todo 混淆变量名不支持PHP8命名参数的风格，如：a('aa', A: 'abc') 这种风格
  * @author monLam <985558837@qq.com>
  * @version 1.0.0
  */
-class Obfuscator
+class Minifier
 {
     /**
-     * 需要过滤掉的变量名列表（不进行混淆）
+     * 移除HTML文件中的注释和多余换行，并可选压缩内容
      *
-     * @var array
+     * @param string $html
+     * @param bool $compress 是否压缩HTML内容
+     * @return string
      */
-    protected $fillterVars = [
-        '$GLOBALS',
-        '$HTTP_RAW_POST_DATA',
-        '$http_response_header',
-        '$php_errormsg',
-        '$_GET',
-        '$_POST',
-        '$_REQUEST',
-        '$_SERVER',
-        '$_ENV',
-        '$_COOKIE',
-        '$_FILES',
-        '$_SESSION',
-        '$this'
-    ];
-
-    /**
-     * 配置信息
-     *
-     * @var array
-     */
-    protected $config = [
-        // 是否对变量名进行混淆（默认 true），暂不支持PHP8命名参数风格代码混淆
-        'renameVariables' => true,
-        // 是否保留注释（默认 false，保留=false 表示会移除注释）
-        'preserveComments' => false,
-        // 在保留注释时是否规范化注释中的换行为 LF（默认 false）
-        'normalizeCommentNewlines' => false,
-    ];
-
-    /**
-     * 构造函数
-     *
-     * @param array $config 配置项
-     * @param array $fillterVars 过滤变量名
-     */
-    public function __construct(array $config = [], array $fillterVars = [])
+    public function html(string $html, bool $compress = false): string
     {
-        if (!empty($fillterVars)) {
-            $this->fillterVars = array_merge($this->fillterVars, $fillterVars);
+        // 移除HTML注释，但保留条件注释
+        $html = preg_replace('/<!--(?!\[if).*?-->/s', '', $html);
+
+        // 提取并处理style标签内容
+        preg_match_all('/(<style[^>]*>)(.*?)(<\/style>)/s', $html, $styles);
+        foreach ($styles[0] as $key => $style) {
+            $openingTag = $styles[1][$key];
+            $content = $styles[2][$key];
+            $closingTag = $styles[3][$key];
+            $cleanedContent = $this->css($content, $compress);
+            $cleanedStyle = $openingTag . $cleanedContent . $closingTag;
+            $html = str_replace($style, $cleanedStyle, $html);
         }
 
-        $this->config = array_merge($this->config, $config);
+        // 提取并处理script标签内容
+        preg_match_all('/(<script[^>]*>)(.*?)(<\/script>)/s', $html, $scripts);
+        foreach ($scripts[0] as $key => $script) {
+            $openingTag = $scripts[1][$key];
+            $content = $scripts[2][$key];
+            $closingTag = $scripts[3][$key];
+            $cleanedContent = $this->js($content);
+            $cleanedScript = $openingTag . $cleanedContent . $closingTag;
+            $html = str_replace($script, $cleanedScript, $html);
+        }
+
+        // 移除多余换行，连续换行替换为单个换行
+        $html = preg_replace('/\n\s*\n+/', "\n", $html);
+
+        // 压缩HTML内容（如果开启）
+        if ($compress) {
+            // 移除标签之间的多余空白字符
+            $html = preg_replace('/>\s+</', '><', $html);
+            // 移除行首和行尾的空白字符
+            $html = trim($html);
+        }
+
+        return $html;
     }
 
     /**
-     * 混淆PHP代码
+     * 移除CSS文件中的注释和多余换行，并可选压缩内容
      *
-     * @param string $code PHP源代码
-     * @param array $config 覆盖默认配置的选项
-     * @return string 混淆后的PHP代码
-     * @throws MinifierException 当输入代码无效时抛出异常
+     * @param string $css
+     * @param bool $compress 是否压缩CSS内容
+     * @return string
      */
-    public function encode(string $code, array $config = []): string
+    public function css(string $css, bool $compress = false): string
     {
-        $opts = array_merge($this->config, $config);
+        // 移除CSS注释
+        $css = preg_replace('/\/\*.*?\*\//s', '', $css);
 
-        $code = trim($code);
+        // 移除多余换行，连续换行替换为单个换行
+        $css = preg_replace('/\n\s*\n+/', "\n", $css);
+
+        // 压缩CSS内容（如果开启）
+        if ($compress) {
+            // 移除换行符和制表符
+            $css = str_replace(array("\n", "\r", "\t"), '', $css);
+            // 移除多余空格（保留一个空格）
+            $css = preg_replace('/\s+/', ' ', $css);
+            // 移除CSS属性前后的空格
+            $css = preg_replace('/\s*([{}:;,])\s*/', '$1', $css);
+            // 移除行首和行尾的空白字符
+            $css = trim($css);
+        }
+
+        return $css;
+    }
+
+    /**
+     * 移除JS文件中的注释和多余换行
+     *
+     * @todo js暂时不支持进行压缩
+     * @param string $js
+     * @return string
+     */
+    public function js(string $js): string
+    {
+        // 先处理模板字符串，避免误删模板字符串内的注释
+        $templateStrings = [];
+        $js = preg_replace_callback('/`[^`]*`/s', function ($matches) use (&$templateStrings) {
+            $key = '__TEMPLATE_STRING_' . count($templateStrings) . '__';
+            $templateStrings[$key] = $matches[0];
+            return $key;
+        }, $js);
+
+        // 移除JS多行注释
+        $js = preg_replace('/\/\*[\s\S]*?\*\//', '', $js);
+
+        // 移除JS单行注释，但保留URL中的//
+        // 使用更严格的正则表达式，确保匹配所有单行注释
+        $js = preg_replace('/\s*\/\/[\s\S]*?$/m', '', $js);
+
+        // 恢复模板字符串
+        $js = str_replace(array_keys($templateStrings), array_values($templateStrings), $js);
+
+        // 移除多余换行，连续换行替换为单个换行
+        $js = preg_replace('/\n\s*\n+/', "\n", $js);
+
+        // 移除行首和行尾的多余空格
+        $lines = explode("\n", $js);
+        $processedLines = [];
+        foreach ($lines as $line) {
+            $trimmed = trim($line);
+            if (!empty($trimmed)) {
+                $processedLines[] = $trimmed;
+            }
+        }
+        $js = implode("\n", $processedLines);
+
+        return $js;
+    }
+
+    /**
+     * 移除Vue文件中的注释和多余换行，并可选压缩内容
+     *
+     * @param string $vue
+     * @param bool $compress 是否压缩HTML和CSS内容
+     * @return string
+     */
+    public function vue(string $vue, bool $compress = false): string
+    {
+        // 移除HTML注释，但保留条件注释
+        $vue = preg_replace('/<!--(?!\[if).*?-->/s', '', $vue);
+
+        // 提取并处理style标签内容
+        preg_match_all('/(<style[^>]*>)(.*?)(<\/style>)/s', $vue, $styles);
+        foreach ($styles[0] as $key => $style) {
+            $openingTag = $styles[1][$key];
+            $content = $styles[2][$key];
+            $closingTag = $styles[3][$key];
+            $cleanedContent = $this->css($content, $compress);
+            $cleanedStyle = $openingTag . $cleanedContent . $closingTag;
+            $vue = str_replace($style, $cleanedStyle, $vue);
+        }
+
+        // 提取并处理script标签内容
+        preg_match_all('/(<script[^>]*>)(.*?)(<\/script>)/s', $vue, $scripts);
+        foreach ($scripts[0] as $key => $script) {
+            $openingTag = $scripts[1][$key];
+            $content = $scripts[2][$key];
+            $closingTag = $scripts[3][$key];
+            $cleanedContent = $this->js($content);
+            $cleanedScript = $openingTag . $cleanedContent . $closingTag;
+            $vue = str_replace($script, $cleanedScript, $vue);
+        }
+
+        // 移除Vue文件本身的多余换行
+        $vue = preg_replace('/\n\s*\n+/', "\n", $vue);
+
+        // 压缩Vue文件中的HTML部分（如果开启）
+        if ($compress) {
+            // 移除标签之间的多余空白字符
+            $vue = preg_replace('/>\s+</', '><', $vue);
+            // 移除行首和行尾的空白字符
+            $vue = trim($vue);
+        }
+
+        return $vue;
+    }
+
+    /**
+     * 移除PHP文件中的注释和多余换行，并可选混淆变量名
+     *
+     * @todo 混淆变量名暂不支持PHP8命名参数的风格，如：a('aa', A: 'abc') 这种风格
+     * @param string $php PHP源代码
+     * @param bool $obfuscator 是否开启混淆（默认 false）
+     * @param array $blackList 自定义黑名单变量名列表（不进行混淆）
+     * @return string 混淆后的PHP代码
+     */
+    public function php(string $php, bool $obfuscator = false, array $blackList = []): string
+    {
+        $code = trim($php);
         // 判断code的第一行是否为 #!/usr/bin/env php 是则剔除
         if (strpos($code, '#!/usr/bin/env php') === 0) {
             $code = trim(substr($code, 19));
@@ -112,7 +229,21 @@ class Obfuscator
         $varCounter = 0;
 
         // 常见超全局与特殊变量黑名单（不进行混淆）
-        $blacklist = $this->fillterVars;
+        $blackList = array_merge($blackList, [
+            '$GLOBALS',
+            '$HTTP_RAW_POST_DATA',
+            '$http_response_header',
+            '$php_errormsg',
+            '$_GET',
+            '$_POST',
+            '$_REQUEST',
+            '$_SERVER',
+            '$_ENV',
+            '$_COOKIE',
+            '$_FILES',
+            '$_SESSION',
+            '$this'
+        ]);
 
         // 扫描 tokens，收集由 `global` 语句声明的变量，这些全局变量应保留原名，不进行混淆
         $globalVars = [];
@@ -133,7 +264,7 @@ class Obfuscator
         }
         if (!empty($globalVars)) {
             foreach ($globalVars as $g => $_) {
-                $blacklist[] = $g;
+                $blackList[] = $g;
             }
         }
 
@@ -146,12 +277,7 @@ class Obfuscator
         $count = count($tokens);
         for ($i = 0; $i < $count; $i++) {
             $token = $tokens[$i];
-
-            // （注意）以前用于查找前一个显著 token 的匿名函数已移除，
-            // 现在使用更局部的上下文检查逻辑（位于 $isPropertyContext 内）来决定
-            // 是否处于属性/可见性上下文，因此无需全局 getPrevSignificant 辅助函数。
-
-            // 辅助：判断当前位置的变量是否处于类属性声明或属性访问的上下文
+            // 辅助函数：判断当前位置的变量是否处于类属性声明或属性访问的上下文
             $isPropertyContext = function ($idx) use ($tokens) {
                 $prev = null;
                 $prevIdx = null;
@@ -257,10 +383,9 @@ class Obfuscator
                     $ttext = $token[1];
 
                     // 不对 heredoc 中的属性名（T_STRING）进行替换，确保类属性名保持原样
-
                     if (!$inNowdoc && $tid === T_VARIABLE) {
                         // 若全局配置禁用变量重命名，则 heredoc 中也不进行任何重命名/替换
-                        if (empty($opts['renameVariables'])) {
+                        if (empty($obfuscator)) {
                             $out .= $ttext;
                             // 继续下一 token
                             continue;
@@ -274,7 +399,7 @@ class Obfuscator
                             // - 含有复杂插值（{ 或 [ ）的不改动
                             // - 仅对长度大于1的变量名进行混淆（保留如 $a 的短变量）
                             $name = $ttext;
-                            if (in_array($name, $blacklist, true)) {
+                            if (in_array($name, $blackList, true)) {
                                 $out .= $name;
                             } else {
                                 if (strpos($name, '{') !== false || strpos($name, '[') !== false) {
@@ -311,7 +436,6 @@ class Obfuscator
                 $text = $token[1];
 
                 // 不对普通代码中的 T_STRING（属性名）做替换，保持类属性名原样
-
                 if ($id === T_START_HEREDOC) {
                     $inHeredoc = true;
                     $inNowdoc = (strpos($text, "<<<'") !== false);
@@ -321,16 +445,7 @@ class Obfuscator
 
                 // 跳过注释节点（包括文档注释）
                 if ($id === T_COMMENT || $id === T_DOC_COMMENT) {
-                    // 注释处理：根据配置决定保留或丢弃注释
-                    if (!empty($opts['preserveComments'])) {
-                        $ctext = $text;
-                        if (!empty($opts['normalizeCommentNewlines'])) {
-                            // 将 CRLF/CR 统一为 LF
-                            $ctext = preg_replace("/\r\n?|\r/", "\n", $ctext);
-                        }
-                        $out .= $ctext;
-                    }
-                    // 若不保留注释则直接跳过
+                    // 不保留注释则直接跳过
                     continue;
                 }
 
@@ -362,7 +477,7 @@ class Obfuscator
 
                 if ($id === T_VARIABLE) {
                     // 若配置关闭变量重命名，则直接输出原始变量文本
-                    if (empty($opts['renameVariables'])) {
+                    if (empty($obfuscator)) {
                         $out .= $text;
                         continue;
                     }
@@ -374,8 +489,8 @@ class Obfuscator
                         continue;
                     }
 
-                    $name = $text; // includes $
-                    if (in_array($name, $blacklist, true)) {
+                    $name = $text;
+                    if (in_array($name, $blackList, true)) {
                         $out .= $name;
                         continue;
                     }
@@ -439,46 +554,58 @@ class Obfuscator
     }
 
     /**
-     * 混淆并保存PHP文件
-     *
-     * @param string $inputFile 输入PHP文件路径
-     * @param string $outputFile 输出混淆后PHP文件路径
-     * @param array $config 覆盖默认配置的选项
-     * @return bool 成功返回true
-     * @throws MinifierException 当输入文件不可读或输出文件写入失败时抛出异常
+     * 根据文件类型自动处理，并可选压缩内容
+     * @param string $content
+     * @param string $type 文件类型：html, css, js, vue, php
+     * @param bool $compress 是否压缩内容（仅对HTML、CSS、Vue有效）, 当文件类型为php时，则表示为是否混淆
+     * @return string
      */
-    public function encodeFile(string $inputFile, string $outputFile, array $config = []): bool
+    public function auto(string $content, string $type, bool $compress = false): string
     {
-        if (!file_exists($inputFile) || !is_readable($inputFile)) {
-            throw new MinifierException("Input file is not readable: $inputFile");
+        switch (strtolower($type)) {
+            case 'html':
+                return $this->html($content, $compress);
+            case 'css':
+                return $this->css($content, $compress);
+            case 'js':
+                return $this->js($content);
+            case 'vue':
+                return $this->vue($content, $compress);
+            case 'php':
+                return $this->php($content, $compress);
+            default:
+                return $content;
         }
-        $code = File::read($inputFile);
-        if ($code === false) {
-            throw new MinifierException("Failed to read file: $inputFile");
-        }
-        try {
-            $obfuscated = $this->encode($code, $config);
-        } catch (MinifierException $e) {
-            throw new MinifierException("Failed to obfuscate file: $inputFile. " . $e->getMessage(), $e->getCode(), $e);
-        }
-        $result = File::createFile($obfuscated, $outputFile, false);
-        if (!$result) {
-            throw new MinifierException("Failed to write file: $outputFile");
-        }
-
-        return true;
     }
 
     /**
-     * 混淆并保存目录下所有PHP文件
+     * 处理文件
+     *
+     * @param string $filePath
+     * @param bool $compress 是否压缩或混淆内容（仅对HTML、CSS、Vue、PHP有效）
+     * @return string 处理后的内容
+     */
+    public function file(string $filePath, bool $compress = false): string
+    {
+        if (!file_exists($filePath)) {
+            throw new MinifierException("File not found: {$filePath}");
+        }
+
+        $content = file_get_contents($filePath);
+        $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+
+        return $this->auto($content, $extension, $compress);
+    }
+
+    /**
+     * 处理目录下所有文件
      *
      * @param string $inputDir 输入目录路径
      * @param string $outputDir 输出目录路径
-     * @param array $config 覆盖默认配置的选项
-     * @return bool 成功返回true
-     * @throws MinifierException 当输入目录不可读、输出目录创建失败或文件写入失败时抛出异常
+     * @param bool $compress 是否压缩或混淆内容（仅对HTML、CSS、Vue、PHP有效）
+     * @return bool 是否成功处理所有文件
      */
-    public function encodeDirectory(string $inputDir, string $outputDir, array $config = []): bool
+    public function directory(string $inputDir, string $outputDir, bool $compress): bool
     {
         $dir_iterator = new RecursiveDirectoryIterator($inputDir, RecursiveDirectoryIterator::SKIP_DOTS);
         $iterator = new RecursiveIteratorIterator($dir_iterator, RecursiveIteratorIterator::SELF_FIRST);
@@ -487,81 +614,13 @@ class Obfuscator
             if ($item->isDir()) {
                 $sontDir = $outputDir . '/' . $iterator->getSubPathName();
                 File::createDir($sontDir);
-            } elseif ($item->isFile() && strtolower($item->getExtension()) === 'php') {
-                $file = $outputDir . '/' . $iterator->getSubPathName();
-                $content = File::read($item->getPathname());
-                try {
-                    $obfuscated = $this->encode($content, $config);
-                } catch (MinifierException $e) {
-                    throw new MinifierException("Failed to obfuscate file: $item. " . $e->getMessage(), $e->getCode(), $e);
-                }
-                $save = File::createFile($obfuscated, $file, false);
+            } elseif ($item->isFile()) {
+                $outputFile = $outputDir . '/' . $iterator->getSubPathName();
+                $content = $this->file($item->getPathname(), $compress);
+                $save = File::createFile($content, $outputFile, false);
                 if (!$save) {
-                    throw new MinifierException("Failed to write file: $file");
+                    throw new MinifierException("Failed to write file: $outputFile");
                 }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * 混淆应用，将应用目录下的所有PHP文件混淆并保存到输出目录，非php文件及排除的文件目录则原样复制
-     *
-     * @param string $appPath 应用目录路径
-     * @param string $buildPath 输出目录路径
-     * @param array $excludePath 排除的路径列表
-     * @param array $excludeNames 排除的文件名列表
-     * @param array $config 配置选项
-     * @return bool 成功返回true
-     */
-    public function encodeApp(string $appPath, string $buildPath, array $excludePath = [], array $excludeNames = [], array $config = []): bool
-    {
-        // 修正路径
-        $excludePath = array_map(function ($dir) {
-            // 将目录分割符号\,/统一修改为 DIRECTORY_SEPARATOR
-            return str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $dir);
-        }, $excludePath);
-
-        // 迭代应用目录
-        $dir_iterator = new RecursiveDirectoryIterator($appPath, RecursiveDirectoryIterator::SKIP_DOTS);
-        $iterator = new RecursiveIteratorIterator($dir_iterator, RecursiveIteratorIterator::SELF_FIRST);
-        /** @var RecursiveDirectoryIterator $iterator */
-        foreach ($iterator as $item) {
-            $relativePath = $iterator->getSubPathname();
-            // 判断是否在排除路径列表中，
-            foreach ($excludePath as $pattern) {
-                if (strpos($relativePath, $pattern) === 0) {
-                    continue 2;
-                }
-            }
-            // 判断是否在排除文件名列表中
-            if (in_array($item->getFilename(), $excludeNames)) {
-                continue;
-            }
-
-            $filePath = $item->getPathname();
-            $newPath = $buildPath . DIRECTORY_SEPARATOR . $relativePath;
-            if ($item->isDir()) {
-                // 创建目录
-                $createDir = File::createDir($newPath);
-                if (!$createDir) {
-                    throw new MinifierException("Failed to create dir: $newPath");
-                }
-                continue;
-            }
-            if ($item->getExtension() !== 'php') {
-                // 复制非php文件
-                $copy = File::copyFile($filePath, $newPath, true);
-                if (!$copy) {
-                    throw new MinifierException("Failed to copy file: $filePath to $newPath");
-                }
-                continue;
-            }
-            // php文件，处理文件
-            $save = $this->encodeFile($filePath, $newPath, $config);
-            if (!$save) {
-                throw new MinifierException("Failed to write file: $newPath");
             }
         }
 

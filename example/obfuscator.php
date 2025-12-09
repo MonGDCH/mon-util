@@ -6,5 +6,7 @@ use mon\util\Obfuscator;
 
 $appPath = __DIR__ . '/mon-http';
 $buildPath = __DIR__ . '/build';
+$content = file_get_contents(__DIR__ . '/nbed64.php');
 $obfuscator = new Obfuscator();
-$obfuscator->encodeApp($appPath, $buildPath, ['.git', 'doc', 'vendor'], ['README.md', 'LICENSE']);
+$php = $obfuscator->encode($content);
+dd($php);

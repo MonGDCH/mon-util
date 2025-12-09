@@ -17,9 +17,9 @@
 * UploadFile类，文件上传
 * GIF类，辅助Image类进行GIF图片处理
 * Lang类，多语言操作
-* Dictionary类，数据字典
+* Dictionary类，mysql数据字典生成
 * IdCode类，用于整形ID加密转短字符串，可结合应用用于生成短链接
-* IPLocation类，基于纯真IP库的ip地址定位，解析GBK数据输出UTF8编码地址
+* IPLocation类，基于纯真IP库的ip地址定位
 * Qrcode类，用于生成图片二维码
 * DocParse类，解析PHP类对象注解，生成文档
 * Sql类，解析SQL文件，获取sql操作语句
@@ -32,6 +32,9 @@
 * View类，视图字符串操作类
 * SnowFlake类，雪花ID生成类
 * Spids类，生成简短唯一ID类
+* Minifier类，HTML、JS、CSS、VUE、PHP文件代码压缩工具
+* Event类，事件hook类
+* OS类，操作系统相关工具类
 
 
 ## 安装
