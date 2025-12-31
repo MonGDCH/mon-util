@@ -42,7 +42,7 @@ class Network
         }
         // 关闭请求句柄
         curl_close($ch);
-        $result = ($toJson) ? json_decode($html, true) : $html;
+        $result = ($toJson) ? json_decode(trim($html), true) : $html;
         return $result;
     }
 
@@ -175,7 +175,7 @@ class Network
         }
         // 关闭请求句柄
         curl_close($ch);
-        $result = ($toJson) ? json_decode($html, true) : $html;
+        $result = ($toJson) ? json_decode(trim($html), true) : $html;
         return $result;
     }
 
@@ -195,18 +195,25 @@ class Network
     {
         static $sockets = [];
         $key = $ip . ':' . $port;
-        $socket = $sockets[$key] ?? socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        if (!$socket) {
-            throw new NetWorkException('创建TCP-Socket失败');
+        // 检查socket是否已存在且有效
+        $socket = $sockets[$key] ?? null;
+        if (!$socket || (!is_object($socket) && !is_resource($socket))) {
+            // 创建新的socket
+            $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+            if (!$socket) {
+                throw new NetWorkException('创建TCP-Socket失败');
+            }
+            // 设置超时选项
+            $timeouter = ['sec' => $timeOut, 'usec' => 0];
+            socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, $timeouter);
+            socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, $timeouter);
+            // 连接到服务器
+            if (socket_connect($socket, $ip, $port) == false) {
+                throw new NetWorkException('链接TCP-Socket失败');
+            }
+            // 缓存已连接 socket，便于复用
+            $sockets[$key] = $socket;
         }
-        $timeouter = ['sec' => $timeOut, 'usec' => 0];
-        socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, $timeouter);
-        socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, $timeouter);
-        if (socket_connect($socket, $ip, $port) == false) {
-            throw new NetWorkException('链接TCP-Socket失败');
-        }
-        // 缓存已连接 socket，便于复用
-        $sockets[$key] = $socket;
 
         $send_len = mb_strlen($cmd, 'UTF-8');
         $sent = socket_write($socket, $cmd, $send_len);
@@ -216,15 +223,13 @@ class Network
         // 读取返回数据
         $data = socket_read($socket, $readLen);
         // 是否转换Json格式
-        $result = $toJson ? json_decode($data, true) : $data;
+        $result = $toJson ? json_decode(trim($data), true) : $data;
         // 是否关闭链接
         if ($close) {
             // 关闭链接，返回结果集
             socket_close($socket);
             unset($sockets[$key]);
         }
-
-        // 返回结果集
         return $result;
     }
 
@@ -244,18 +249,25 @@ class Network
     {
         static $sockets = [];
         $key = $ip . ':' . $port;
-        $socket = $sockets[$key] ?? socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-        if (!$socket) {
-            throw new NetWorkException('创建UDP-Socket失败');
+        // 检查socket是否已存在且有效
+        $socket = $sockets[$key] ?? null;
+        if (!$socket || (!is_object($socket) && !is_resource($socket))) {
+            // 创建新的socket
+            $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+            if (!$socket) {
+                throw new NetWorkException('创建UDP-Socket失败');
+            }
+            // 设置超时选项
+            $timeouter = ['sec' => $timeOut, 'usec' => 0];
+            socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, $timeouter);
+            socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, $timeouter);
+            // 连接到服务器
+            if (socket_connect($socket, $ip, $port) == false) {
+                throw new NetWorkException('链接UDP-Socket失败');
+            }
+            // 缓存已连接 socket，便于复用
+            $sockets[$key] = $socket;
         }
-        $timeouter = ['sec' => $timeOut, 'usec' => 0];
-        socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, $timeouter);
-        socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, $timeouter);
-        if (socket_connect($socket, $ip, $port) == false) {
-            // 执行链接Socket失败钩子
-            throw new NetWorkException('链接UDP-Socket失败');
-        }
-        $sockets[$key] = $socket;
 
         $send_len = mb_strlen($cmd, 'UTF-8');
         $sent = socket_write($socket, $cmd, $send_len);
@@ -265,7 +277,7 @@ class Network
         // 读取返回数据
         $data = socket_read($socket, $readLen);
         // 是否转换Json格式
-        $result = $toJson ? json_decode($data, true) : $data;
+        $result = $toJson ? json_decode(trim($data), true) : $data;
         // 是否关闭链接
         if ($close) {
             // 关闭链接，返回结果集
@@ -273,7 +285,6 @@ class Network
             unset($sockets[$key]);
         }
 
-        // 返回结果集
         return $result;
     }
 
@@ -333,7 +344,6 @@ class Network
             curl_setopt($ch, CURLOPT_SSLKEY, $ssl_key);
         }
 
-        // 
         $isHttps = stripos($url, 'https://') === 0 || (parse_url($url, PHP_URL_SCHEME) === 'https');
         if ($isHttps) {
             // 跳过证书检查

@@ -174,7 +174,7 @@ class Event
             return Container::instance()->invokeFunction($class, $args);
         } elseif (is_string($class) && !empty($class)) {
             // 类方法回调
-            return Container::instance()->invokeMethd([$class, $this->handler()], $args);
+            return Container::instance()->invokeMethod([$class, $this->handler()], $args);
         }
 
         throw new RuntimeException('Event handler not found!');
