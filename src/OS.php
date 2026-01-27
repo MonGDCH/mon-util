@@ -531,4 +531,41 @@ class OS
         }
         return 'unknown';
     }
+
+    /**
+     * 获取系统已安装的打印机列表
+     *
+     * @return array 打印机名数组（失败返回空数组）
+     */
+    public static function getPrinterList(): array
+    {
+        $printers = [];
+        // 执行PowerShell命令：获取打印机名称，格式化为纯文本（避免复杂JSON/XML解析）
+        // -Command：执行指定命令；Get-Printer：获取所有打印机；Select-Object Name：只取名称列；
+        // Out-String：转为字符串；2>&1：捕获错误输出
+        $psCommand = 'powershell -Command "Get-Printer | Select-Object -ExpandProperty Name" 2>&1';
+        $output = shell_exec($psCommand);
+        // 检查命令执行结果
+        if ($output === null) {
+            throw new RuntimeException("无法执行PowerShell命令，可能是权限不足");
+        }
+
+        // 解析输出：按行分割，过滤空行和无效内容
+        $lines = explode("\n", trim($output));
+        foreach ($lines as $line) {
+            $line = trim($line);
+            // 过滤错误提示（如命令不存在时的报错）
+            if (!empty($line) && strpos($line, 'Get-Printer') === false) {
+                $printers[] = $line;
+            }
+        }
+
+        // 处理无打印机的情况
+        if (empty($printers) && strpos($output, 'No printers found') !== false) {
+            // throw new RuntimeException("系统中未安装任何打印机");
+            return [];
+        }
+
+        return $printers;
+    }
 }

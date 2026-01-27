@@ -16,6 +16,22 @@ use InvalidArgumentException;
 class Common
 {
     /**
+     * 获取数组中指定字段的值
+     *
+     * @param array $data   数组
+     * @param string $field 字段名
+     * @param bool $empty   是否保留空值
+     * @return array
+     */
+    public static function getArrayFieldValues(array $data, string $field, bool $empty = false): array
+    {
+        $result = array_unique(array_column($data, $field));
+        return $empty ? $result : array_filter($result, function ($value) {
+            return $value !== '';
+        });
+    }
+
+    /**
      * 随机生成指定区间内一定个数的随机数
      *
      * @param integer $min      最小数
