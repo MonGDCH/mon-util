@@ -100,7 +100,7 @@ class Tool
         // 组装传参
         if (!empty($vars)) {
             $vars = http_build_query($vars);
-            $url .= '?' . $vars;
+            $url .= (strpos($url, '?') === false ? '?' : '&') . $vars;
         }
         $url .= $anchor;
 
