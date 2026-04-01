@@ -8,6 +8,7 @@ use Countable;
 use ArrayAccess;
 use ArrayIterator;
 use mon\util\Common;
+use JsonSerializable;
 use IteratorAggregate;
 
 /**
@@ -16,7 +17,7 @@ use IteratorAggregate;
  * @author Mon <985558837@qq.com>
  * @version 1.0.0
  */
-class Collection implements ArrayAccess, Countable, IteratorAggregate
+class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSerializable
 {
     /**
      * 集合数据
@@ -47,6 +48,27 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
+     * getData别名
+     *
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return $this->getData();
+    }
+
+    /**
+     * getJson别名
+     *
+     * @param mixed $option  json_encode选项
+     * @return string
+     */
+    public function toJson($option = JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT): string
+    {
+        return $this->getJson($option);
+    }
+
+    /**
      * 设置集合数据
      *
      * @param array $data
@@ -71,11 +93,12 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
     /**
      * 获取json数据
      *
+     * @param mixed $option  json_encode选项
      * @return string
      */
-    public function getJson(): string
+    public function getJson($option = JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT): string
     {
-        return json_encode($this->data, JSON_UNESCAPED_UNICODE);
+        return json_encode($this->data, $option);
     }
 
     /**
@@ -593,5 +616,16 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate
     public function getIterator(): ArrayIterator
     {
         return new ArrayIterator($this->data);
+    }
+
+    /**
+     * JsonSerializable相关处理方法, 转换为数组
+     *
+     * @return array
+     */
+    #[\ReturnTypeWillChange]
+    public function jsonSerialize(): array
+    {
+        return $this->getData();
     }
 }
