@@ -330,6 +330,8 @@ class Image
         // 原图宽度和高度
         $w = $this->info['width'];
         $h = $this->info['height'];
+        $x = 0;
+        $y = 0;
         // 计算缩略图生成的必要参数
         switch ($type) {
             case 1:

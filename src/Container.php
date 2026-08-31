@@ -50,7 +50,6 @@ class Container implements ContainerInterface
     /**
      * 获取单例
      *
-     * @param mixed $options 初始化参数
      * @return static
      */
     public static function instance()

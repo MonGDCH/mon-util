@@ -736,7 +736,7 @@ class Nbed64
     /**
      * key转为byteArray（字符串转字节数组, 密钥专用）
      *
-     * @param string key {string} 密钥
+     * @param string $key 密钥
      * @return array 转换结果为字节数组（也就是二进制数据流） {ByteArray} 
      */
     private static function _keyToByteArray(string $key): array

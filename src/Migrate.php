@@ -276,7 +276,7 @@ class Migrate
      * @throws MigrateException
      * @return boolean
      */
-    public function remove(int $time = null): bool
+    public function remove(int $time): bool
     {
         if (!$time) {
             throw new MigrateException("{$time} Time parameter is incorrect");
@@ -319,7 +319,6 @@ class Migrate
      * @param integer $time 文件名时间戳
      * @param integer $part
      * @throws MigrateException
-     * @throws SqlException
      * @return true
      */
     public function import(int $time, int $part = 0): bool

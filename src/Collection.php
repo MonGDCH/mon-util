@@ -244,7 +244,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param  $callback
      * @return Collection
      */
-    public function sort(callable $callback = null): Collection
+    public function sort(?callable $callback = null): Collection
     {
         $items = $this->data;
         $callback && is_callable($callback) ? uasort($items, $callback) : asort($items, $callback ?? SORT_REGULAR);

@@ -89,7 +89,6 @@ class Network
 
             while ($done = curl_multi_info_read($master)) {
                 // 获取请求信息
-                /** @var CurlHandle $done */
                 $info = curl_getinfo($done['handle']);
                 // 请求成功
                 if ($info['http_code'] == 200) {

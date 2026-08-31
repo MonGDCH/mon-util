@@ -68,7 +68,7 @@ class HttpRequest
      * @param mixed $default 默认值
      * @return mixed
      */
-    public function post($name = '', $default = null)
+    public function post(string $name = '', $default = null)
     {
         if (!isset($this->_data['post'])) {
             $this->parsePost();

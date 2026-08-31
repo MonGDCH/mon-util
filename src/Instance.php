@@ -35,7 +35,6 @@ trait Instance
     /**
      * 创建对象实例
      *
-     * @param  string $class    类名或标识
      * @param  array  $args     变量
      * @param  bool   $isNew    是否创建新的实例
      * @return static

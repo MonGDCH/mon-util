@@ -112,7 +112,6 @@ class Common
                 case "/":
                 case " ":
                 case "'":
-                case "\"":
                 case "\n":
                 case "\r":
                 case "\t":
@@ -173,7 +172,7 @@ class Common
     /**
      * 检查字符串是否是UTF8编码
      *
-     * @param string $string 验证的字符串
+     * @param string $str 验证的字符串
      * @return boolean
      */
     public static function isUTF8(string $str): bool

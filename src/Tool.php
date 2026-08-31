@@ -255,7 +255,7 @@ class Tool
      *
      * @param string  $ticket      验证秘钥
      * @param string  $token       Token值
-     * @param string  $tokenTime   Token创建时间
+     * @param integer $tokenTime   Token创建时间
      * @param string  $salt        加密盐
      * @param boolean $destroy     是否清除Cookie
      * @param integer $expire      Cookie生存时间
@@ -989,7 +989,7 @@ class Tool
     /**
      * RGB颜色值转十六进制
      * 
-     * @param string|array $reg reg颜色值
+     * @param string|array $rgb RGB颜色值
      * @return string
      */
     public static function rgbToHex($rgb): string

@@ -207,11 +207,11 @@ class UploadFile
     /**
      * 检测文件
      *
-     * @param string $file  文件路径
+     * @param array $file  文件信息
      * @throws UploadException
      * @return boolean
      */
-    protected function checkFile(string $file): bool
+    protected function checkFile(array $file): bool
     {
         // 上传错误码检查
         if (!empty($file['error'])) {
@@ -245,11 +245,11 @@ class UploadFile
     /**
      * 检测图片
      *
-     * @param string $file 文件路径
+     * @param array $file 文件信息
      * @throws UploadException
      * @return boolean
      */
-    protected function checkImg(string $file): bool
+    protected function checkImg(array $file): bool
     {
         $ext = strtolower($file['ext'] ?? '');
         if (in_array($ext, ['gif', 'jpg', 'jpeg', 'bmp', 'png', 'swf'])) {

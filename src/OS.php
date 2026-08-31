@@ -311,7 +311,7 @@ class OS
     /**
      * 获取 CPU 逻辑核心数
      *
-     * @return string
+     * @return integer
      */
     public static function getCpuLogicCores(): int
     {

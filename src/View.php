@@ -80,6 +80,13 @@ class View implements ArrayAccess
     protected $layouts = [];
 
     /**
+     * 是否提取布局变量
+     *
+     * @var boolean
+     */
+    protected $extract = true;
+
+    /**
      * 设置视图目录路径
      *
      * @param string $path 视图目录根路径
@@ -147,6 +154,28 @@ class View implements ArrayAccess
     }
 
     /**
+     * 设置是否提取布局变量
+     *
+     * @param boolean $extract 是否提取布局变量
+     * @return View
+     */
+    public function setExtract(bool $extract): View
+    {
+        $this->extract = $extract;
+        return $this;
+    }
+
+    /**
+     * 获取是否提取布局变量
+     *
+     * @return boolean
+     */
+    public function getExtract(): bool
+    {
+        return $this->extract;
+    }
+
+    /**
      * 模版赋值
      *
      * @param  string|array $key   string: 模版变量名;array: 批量赋值
@@ -181,7 +210,6 @@ class View implements ArrayAccess
      *
      * @param string $view  完整的视图路径
      * @param array $data   视图数据
-     * @param boolean $ext  是否加上后缀名
      * @return string
      */
     public function display(string $view, array $data = []): string
@@ -462,11 +490,13 @@ class View implements ArrayAccess
         if (file_exists($view)) {
             // 开启缓存，利用缓存获取视图内容
             ob_start();
-            // $data = !empty($data) ?: $this->data;
-            // 合并已有视图数据与传入数据，传入数据优先
-            $data = array_merge($this->data, $data);
-            // 数组变量分割
-            extract($data);
+            if ($this->getExtract()) {
+                // $data = !empty($data) ?: $this->data;
+                // 合并已有视图数据与传入数据，传入数据优先
+                $data = array_merge($this->data, $data);
+                // 数组变量分割
+                extract($data);
+            }
 
             // 校验是否出现异常，出现异常清空缓存，防止污染程序
             try {
@@ -565,7 +595,7 @@ class View implements ArrayAccess
      *
      * @param string $key   变量名称
      * @param mixed $value  变量值
-     * @return mixed
+     * @return void
      */
     #[\ReturnTypeWillChange]
     public function offsetSet($key, $value = null): void

@@ -45,13 +45,45 @@ class SnowFlake
     protected $sequenceBits = 12;
 
     /**
-     * 派生值：最大值与移位量
+     * 最大数据中心id
+     * 
+     * @var integer
      */
     protected $maxDatacenterId;
+
+    /**
+     * 最大机器号
+     * 
+     * @var integer
+     */
     protected $maxWorkerId;
+
+    /**
+     * 序列掩码
+     * 
+     * @var integer
+     */
     protected $sequenceMask;
+
+    /**
+     * 机器号移位量
+     * 
+     * @var integer
+     */
     protected $workerIdShift;
+
+    /**
+     * 数据中心id移位量
+     * 
+     * @var integer
+     */
     protected $datacenterIdShift;
+
+    /**
+     * 时间戳移位量
+     * 
+     * @var integer
+     */
     protected $timestampLeftShift;
 
     /**

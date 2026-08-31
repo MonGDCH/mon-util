@@ -638,8 +638,8 @@ class Validate
 	/**
 	 * 验证是否为一个有效的24小时时间，时分秒
 	 *
-	 * @param [type] $value
-	 * @param boolean $allowEmpty
+	 * @param mixed $value 操作的数据
+	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
 	public function time($value, $allowEmpty = true): bool
@@ -653,8 +653,8 @@ class Validate
 	/**
 	 * 验证是否为一个有效的12小时时间，时分秒
 	 *
-	 * @param [type] $value
-	 * @param boolean $allowEmpty
+	 * @param mixed $value 操作的数据
+	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
 	public function time12($value, $allowEmpty = true): bool
@@ -668,7 +668,7 @@ class Validate
 	/**
 	 * 验证是否为一个有效的时间戳
 	 *
-	 * @param mixed $value	操作的数据
+	 * @param mixed $value 操作的数据
 	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */

@@ -313,7 +313,7 @@ class Date
     /**
      * 是否为闰年
      *
-     * @param string $year 年份
+     * @param integer $year 年份
      * @return boolean
      */
     public function isLeapYear(?int $year = null): bool
@@ -573,7 +573,7 @@ class Date
     /**
      * 月中日期数字转中文
      *
-     * @param integer $day 日期数字
+     * @param integer $mday 日期数字
      * @return string
      */
     public function mdayToCh(?int $mday = null): string
