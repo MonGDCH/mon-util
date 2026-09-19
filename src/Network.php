@@ -173,7 +173,7 @@ class Network
             throw new NetWorkException('发起文件上传请求失败！' . $error, 0, null, $ch);
         }
         // 关闭请求句柄
-        curl_close($ch);
+        // curl_close($ch);
         $result = ($toJson) ? json_decode(trim($html), true) : $html;
         return $result;
     }

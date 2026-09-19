@@ -19,7 +19,7 @@ class UploadSlice
      *
      * @var array
      */
-    protected $config = [
+    protected array $config = [
         // 允许上传的文件后缀
         'exts'      => [],
         // 分片文件大小限制
@@ -35,16 +35,16 @@ class UploadSlice
      *
      * @var array
      */
-    protected $error_chunk = [];
+    protected array $error_chunk = [];
 
     /**
      * 构造方法
      *
      * @param array $config 自定义配置信息
      */
-    public function __construct(?array $config = [])
+    public function __construct(array $config = [])
     {
-        $this->config = array_merge($this->config, (array)$config);
+        $this->config = array_merge($this->config, $config);
     }
 
     /**
@@ -64,7 +64,7 @@ class UploadSlice
      * @param mixed $value 值
      * @return UploadSlice
      */
-    public function setConifg($config, $value = null): UploadSlice
+    public function setConfig(array|string $config, $value = null): UploadSlice
     {
         if (is_array($config)) {
             $this->config = array_merge($this->config, $config);

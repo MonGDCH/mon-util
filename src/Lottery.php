@@ -19,28 +19,28 @@ class Lottery
      *
      * @var array
      */
-    protected $awards = [];
+    protected array $awards = [];
 
     /**
      * 概率总和
      *
      * @var integer
      */
-    protected $probabilityCount = 100;
+    protected int $probabilityCount = 100;
 
     /**
      * 奖品概率索引
      *
      * @var string
      */
-    protected $probabilityKey = 'probability';
+    protected string $probabilityKey = 'probability';
 
     /**
      * 支持概率的小数位数
      *
      * @var integer
      */
-    protected $scale = 4;
+    protected int $scale = 4;
 
     /**
      * 构造方法

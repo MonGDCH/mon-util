@@ -20,21 +20,21 @@ class Image
      *
      * @var \GdImage
      */
-    private $img;
+    private ?\GdImage $img;
 
     /**
      * 图像信息，包括width,height,type,mime,size
      *
      * @var array
      */
-    private $info;
+    private array $info;
 
     /**
      * gif图片特殊处理实例
      *
      * @var GIF
      */
-    protected $gif;
+    protected ?GIF $gif;
 
     /**
      * 构造方法
@@ -89,9 +89,6 @@ class Image
             'type'   => image_type_to_extension($info[2], false),
             'mime'   => $info['mime'],
         ];
-
-        // 销毁已存在的图像
-        empty($this->img) || imagedestroy($this->img);
 
         //打开图像
         if ('gif' == $this->info['type']) {
@@ -301,7 +298,7 @@ class Image
             // 裁剪
             imagecopyresampled($img, $this->img, 0, 0, $x, $y, $width, $height, $w, $h);
             // 销毁原图
-            imagedestroy($this->img);
+            // imagedestroy($this->img);
             // 设置新图像
             $this->img = $img;
         } while (!empty($this->gif) && $this->gifNext());
@@ -389,7 +386,7 @@ class Image
                     $img = imagecreatetruecolor($width, $height);
                     $this->preserveTransparency($img);
                     imagecopyresampled($img, $this->img, $posx, $posy, $x, $y, $neww, $newh, $w, $h);
-                    imagedestroy($this->img);
+                    // imagedestroy($this->img);
                     $this->img = $img;
                 } while (!empty($this->gif) && $this->gifNext());
 
@@ -503,10 +500,10 @@ class Image
             imagecopy($src, $water, 0, 0, 0, 0, $info[0], $info[1]);
             // 将合成结果回写到目标图像（保留目标 alpha）
             imagecopy($this->img, $src, $x, $y, 0, 0, $info[0], $info[1]);
-            imagedestroy($src);
+            // imagedestroy($src);
         } while (!empty($this->gif) && $this->gifNext());
         // 销毁水印资源
-        imagedestroy($water);
+        // imagedestroy($water);
 
         return $this;
     }
@@ -640,11 +637,11 @@ class Image
         $this->gif->image($img);
         $next = $this->gif->nextImage();
         if ($next) {
-            imagedestroy($this->img);
+            // imagedestroy($this->img);
             $this->img = imagecreatefromstring($next);
             return $next;
         } else {
-            imagedestroy($this->img);
+            // imagedestroy($this->img);
             $this->img = imagecreatefromstring($this->gif->image());
             return false;
         }
@@ -664,15 +661,5 @@ class Image
         imagesavealpha($img, true);
         $transparent = imagecolorallocatealpha($img, 0, 0, 0, 127);
         imagefill($img, 0, 0, $transparent);
-    }
-
-    /**
-     * 析构方法，用于销毁图像资源
-     * 
-     * @return void
-     */
-    public function __destruct()
-    {
-        empty($this->img) || imagedestroy($this->img);
     }
 }

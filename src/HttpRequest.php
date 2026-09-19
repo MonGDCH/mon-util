@@ -17,21 +17,21 @@ class HttpRequest
      *
      * @var array
      */
-    protected $_data = [];
+    protected array $_data = [];
 
     /**
      * http请求体内容
      *
      * @var string
      */
-    protected $_buffer = '';
+    protected string $_buffer = '';
 
     /**
      * 最大文件上传数量
      *
      * @var integer
      */
-    protected $maxFileUploads = 1024;
+    protected int $maxFileUploads = 1024;
 
     /**
      * 构造方法

@@ -51,7 +51,7 @@ class Dictionary
      *
      * @var string
      */
-    protected $viewMark;
+    protected string $viewMark = '';
 
     /**
      * 构造方法

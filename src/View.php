@@ -21,70 +21,70 @@ class View implements ArrayAccess
      *
      * @var array
      */
-    protected $data = [];
+    protected array $data = [];
 
     /**
      * 视图目录路径
      *
      * @var string
      */
-    protected $path = '';
+    protected string $path = '';
 
     /**
      * 视图文件后缀
      *
      * @var string
      */
-    protected $ext = '';
+    protected string $ext = '';
 
     /**
      * 视图嵌套级别
      *
      * @var integer
      */
-    protected $offset = 0;
+    protected int $offset = 0;
 
     /**
      * 继承的父视图
      *
      * @var array
      */
-    protected $extends = [];
+    protected array $extends = [];
 
     /**
      * 视图的片段
      *
      * @var array
      */
-    protected $sections = [];
+    protected array $sections = [];
 
     /**
      * 视图片段名
      *
      * @var array
      */
-    protected $sectionStacks = [];
+    protected array $sectionStacks = [];
 
     /**
      * 未发现的视图片段
      *
      * @var array
      */
-    protected $sectionsNotFound = [];
+    protected array $sectionsNotFound = [];
 
     /**
      * 布局
      *
      * @var array
      */
-    protected $layouts = [];
+    protected array $layouts = [];
 
     /**
      * 是否提取布局变量
      *
      * @var boolean
      */
-    protected $extract = true;
+    protected bool $extract = true;
 
     /**
      * 设置视图目录路径
@@ -182,7 +182,7 @@ class View implements ArrayAccess
      * @param  mixed        $value 模版变量值
      * @return View
      */
-    public function assign($key, $value = null): View
+    public function assign(string|array $key, $value = null): View
     {
         if (is_array($key)) {
             $this->data = array_merge($this->data, $key);
@@ -375,7 +375,7 @@ class View implements ArrayAccess
      * @param mixed  $value 变量值
      * @return View
      */
-    public function set($key, $value = null): View
+    public function set(string|array $key, $value = null): View
     {
         if (is_array($key)) {
             $this->data = array_merge($this->data, $key);

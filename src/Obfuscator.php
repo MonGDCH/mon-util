@@ -23,7 +23,7 @@ class Obfuscator
      *
      * @var array
      */
-    protected $fillterVars = [
+    protected array $fillterVars = [
         '$GLOBALS',
         '$HTTP_RAW_POST_DATA',
         '$http_response_header',
@@ -44,7 +44,7 @@ class Obfuscator
      *
      * @var array
      */
-    protected $config = [
+    protected array $config = [
         // 是否对变量名进行混淆（默认 true），暂不支持PHP8命名参数风格代码混淆
         'renameVariables' => true,
         // 是否保留注释（默认 false，保留=false 表示会移除注释）

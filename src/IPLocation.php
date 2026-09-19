@@ -29,42 +29,42 @@ class IPLocation
      *
      * @var integer
      */
-    private $firstip;
+    private int $firstip;
 
     /**
      * 最后一条IP记录的偏移地址
      *
      * @var integer
      */
-    private $lastip;
+    private int $lastip;
 
     /**
      * IP记录的总条数（不包含版本信息记录）
      *
      * @var integer
      */
-    private $totalip;
+    private int $totalip;
 
     /**
      * 运营商
      *
      * @var array
      */
-    private $dict_isp = ['联通', '移动', '铁通', '电信', '长城', '鹏博士'];
+    private array $dict_isp = ['联通', '移动', '铁通', '电信', '长城', '鹏博士'];
 
     /**
      * 直辖市
      *
      * @var array
      */
-    private $dict_city_directly = ['北京', '天津', '重庆', '上海'];
+    private array $dict_city_directly = ['北京', '天津', '重庆', '上海'];
 
     /**
      * 省份
      *
      * @var array
      */
-    private $dict_province = [
+    private array $dict_province = [
         '北京', '天津', '重庆', '上海', '河北', '山西', '辽宁', '吉林', '黑龙江', '江苏', '浙江', '安徽', '福建', '江西', '山东', '河南', '湖北', '湖南',
         '广东', '海南', '四川', '贵州', '云南', '陕西', '甘肃', '青海', '台湾', '内蒙古', '广西', '宁夏', '新疆', '西藏', '香港', '澳门'
     ];
@@ -74,7 +74,7 @@ class IPLocation
      *
      * @var boolean
      */
-    private $init = false;
+    private bool $init = false;
 
     /**
      * 构造方法

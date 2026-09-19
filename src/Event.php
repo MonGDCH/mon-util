@@ -23,14 +23,14 @@ class Event
      *
      * @var string
      */
-    protected $handler = 'handler';
+    protected string $handler = 'handler';
 
     /**
      * 事件标签列表
      *
      * @var array
      */
-    protected $tags = [];
+    protected array $tags = [];
 
     /**
      * 私有化构造方法
@@ -135,7 +135,7 @@ class Event
      * @param string|array $tag
      * @return Event
      */
-    public function remove($tag): Event
+    public function remove(string|array $tag): Event
     {
         if (is_array($tag)) {
             foreach ($tag as $name) {

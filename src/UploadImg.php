@@ -19,14 +19,14 @@ class UploadImg
      *
      * @var string
      */
-    protected $path = '';
+    protected string $path = '';
 
     /**
      * 文件保存名称
      *
      * @var string
      */
-    protected $name = '';
+    protected string $name = '';
 
     /**
      * 设置默认文件保存路径

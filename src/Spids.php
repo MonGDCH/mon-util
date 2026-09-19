@@ -23,21 +23,21 @@ class Spids
      *
      * @var string
      */
-    protected $alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    protected string $alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
     /**
      * 生成字符串最小长度
      *
      * @var integer
      */
-    protected $minLength = 0;
+    protected int $minLength = 0;
 
     /**
      * 不可用的编码块列表
      *
      * @var array
      */
-    protected $blocklist = [];
+    protected array $blocklist = [];
 
     /**
      * 构造方法

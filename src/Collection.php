@@ -24,7 +24,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      *
      * @var array
      */
-    protected $data = [];
+    protected array $data = [];
 
     /**
      * 构造方法
@@ -60,10 +60,10 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     /**
      * getJson别名
      *
-     * @param mixed $option  json_encode选项
+     * @param integer $option  json_encode选项
      * @return string
      */
-    public function toJson($option = JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT): string
+    public function toJson(int $option = JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT): string
     {
         return $this->getJson($option);
     }
@@ -93,10 +93,10 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     /**
      * 获取json数据
      *
-     * @param mixed $option  json_encode选项
+     * @param integer $option  json_encode选项
      * @return string
      */
-    public function getJson($option = JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT): string
+    public function getJson(int $option = JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT): string
     {
         return json_encode($this->data, $option);
     }
@@ -233,7 +233,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param mixed $value  补充值
      * @return Collection
      */
-    public function pad(int $size, $value): Collection
+    public function pad(int $size, mixed $value): Collection
     {
         return new self(array_pad($this->data, $size, $value));
     }
@@ -241,7 +241,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     /**
      * 排序
      *
-     * @param  $callback
+     * @param callable $callback 回调方法
      * @return Collection
      */
     public function sort(?callable $callback = null): Collection
@@ -259,7 +259,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param integer $sort 排序方式，默认值：SORT_DESC
      * @return Collection
      */
-    public function sort2D(string $keys, $sort = SORT_DESC): Collection
+    public function sort2D(string $keys, int $sort = SORT_DESC): Collection
     {
         $data = Common::sortArray2D($this->data, $keys, $sort);
         return new self($data);
@@ -289,7 +289,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param boolean $index    是否获取的是索引
      * @return mixed
      */
-    public function find(callable $callback, bool $index = false)
+    public function find(callable $callback, bool $index = false): mixed
     {
         foreach ($this->data as $key => $item) {
             if ($callback($item, $key, $this)) {
@@ -307,7 +307,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param mixed $default    默认值
      * @return mixed
      */
-    public function reduce(callable $callback, $default = null)
+    public function reduce(callable $callback, mixed $default = null): mixed
     {
         $result = $default;
         foreach ($this->data as $key => $value) {
@@ -323,7 +323,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param string $key  二维数组键名
      * @return integer|float
      */
-    public function sum(string $key = '')
+    public function sum(string $key = ''): int|float
     {
         return $this->reduce(function ($result, $item) use ($key) {
             $value = empty($key) ? $item : (isset($item[$key]) ? $item[$key] : 0);
@@ -337,7 +337,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param string $key  二维数组键名
      * @return integer|float
      */
-    public function svg(string $key = '')
+    public function svg(string $key = ''): int|float
     {
         return $this->sum($key) / $this->count();
     }
@@ -348,7 +348,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param string $key  二维数组键名
      * @return integer|float
      */
-    public function min(string $key = '')
+    public function min(string $key = ''): int|float
     {
         return $this->reduce(function ($result, $item) use ($key) {
             $value = empty($key) ? $item : (isset($item[$key]) ? $item[$key] : null);
@@ -362,7 +362,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param string $key  二维数组键名
      * @return integer|float
      */
-    public function max(string $key = '')
+    public function max(string $key = ''): int|float
     {
         return $this->reduce(function ($result, $item) use ($key) {
             $value = empty($key) ? $item : (isset($item[$key]) ? $item[$key] : null);
@@ -376,7 +376,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param integer $count pop个数
      * @return mixed
      */
-    public function pop(int $count = 1)
+    public function pop(int $count = 1): mixed
     {
         if ($this->isEmpty()) {
             return null;

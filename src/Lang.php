@@ -21,14 +21,14 @@ class Lang
      *
      * @var array
      */
-    protected $lang = [];
+    protected array $lang = [];
 
     /**
      * 当前选择的默认语言
      *
      * @var string
      */
-    protected $range = 'zh-cn';
+    protected string $range = 'zh-cn';
 
     /**
      * 设定当前的语言
@@ -53,7 +53,7 @@ class Lang
      * @param string        $range 语言作用域
      * @return Lang
      */
-    public function set($name, string $value = '', string $range = ''): Lang
+    public function set(string|array $name, string $value = '', string $range = ''): Lang
     {
         $range = $range ?: $this->range;
 

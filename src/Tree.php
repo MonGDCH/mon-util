@@ -21,14 +21,14 @@ class Tree
      *
      * @var array
      */
-    public $data = [];
+    public array $data = [];
 
     /**
      * 配置信息
      * 
      * @var array
      */
-    protected $config = [
+    protected array $config = [
         // 空格替换
         'nbsp'      => "　",
         // 主键 
@@ -51,14 +51,14 @@ class Tree
      *
      * @var array
      */
-    protected $map = [];
+    protected array $map = [];
 
     /**
      * pid => [nodes...] 索引，便于快速获取子节点
      *
      * @var array
      */
-    protected $index = [];
+    protected array $index = [];
 
     /**
      * 构造方法
@@ -114,7 +114,7 @@ class Tree
      * @param  integer|string  $pid  子级对应父级的PID
      * @return array
      */
-    public function getChild($pid): array
+    public function getChild(int|string $pid): array
     {
         return isset($this->index[$pid]) ? $this->index[$pid] : [];
     }
@@ -126,7 +126,7 @@ class Tree
      * @param  boolean $self 是否包含自身
      * @return array
      */
-    public function getChildren($pid, bool $self = false): array
+    public function getChildren(int|string $pid, bool $self = false): array
     {
         $result = [];
         // 包含自身
@@ -155,7 +155,7 @@ class Tree
      * @param  boolean $self 是否包含自身
      * @return array
      */
-    public function getChildrenIds($pid, bool $self = false): array
+    public function getChildrenIds(int|string $pid, bool $self = false): array
     {
         $result = [];
         $list = $this->getChildren($pid, $self);
@@ -174,7 +174,7 @@ class Tree
      * @param  integer|string $id 节点ID
      * @return array
      */
-    public function getParent($id): array
+    public function getParent(int|string $id): array
     {
         if (!isset($this->map[$id])) {
             return [];
@@ -193,7 +193,7 @@ class Tree
      * @param  boolean $self 是否包含自身
      * @return array
      */
-    public function getParents($id, bool $self = false): array
+    public function getParents(int|string $id, bool $self = false): array
     {
         $result = [];
         if (!isset($this->map[$id])) {
@@ -218,7 +218,7 @@ class Tree
      * @param  boolean $self 是否包含自身
      * @return array
      */
-    public function getParentsIds($id, bool $self = false): array
+    public function getParentsIds(int|string $id, bool $self = false): array
     {
         $result = [];
         $list = $this->getParents($id, $self);
@@ -300,7 +300,7 @@ class Tree
      * @param string  $toptpl       顶级栏目的模板
      * @return string
      */
-    public function getTreeOption($pid, ?string $itemtpl = null, string $selectedids = '', string $disabledids = '', string $itemprefix = '', string $toptpl = ''): string
+    public function getTreeOption(int|string $pid, ?string $itemtpl = null, $selectedids = '', $disabledids = '', string $itemprefix = '', string $toptpl = ''): string
     {
         $itemtpl = is_null($itemtpl) ? $this->config['tpl']['option'] : $itemtpl;
         $ret = '';
@@ -349,12 +349,12 @@ class Tree
      *
      * @param integer|string $pid   表示获得这个ID下的所有子级
      * @param string  $itemtpl      条目模板 如："<li value=@id @selected @disabled>@name @childlist</li>"
-     * @param string  $selectedids  选中的ID
-     * @param string  $disabledids  禁用的ID
+     * @param mixed  $selectedids   选中的ID
+     * @param mixed  $disabledids   禁用的ID
      * @param string  $wraptag      子列表包裹标签
      * @return string
      */
-    public function getTreeUl($pid, ?string $itemtpl = null, string $selectedids = '', string $disabledids = '', string $wraptag = 'ul', string $wrapattr = ''): string
+    public function getTreeUl(int|string $pid, ?string $itemtpl = null, $selectedids = '', $disabledids = '', string $wraptag = 'ul', string $wrapattr = ''): string
     {
         $itemtpl = is_null($itemtpl) ? $this->config['tpl']['ul'] : $itemtpl;
         $str = '';
@@ -396,7 +396,7 @@ class Tree
      * @param string $mark          后代标识
      * @return array
      */
-    public function getTreeArray($myid, string $itemprefix = '', string $mark = 'children'): array
+    public function getTreeArray(int|string $myid, string $itemprefix = '', string $mark = 'children'): array
     {
         $childs = $this->getChild($myid);
         $n = 0;

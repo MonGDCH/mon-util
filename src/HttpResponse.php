@@ -17,14 +17,14 @@ class HttpResponse
      *
      * @var string
      */
-    protected $_buffer = '';
+    protected string $_buffer = '';
 
     /**
      * 响应数据
      *
      * @var array
      */
-    protected $_data = [];
+    protected array $_data = [];
 
     /**
      * 构造方法

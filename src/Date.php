@@ -20,63 +20,63 @@ class Date
      *
      * @var integer
      */
-    protected $date;
+    protected int $date;
 
     /**
      * 年
      *
      * @var integer
      */
-    protected $year;
+    protected int $year;
 
     /**
      * 月
      *
      * @var integer
      */
-    protected $month;
+    protected int $month;
 
     /**
      * 日
      *
      * @var integer
      */
-    protected $day;
+    protected int $day;
 
     /**
      * 时
      *
      * @var integer
      */
-    protected $hour;
+    protected int $hour;
 
     /**
      * 分
      *
      * @var integer
      */
-    protected $minute;
+    protected int $minute;
 
     /**
      * 秒
      *
      * @var integer
      */
-    protected $second;
+    protected int $second;
 
     /**
      * 毫秒
      *
      * @var float
      */
-    protected $milliSecond;
+    protected float $milliSecond;
 
     /**
      * 星期的数字表示
      *
      * @var integer
      */
-    protected $weekDay;
+    protected int $weekDay;
 
     /**
      * 一年中的天数 0－365
@@ -155,7 +155,7 @@ class Date
         $this->second       = $dateArray['seconds'];
         // 毫秒
         list($milliSecond)  = explode(' ', (string)microtime());
-        $this->milliSecond  = $milliSecond;
+        $this->milliSecond  = (float)$milliSecond;
         // 分 
         $this->minute       = $dateArray['minutes'];
         // 时
@@ -190,7 +190,7 @@ class Date
      * @param boolean $timeStamp    是否返回完整时间戳
      * @return float
      */
-    public function getMilliSecond(bool $timeStamp = true)
+    public function getMilliSecond(bool $timeStamp = true): float
     {
         return $timeStamp ? (float)sprintf('%.0f', ($this->date + $this->milliSecond) * 1000) : $this->milliSecond;
     }

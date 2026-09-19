@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace mon\util;
 
 use DateTime;
+use Throwable;
 use RuntimeException;
 use InvalidArgumentException;
-use Throwable;
 
 /**
  * 身份证号码工具类(支持15位和18位)
@@ -24,21 +24,21 @@ class IdCard
      *
      * @var string
      */
-    public $dataFile = __DIR__ . '/data/idcard.php';
+    public string $dataFile = __DIR__ . '/data/idcard.php';
 
     /**
      * 正则验证规则
      *
      * @var string
      */
-    protected $regx = '/^([\d]{17}[xX\d]|[\d]{15})$/';
+    protected string $regx = '/^([\d]{17}[xX\d]|[\d]{15})$/';
 
     /**
      * 省份信息
      *
      * @var array
      */
-    protected $provinces = [
+    protected array $provinces = [
         11 => '北京',
         12 => '天津',
         13 => '河北',
@@ -81,7 +81,7 @@ class IdCard
      *
      * @var array
      */
-    protected $location = null;
+    protected ?array $location = null;
 
     /**
      * 校验身份证号码

@@ -19,7 +19,7 @@ class UploadFile
      *
      * @var array
      */
-    protected $config = [
+    protected array $config = [
         // 允许上传的文件MiMe类型
         'mimes'     => [],
         // 上传的文件大小限制，0不做限制
@@ -35,16 +35,16 @@ class UploadFile
      *
      * @var array
      */
-    protected $file = [];
+    protected array $file = [];
 
     /**
      * 构造方法
      *
      * @param array $config 自定义配置信息
      */
-    public function __construct(?array $config = [])
+    public function __construct(array $config = [])
     {
-        $this->config = array_merge($this->config, (array)$config);
+        $this->config = array_merge($this->config, $config);
     }
 
     /**

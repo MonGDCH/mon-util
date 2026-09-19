@@ -24,7 +24,7 @@ class DocParse
      * @throws RuntimeException
      * @return array
      */
-    public static function parseClass(string $class, $type = ReflectionMethod::IS_PUBLIC): array
+    public static function parseClass(string $class, int $type = ReflectionMethod::IS_PUBLIC): array
     {
         if (class_exists($class)) {
             $result = [];
@@ -93,7 +93,7 @@ class DocParse
      * @param string $line  行信息
      * @return array|string
      */
-    protected static function parseLine(string $line)
+    protected static function parseLine(string $line): array|string
     {
         $content = trim($line);
         if (mb_strpos($content, '@') === 0) {
@@ -132,7 +132,7 @@ class DocParse
      * @param string $string  注解字符串
      * @return array|string
      */
-    protected static function formatResult(string $string)
+    protected static function formatResult(string $string): array|string
     {
         $string = trim($string);
         if (mb_strpos($string, ' ') !== false) {
@@ -156,7 +156,7 @@ class DocParse
      * @param string $string  注解字符串
      * @return string|array
      */
-    protected static function formatParam(string $string)
+    protected static function formatParam(string $string): string|array
     {
         $string = trim($string);
         if (mb_strpos($string, ' ') !== false) {

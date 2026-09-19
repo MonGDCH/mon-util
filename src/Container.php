@@ -33,14 +33,14 @@ class Container implements ContainerInterface
      *
      * @var array
      */
-    protected $bind = [];
+    protected array $bind = [];
 
     /**
      * 实例容器
      *
      * @var array
      */
-    protected $service = [];
+    protected array $service = [];
 
     /**
      * 私有化构造方法
@@ -173,7 +173,7 @@ class Container implements ContainerInterface
      * @throws ReflectionException
      * @return mixed
      */
-    public function invokeFunction($function, array $vars = [])
+    public function invokeFunction(Closure|string $function, array $vars = []): mixed
     {
         // 创建反射对象
         $reflact = new ReflectionFunction($function);
@@ -191,7 +191,7 @@ class Container implements ContainerInterface
      * @throws ReflectionException
      * @return mixed
      */
-    public function invokeMethod($method, array $vars = [])
+    public function invokeMethod(string|array $method, array $vars = [])
     {
         // 字符串转数组
         if (is_string($method)) {
@@ -215,7 +215,7 @@ class Container implements ContainerInterface
      * @throws ReflectionException
      * @return mixed
      */
-    public function invokeClass($class, array $vars = [])
+    public function invokeClass(object|string $class, array $vars = [])
     {
         $reflect = new ReflectionClass($class);
         // 获取构造方法
@@ -234,12 +234,12 @@ class Container implements ContainerInterface
     /**
      * 反射执行回调方法
      *
-     * @param  Closure|string|array  $callback 回调方法
+     * @param  Closure|string  $callback 回调方法
      * @param  array  $vars     参数
      * @throws ReflectionException
      * @return mixed
      */
-    public function invoke($callback, array $vars = [])
+    public function invoke(Closure|string $callback, array $vars = []): mixed
     {
         if ($callback instanceof Closure) {
             $result = $this->invokeFunction($callback, $vars);
@@ -281,7 +281,7 @@ class Container implements ContainerInterface
      * @throws InvalidArgumentException
      * @return array
      */
-    protected function bindParams($reflact, array $vars = []): array
+    protected function bindParams(\ReflectionFunctionAbstract $reflact, array $vars = []): array
     {
         // PHP内置常规类型
         $adapters = ['int', 'float', 'string', 'bool', 'array', 'object', 'mixed', 'resource'];

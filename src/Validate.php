@@ -1297,12 +1297,13 @@ class Validate
 	/**
 	 * 判断值是否为金额
 	 *
-	 * @param mixed $value	操作的数据
+	 * @param mixed $value		操作的数据
+	 * @param bool $unsigned	是否为无符号数
 	 * @return boolean
 	 */
-	public function money($value): bool
+	public function money($value, $unsigned = false): bool
 	{
-		return $this->num($value) && $this->int($value * 100) && $value >= 0;
+		return $this->num($value) && $this->int($value * 100) && (!$unsigned || $value >= 0);
 	}
 
 	/**

@@ -20,7 +20,7 @@ class Pipeline
      *
      * @var array
      */
-    protected $middlewares = [];
+    protected array $middlewares = [];
 
     /**
      * 执行回调，绑定入参

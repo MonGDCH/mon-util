@@ -58,11 +58,11 @@ class File
      *
      * @param string $file 文件路径
      * @param string $type 操作类型, 支持：group、mode、ower
-     * @param mixed  $ch_info 操作信息
+     * @param string|int $ch_info 操作信息
      * @throws InvalidArgumentException
      * @return boolean
      */
-    public static function changeAuth(string $file, string $type, $ch_info): bool
+    public static function changeAuth(string $file, string $type, string|int $ch_info): bool
     {
         switch ($type) {
             case 'group':
@@ -101,7 +101,7 @@ class File
      * @param boolean $overwrite   文件是否覆盖，默认不覆盖
      * @return void
      */
-    public static function copydir(string $source, string $dest, bool $overwrite = false)
+    public static function copydir(string $source, string $dest, bool $overwrite = false): void
     {
         static::createDir($dest);
         $dir_iterator = new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS);
@@ -251,9 +251,9 @@ class File
      * @param  mixed  $content 写入内容
      * @param  string  $path    文件路径
      * @param  boolean $append  存在文件是否继续写入
-     * @return boolean|integer
+     * @return integer|false
      */
-    public static function createFile($content, string $path, bool $append = true)
+    public static function createFile($content, string $path, bool $append = true): int|false
     {
         $dirPath = dirname($path);
         is_dir($dirPath) || static::createDir($dirPath);
@@ -586,7 +586,7 @@ class File
     protected static function directoryIteratorToArray(DirectoryIterator $dir): array
     {
         $result = [];
-        foreach ($dir as $key => $child) {
+        foreach ($dir as $child) {
             if ($child->isDot()) {
                 continue;
             }
@@ -625,8 +625,8 @@ class File
                 ];
             } else {
                 $result[$key] = [
-                    'title'     => $name,
-                    'path'      => $child->getPathname(),
+                    'title' => $name,
+                    'path'  => $child->getPathname(),
                 ];
             }
         }

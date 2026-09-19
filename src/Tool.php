@@ -660,7 +660,7 @@ class Tool
      * @param float $distance 该点所在圆的半径，该圆与此正方形内切，默认值为0.5千米
      * @return array 正方形的四个点的经纬度坐标
      */
-    public static function getSquarePoint($lng, $lat, $distance = 0.5): array
+    public static function getSquarePoint(float $lng, float $lat, float $distance = 0.5): array
     {
         if (empty($lng) || empty($lat)) {
             return [];
@@ -992,7 +992,7 @@ class Tool
      * @param string|array $rgb RGB颜色值
      * @return string
      */
-    public static function rgbToHex($rgb): string
+    public static function rgbToHex(string|array $rgb): string
     {
         if (is_string($rgb) && stripos($rgb, 'rgb(') === 0) {
             if (!preg_match('/rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)/i', $rgb, $m)) {

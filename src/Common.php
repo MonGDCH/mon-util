@@ -192,9 +192,9 @@ class Common
      * @param  float|integer $sn 除数
      * @return float|integer 余
      */
-    public static function mod($bn, $sn)
+    public static function mod(int|float $bn, int|float $sn): int|float
     {
-        $mod = intval(fmod(floatval($bn), $sn));
+        $mod = intval(fmod(floatval($bn), floatval($sn)));
         return abs($mod);
     }
 
@@ -377,7 +377,7 @@ class Common
      * @param integer $sort 排序方式，默认值：SORT_DESC
      * @return array
      */
-    public static function sortArray2D(array $array, string $keys, $sort = \SORT_DESC): array
+    public static function sortArray2D(array $array, string $keys, int $sort = \SORT_DESC): array
     {
         $keysValue = [];
         foreach ($array as $k => $v) {

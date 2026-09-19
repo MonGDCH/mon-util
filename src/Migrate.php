@@ -8,7 +8,6 @@ use PDO;
 use PDOException;
 use FilesystemIterator;
 use InvalidArgumentException;
-use mon\util\exception\SqlException;
 use mon\util\exception\MigrateException;
 
 /**
@@ -41,21 +40,21 @@ class Migrate
      *
      * @var array
      */
-    protected $file = [];
+    protected array $file = [];
 
     /**
      * 当前打开文件大小
      *
      * @var integer
      */
-    protected $size = 0;
+    protected int $size = 0;
 
     /**
      * 备份配置
      *
      * @var array
      */
-    protected $config = [
+    protected array $config = [
         // 数据库备份路径
         'path'      => './data/',
         // 数据库备份卷大小

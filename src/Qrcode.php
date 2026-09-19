@@ -2486,7 +2486,7 @@ class QRimage
         ob_start();
         imagepng($image);
         $img = ob_get_clean();
-        imagedestroy($image);
+        // imagedestroy($image);
 
         return $img;
     }
@@ -2519,7 +2519,7 @@ class QRimage
 
         $target_image = imagecreate($imgW * $pixelPerPoint, $imgH * $pixelPerPoint);
         imagecopyresized($target_image, $base_image, 0, 0, 0, 0, $imgW * $pixelPerPoint, $imgH * $pixelPerPoint, $imgW, $imgH);
-        imagedestroy($base_image);
+        // imagedestroy($base_image);
 
         return $target_image;
     }
