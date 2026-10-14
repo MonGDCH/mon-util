@@ -606,75 +606,70 @@ class Validate
 	}
 
 	/**
-	 * 验证是否为一个有效的日期
+	 * 验证是否为一个有效的日期，允许为空字符串或null
 	 *
-	 * @param  mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param  mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function date($value, $allowEmpty = true): bool
+	public function date($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return strtotime($value) !== false;
 	}
 
 	/**
-	 * 验证是否为一个有效的时间，年月日
+	 * 验证是否为一个有效的时间，年月日，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function day($value, $allowEmpty = true): bool
+	public function day($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return preg_match($this->regex['day'], strval($value)) === 1;
 	}
 
 	/**
-	 * 验证是否为一个有效的24小时时间，时分秒
+	 * 验证是否为一个有效的24小时时间，时分秒，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function time($value, $allowEmpty = true): bool
+	public function time($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return preg_match($this->regex['time'], strval($value)) === 1;
 	}
 
 	/**
-	 * 验证是否为一个有效的12小时时间，时分秒
+	 * 验证是否为一个有效的12小时时间，时分秒，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function time12($value, $allowEmpty = true): bool
+	public function time12($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return preg_match($this->regex['time12'], strval($value)) === 1;
 	}
 
 	/**
-	 * 验证是否为一个有效的时间戳
+	 * 验证是否为一个有效的时间戳，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function timestamp($value, $allowEmpty = true): bool
+	public function timestamp($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return $this->int($value) && (strtotime(date('Y-m-d H:i:s', intval($value))) == $value);
@@ -723,240 +718,224 @@ class Validate
 	}
 
 	/**
-	 * IP地址
+	 * IP地址，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function ip($value, $allowEmpty = true): bool
+	public function ip($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return filter_var($value, FILTER_VALIDATE_IP) !== false;
 	}
 
 	/**
-	 * 内网IP地址
+	 * 内网IP地址，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function intranet($value, $allowEmpty = true): bool
+	public function intranet($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return !filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
 	}
 
 	/**
-	 * mac地址
+	 * mac地址，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function mac($value, $allowEmpty = true): bool
+	public function mac($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return filter_var($value, FILTER_VALIDATE_MAC) !== false;
 	}
 
 	/**
-	 * 手机号码
+	 * 手机号码，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function mobile($value, $allowEmpty = true): bool
+	public function mobile($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return preg_match($this->regex['mobile'], strval($value)) === 1;
 	}
 
 	/**
-	 * 固定电话
+	 * 固定电话，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function tel($value, $allowEmpty = true): bool
+	public function tel($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return preg_match($this->regex['tel'], strval($value)) === 1;
 	}
 
 	/**
-	 * 邮政编码
+	 * 邮政编码，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function postal($value, $allowEmpty = true): bool
+	public function postal($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return preg_match($this->regex['postal'], strval($value)) === 1;
 	}
 
 	/**
-	 * 邮箱地址
+	 * 邮箱地址，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function email($value, $allowEmpty = true): bool
+	public function email($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
 	}
 
 	/**
-	 * 中文，只支持UTF-8格式编码
+	 * 中文，只支持UTF-8格式编码，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function china($value, $allowEmpty = true): bool
+	public function china($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return preg_match($this->regex['china'], strval($value)) === 1;
 	}
 
 	/**
-	 * 字母和数字
+	 * 字母和数字，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function language($value, $allowEmpty = true): bool
+	public function language($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return preg_match($this->regex['language'], strval($value)) === 1;
 	}
 
 	/**
-	 * 字母
+	 * 字母，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function alpha($value, $allowEmpty = true): bool
+	public function alpha($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return preg_match($this->regex['alpha'], strval($value)) === 1;
 	}
 
 	/**
-	 * 小写字母
+	 * 小写字母，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function lower($value, $allowEmpty = true): bool
+	public function lower($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return preg_match($this->regex['lower'], strval($value)) === 1;
 	}
 
 	/**
-	 * 大写字母
+	 * 大写字母，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function upper($value, $allowEmpty = true): bool
+	public function upper($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return preg_match($this->regex['upper'], strval($value)) === 1;
 	}
 
 	/**
-	 * 只允许字母、数字和下划线 破折号
+	 * 只允许字母、数字和下划线 破折号，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function account($value, $allowEmpty = true): bool
+	public function account($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return preg_match($this->regex['account'], strval($value)) === 1;
 	}
 
 	/**
-	 * 验证营业执照
+	 * 验证营业执照，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function license($value, $allowEmpty = true): bool
+	public function license($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return preg_match($this->regex['license'], strval($value)) === 1;
 	}
 
 	/**
-	 * 验证银行卡号
+	 * 验证银行卡号，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function payCard($value, $allowEmpty = true): bool
+	public function payCard($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return preg_match($this->regex['pay_card'], strval($value)) === 1;
 	}
 
 	/**
-	 * 验证车牌号
+	 * 验证车牌号，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function carNum($value, $allowEmpty = true): bool
+	public function carNum($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return preg_match($this->regex['car_num'], strval($value)) === 1;
@@ -974,30 +953,28 @@ class Validate
 	}
 
 	/**
-	 * 有效URL
+	 * 有效URL，允许为空字符串或null
 	 *
-	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
+	 * @param mixed $value 操作的数据	
 	 * @return boolean
 	 */
-	public function url($value, $allowEmpty = true): bool
+	public function url($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return filter_var($value, FILTER_VALIDATE_URL) !== false;
 	}
 
 	/**
-	 * 域名domain
+	 * 域名domain，允许为空字符串或null
 	 *
 	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function domain($value, $allowEmpty = true): bool
+	public function domain($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return filter_var($value, FILTER_VALIDATE_DOMAIN) !== false;
@@ -1081,15 +1058,14 @@ class Validate
 	}
 
 	/**
-	 * JSON
+	 * JSON，允许为空字符串或null
 	 *
 	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function json($value, $allowEmpty = true): bool
+	public function json($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		if (function_exists('Json_validate')) {
@@ -1099,15 +1075,14 @@ class Validate
 	}
 
 	/**
-	 * XML
+	 * XML，允许为空字符串或null
 	 *
 	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function xml($value, $allowEmpty = true): bool
+	public function xml($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		$xmlParser = xml_parser_create();
@@ -1174,15 +1149,14 @@ class Validate
 	}
 
 	/**
-	 * 身份证号码(支持15位和18位)
+	 * 身份证号码(支持15位和18位)，允许为空字符串或null
 	 *
 	 * @param mixed $value 操作的数据
-	 * @param boolean $allowEmpty 是否允许为空字符串或null
 	 * @return boolean
 	 */
-	public function idCard($value, $allowEmpty = true): bool
+	public function idCard($value): bool
 	{
-		if ($allowEmpty && ($value === '' || is_null($value))) {
+		if ($value === '' || is_null($value)) {
 			return true;
 		}
 		return IdCard::instance()->check($value);
@@ -1295,15 +1269,14 @@ class Validate
 	}
 
 	/**
-	 * 判断值是否为金额
+	 * 判断值是否为金额，允许为负值
 	 *
 	 * @param mixed $value		操作的数据
-	 * @param bool $unsigned	是否为无符号数
 	 * @return boolean
 	 */
-	public function money($value, $unsigned = false): bool
+	public function money($value): bool
 	{
-		return $this->num($value) && $this->int($value * 100) && (!$unsigned || $value >= 0);
+		return $this->num($value) && $this->int($value * 100);
 	}
 
 	/**
