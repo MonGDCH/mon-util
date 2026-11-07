@@ -8,8 +8,11 @@ use Closure;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionFunction;
+use ReflectionNamedType;
 use ReflectionException;
 use InvalidArgumentException;
+use mon\util\exception\ContainerException;
+use mon\util\exception\NotFoundException;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -186,9 +189,10 @@ class Container implements ContainerInterface
     /**
      * 执行类方法， 绑定参数
      *
-     * @param  string|array $method 类方法, 用@分割, 如: Test@say
+     * @param  string|array $method 类方法, 字符串时用@分割, 如: Test@say
      * @param  array        $vars   绑定参数
-     * @throws ReflectionException
+     * @throws NotFoundException      类不存在时抛出
+     * @throws InvalidArgumentException 方法格式错误时抛出
      * @return mixed
      */
     public function invokeMethod(string|array $method, array $vars = [])
@@ -196,6 +200,9 @@ class Container implements ContainerInterface
         // 字符串转数组
         if (is_string($method)) {
             $method = explode('@', $method);
+            if (count($method) !== 2) {
+                throw new InvalidArgumentException('方法定义格式错误，应为 [类名@方法名]，如: Test@say');
+            }
         }
 
         // 反射绑定类方法
@@ -212,23 +219,33 @@ class Container implements ContainerInterface
      *
      * @param  object|string $class 对象名称
      * @param  array  $vars  绑定构造方法参数
-     * @throws ReflectionException
+     * @throws NotFoundException     类不存在时抛出
+     * @throws ContainerException    反射实例化失败时抛出
      * @return mixed
      */
     public function invokeClass(object|string $class, array $vars = [])
     {
-        $reflect = new ReflectionClass($class);
-        // 获取构造方法
-        $constructor = $reflect->getConstructor();
-
-        if ($constructor) {
-            // 存在构造方法
-            $args = $this->bindParams($constructor, $vars);
-        } else {
-            $args = [];
+        if (is_string($class) && !class_exists($class) && !interface_exists($class)) {
+            throw new NotFoundException("class not exists: {$class}", 404);
         }
 
-        return $reflect->newInstanceArgs($args);
+        try {
+            $reflect = new ReflectionClass($class);
+            // 获取构造方法
+            $constructor = $reflect->getConstructor();
+
+            if ($constructor) {
+                // 存在构造方法
+                $args = $this->bindParams($constructor, $vars);
+            } else {
+                $args = [];
+            }
+
+            return $reflect->newInstanceArgs($args);
+        } catch (\ReflectionException | \Error $e) {
+            // 反射实例化失败（如抽象类、私有构造方法等），归一为容器异常
+            throw new ContainerException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     /**
@@ -283,8 +300,6 @@ class Container implements ContainerInterface
      */
     protected function bindParams(\ReflectionFunctionAbstract $reflact, array $vars = []): array
     {
-        // PHP内置常规类型
-        $adapters = ['int', 'float', 'string', 'bool', 'array', 'object', 'mixed', 'resource'];
         // 参数结果集
         $args = [];
         if ($reflact->getNumberOfParameters() > 0) {
@@ -293,21 +308,27 @@ class Container implements ContainerInterface
             $type = key($vars) === 0 ? 1 : 0;
             // 获取类方法需要的参数
             $params = $reflact->getParameters();
-            // 获取参数类型, 绑定参数
+            // 绑定参数
             foreach ($params as $param) {
                 // 变量名
-                $name  = $param->getName();
-                /** @var \ReflectionNamedType $class 变量类型 */
+                $name = $param->getName();
                 $class = $param->getType();
-                // 绑定参数
-                if ($class && !in_array($class->getName(), $adapters)) {
-                    // 对象类型，且不是PHP内置常规类型，获取对象实例注入
-                    $className = $class->getName();
-                    $args[] = $this->get($className);
+                // 仅处理命名类型（联合/交叉类型直接走参数匹配），非内置类型视为类类型参数
+                $className = ($class instanceof ReflectionNamedType && !$class->isBuiltin()) ? $class->getName() : null;
+
+                if ($className !== null) {
+                    // 类类型参数：优先使用传入的参数，否则由容器注入
+                    if (1 == $type && !empty($vars)) {
+                        $args[] = array_shift($vars);
+                    } elseif (0 == $type && array_key_exists($name, $vars)) {
+                        $args[] = $vars[$name];
+                    } else {
+                        $args[] = $this->get($className);
+                    }
                 } elseif (1 == $type && !empty($vars)) {
                     // 参数为索引数组
                     $args[] = array_shift($vars);
-                } elseif (0 == $type && isset($vars[$name])) {
+                } elseif (0 == $type && array_key_exists($name, $vars)) {
                     // 参数为关联数组
                     $args[] = $vars[$name];
                 } elseif ($param->isDefaultValueAvailable()) {

@@ -641,6 +641,35 @@ class File
      */
     protected static function pathReplace(string $path): string
     {
-        return str_replace('//', '/', str_replace('\\', '/', $path));
+        // 统一分隔符并压缩重复分隔符
+        $path = preg_replace('#/+#', '/', str_replace('\\', '/', $path));
+
+        // 规范化 . 与 .. 路径段，防止路径穿越
+        $parts = explode('/', $path);
+        $stack = [];
+        foreach ($parts as $i => $part) {
+            // 保留绝对路径开头的根段，跳过其余空段与 . 段
+            if ($part === '' || $part === '.') {
+                if ($i === 0) {
+                    $stack[] = $part;
+                }
+                continue;
+            }
+            if ($part === '..') {
+                $prev = $stack ? end($stack) : null;
+                if ($prev === null || $prev === '..') {
+                    // 空栈或已有 .. 段，保留向上穿越语义
+                    $stack[] = $part;
+                } elseif ($prev !== '' && !preg_match('/^[A-Za-z]:$/', $prev)) {
+                    // 正常路径段，回退一级
+                    array_pop($stack);
+                }
+                // 根目录或盘符不可回退，抵消该段
+                continue;
+            }
+            $stack[] = $part;
+        }
+
+        return implode('/', $stack);
     }
 }

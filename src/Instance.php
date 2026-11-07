@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace mon\util;
 
+use ReflectionClass;
+
 /**
  * 单例trait
  *
  * @author Mon 985558837@qq.com
  * @version 1.0.1   修正获取当前实例的方式为static而非self
  * @version 2.0.0   重构逻辑，兼容Container容器
+ * @version 2.0.1   改用反射判断构造方法可见性，不再依赖异常消息
  */
 trait Instance
 {
@@ -46,15 +49,13 @@ trait Instance
             $isNew = true;
         }
 
-        try {
-            return is_null(static::$instance) ? Container::instance()->get($class, $args, $isNew) : static::getInstance($args, $isNew);
-        } catch (\ReflectionException $e) {
-            // 特殊处理私有化构造方法的对象
-            if (strpos($e->getMessage(), 'Access to non-public constructor of class') === 0) {
-                return static::getInstance($args, $isNew);
-            }
-            throw $e;
+        // 私有/保护构造方法无法通过容器反射实例化，直接走本地单例逻辑
+        $constructor = (new ReflectionClass($class))->getConstructor();
+        if ($constructor !== null && !$constructor->isPublic()) {
+            return static::getInstance($args, $isNew);
         }
+
+        return Container::instance()->get($class, $args, $isNew);
     }
 
     /**

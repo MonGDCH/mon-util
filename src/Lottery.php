@@ -61,11 +61,12 @@ class Lottery
 
         // 计算奖品总概率
         $totalProbability = '0';
-        foreach ($this->awards as $item) {
+        foreach ($this->awards as &$item) {
             $totalProbability = bcadd($totalProbability, (string)$item[$this->probabilityKey], $this->scale);
             // 标记中奖
             $item['isWin'] = true;
         }
+        unset($item);
 
         if (bccomp($totalProbability, (string)$this->probabilityCount, $this->scale) > 0) {
             throw new LotteryException('概率总和必须小于等于' . $this->probabilityCount . '，当前总和为：' . $totalProbability, LotteryException::ERROR_PROBABILITY_MIN);
