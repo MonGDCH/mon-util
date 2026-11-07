@@ -2,6 +2,16 @@
 
 > 所有值得注意的版本信息都将记录在该文件中
 
+#### [1.6.1] (2026-11-07)
+
+- 修复`File`类`pathReplace`方法，路径归一化处理`.`、`..`路径段，防止路径穿越
+- 修复`Container`容器类`PSR-11`异常契约，新增`NotFoundException`、`ContainerException`异常类，类不存在时抛出`NotFoundExceptionInterface`
+- 修复`Container`容器类`bindParams`方法，支持联合/交叉类型参数，类类型参数优先使用传入参数，否则由容器注入
+- 修复`Container`容器类`invokeMethod`方法，方法格式错误时抛出明确的异常
+- 修复`Lottery`抽奖类构造方法中奖标记未生效的问题
+- 修复`Validate`验证器`postal`规则未锚定导致的误判问题
+- 优化`Instance`单例trait，改用反射判断构造方法可见性，不再依赖异常消息内容
+
 #### [1.6.0]
 
 - 优化代码
