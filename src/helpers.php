@@ -43,10 +43,15 @@ if (!function_exists('check')) {
         if (is_null($validate)) {
             $validate = new Validate();
         }
-        if (method_exists($validate, $type)) {
-            return call_user_func_array([$validate, $type], (array) $args);
+        if (!method_exists($validate, $type)) {
+            throw new \ErrorException('不支持的验证类型[' . $type . ']');
         }
-        throw new \ErrorException('不支持的验证类型[' . $type . ']');
+        try {
+            return call_user_func_array([$validate, $type], (array) $args);
+        } finally {
+            // 常驻进程中复用同一实例，必须清理单次调用产生的验证状态，避免跨请求串用
+            $validate->reset();
+        }
     }
 }
 

@@ -114,12 +114,23 @@ class HttpResponse
      */
     protected function parseFristLine()
     {
+        // 先给默认值，非HTTP报文（代理返回的垃圾数据、裸TCP响应）不再抛 TypeError
+        $this->_data['status'] = 0;
+        $this->_data['statusMessage'] = '';
+        $this->_data['protocolVersion'] = '1.0';
+
         $first_line = \strstr($this->_buffer, "\r\n", true);
-        $data = \substr(\strstr($first_line, 'HTTP/'), 5);
-        list($protoco_version, $status_code, $status_message) = \explode(' ', $data, 3);
-        $this->_data['status'] = $status_code ?: 0;
-        $this->_data['statusMessage'] = $status_message ?: '';
-        $this->_data['protocolVersion'] = $protoco_version ?: '1.0';
+        if ($first_line === false || \stripos($first_line, 'HTTP/') === false) {
+            return;
+        }
+        $data = \substr((string)\strstr($first_line, 'HTTP/'), 5);
+        $parts = \explode(' ', \trim($data), 3);
+        if (\count($parts) < 2) {
+            return;
+        }
+        $this->_data['protocolVersion'] = $parts[0] ?: '1.0';
+        $this->_data['status'] = (int)$parts[1];
+        $this->_data['statusMessage'] = $parts[2] ?? '';
     }
 
     /**
@@ -163,8 +174,12 @@ class HttpResponse
      */
     protected function parseBody()
     {
-        // 获取主体内容
-        $bodyStart = \strpos($this->_buffer, "\r\n\r\n") + 4;
-        $this->_data['body'] = \substr($this->_buffer, $bodyStart);
+        $this->_data['body'] = '';
+        // 获取主体内容，不存在分隔符时视为无响应体
+        $pos = \strpos($this->_buffer, "\r\n\r\n");
+        if ($pos === false) {
+            return;
+        }
+        $this->_data['body'] = \substr($this->_buffer, $pos + 4);
     }
 }

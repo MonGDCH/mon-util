@@ -121,12 +121,12 @@ class GIFEncoder
      * @param [type] $GIF_grn
      * @param [type] $GIF_blu
      * @param [type] $GIF_mod
+     * @throws ImgException 参数或图像数据非法时抛出，不再直接终止进程
      */
     public function __construct($GIF_src, $GIF_dly, $GIF_lop, $GIF_dis, $GIF_red, $GIF_grn, $GIF_blu, $GIF_mod)
     {
         if (!is_array($GIF_src)) {
-            printf("%s: %s", $this->VER, $this->ERR['ERR00']);
-            exit(0);
+            throw new ImgException("{$this->VER}: {$this->ERR['ERR00']}", ImgException::ERROR_GIT_PARSE);
         }
         $this->LOP = ($GIF_lop > -1) ? $GIF_lop : 0;
         $this->DIS = ($GIF_dis > -1) ? (($GIF_dis < 3) ? $GIF_dis : 3) : 2;
@@ -138,19 +138,21 @@ class GIFEncoder
             } else if (strToLower($GIF_mod) == "bin") {
                 $this->BUF[] = $GIF_src[$i];
             } else {
-                printf("%s: %s ( %s )!", $this->VER, $this->ERR['ERR02'], $GIF_mod);
-                exit(0);
+                throw new ImgException("{$this->VER}: {$this->ERR['ERR02']} ( {$GIF_mod} )!", ImgException::ERROR_IMG_TYPE_NOT_SUPPORT);
             }
             if (substr($this->BUF[$i], 0, 6) != "GIF87a" && substr($this->BUF[$i], 0, 6) != "GIF89a") {
-                printf("%s: %d %s", $this->VER, $i, $this->ERR['ERR01']);
-                exit(0);
+                throw new ImgException("{$this->VER}: {$i} {$this->ERR['ERR01']}", ImgException::ERROR_IMG_FAILD);
             }
+            // 扫描块结束标记，必须做越界检查，否则截断的GIF数据会导致死循环
+            $bufLength = strlen($this->BUF[$i]);
             for ($j = (13 + 3 * (2 << (ord($this->BUF[$i][10]) & 0x07))), $k = TRUE; $k; $j++) {
+                if ($j >= $bufLength) {
+                    throw new ImgException("{$this->VER}: {$i} {$this->ERR['ERR01']}", ImgException::ERROR_IMG_FAILD);
+                }
                 switch ($this->BUF[$i][$j]) {
                     case "!":
                         if ((substr($this->BUF[$i], ($j + 3), 8)) == "NETSCAPE") {
-                            printf("%s: %s ( %s source )!", $this->VER, $this->ERR['ERR03'], ($i + 1));
-                            exit(0);
+                            throw new ImgException("{$this->VER}: {$this->ERR['ERR03']} ( " . ($i + 1) . " source )!", ImgException::ERROR_IMG_FAILD);
                         }
                         break;
                     case ";":
@@ -161,7 +163,7 @@ class GIFEncoder
         }
         $this->GIFAddHeader();
         for ($i = 0; $i < count($this->BUF); $i++) {
-            $this->GIFAddFrames($i, $GIF_dly[$i]);
+            $this->GIFAddFrames($i, is_array($GIF_dly) ? ($GIF_dly[$i] ?? 0) : 0);
         }
         $this->GIFAddFooter();
     }

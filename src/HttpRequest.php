@@ -410,7 +410,8 @@ class HttpRequest
             if (!\strpos($content_line, ': ')) {
                 return 0;
             }
-            list($key, $value) = \explode(': ', $content_line);
+            // 限制切分次数，避免 filename 中含 ": " 时被截断
+            list($key, $value) = \explode(': ', $content_line, 2);
             switch (strtolower($key)) {
                 case "content-disposition":
                     // 文件流

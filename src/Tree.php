@@ -105,6 +105,8 @@ class Tree
             // 支持 pid 为 0 或 '0'
             $this->index[$pid][] = &$this->data[$k];
         }
+        // 必须断开循环引用，否则后续对 $this->data 的遍历会被最后一个元素的引用污染
+        unset($v);
         return $this;
     }
 

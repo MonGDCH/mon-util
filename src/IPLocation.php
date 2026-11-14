@@ -89,6 +89,25 @@ class IPLocation
     }
 
     /**
+     * 获取实例，传入数据库路径时确保按该路径重新初始化
+     * 说明：构造方法为 public，单例由 Container 持有，若不显式重新初始化，
+     * 首次调用传入的 $db 会被固化，后续传入不同路径会被静默忽略
+     *
+     * @param string|null $db IP库文件路径
+     * @return IPLocation
+     */
+    public static function instance(?string $db = ''): IPLocation
+    {
+        /** @var IPLocation $instance */
+        $instance = static::createInstance();
+        if (!empty($db)) {
+            $instance->init($db);
+        }
+
+        return $instance;
+    }
+
+    /**
      * 析构函数，关闭打开的IP库文件
      */
     public function __destruct()
@@ -111,12 +130,15 @@ class IPLocation
             throw new IPLocationException('IP数据文件未找到', IPLocationException::ERROR_DATA_NOT_FOUND);
         }
 
+        // 重新初始化前释放上一次的文件句柄
         $this->fp = 0;
-        if (($this->fp = fopen($db, 'rb')) !== false) {
-            $this->firstip = $this->getlong();
-            $this->lastip  = $this->getlong();
-            $this->totalip = ($this->lastip - $this->firstip) / 7;
+        if (($this->fp = fopen($db, 'rb')) === false) {
+            $this->init = false;
+            throw new IPLocationException('IP数据文件打开失败: ' . $db, IPLocationException::ERROR_DATA_NOT_FOUND);
         }
+        $this->firstip = $this->getlong();
+        $this->lastip  = $this->getlong();
+        $this->totalip = (int)(($this->lastip - $this->firstip) / 7);
 
         $this->init = true;
         return $this;

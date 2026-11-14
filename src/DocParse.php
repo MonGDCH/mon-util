@@ -162,17 +162,14 @@ class DocParse
         if (mb_strpos($string, ' ') !== false) {
             $data = explode(' ', $string, 3);
             $type = $data[0];
-            if (count($data) > 1) {
-                $name = $data[1];
-                $desc = $data[2];
-            } else {
-                $name = $data[1];
-            }
+            // 注解可能没有变量名或描述，必须使用默认值避免未定义索引警告
+            $name = $data[1] ?? '';
+            $desc = $data[2] ?? '';
 
             return [
                 'type' => $type,
                 'name' => $name,
-                'desc' => isset($desc) ? trim($desc) : ''
+                'desc' => trim($desc)
             ];
         }
 

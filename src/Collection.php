@@ -339,16 +339,22 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      */
     public function svg(string $key = ''): int|float
     {
-        return $this->sum($key) / $this->count();
+        $count = $this->count();
+        // 空集合直接返回0，避免除零错误
+        if ($count === 0) {
+            return 0;
+        }
+
+        return $this->sum($key) / $count;
     }
 
     /**
      * 集合最小值
      *
      * @param string $key  二维数组键名
-     * @return integer|float
+     * @return integer|float|null 空集合返回null
      */
-    public function min(string $key = ''): int|float
+    public function min(string $key = ''): int|float|null
     {
         return $this->reduce(function ($result, $item) use ($key) {
             $value = empty($key) ? $item : (isset($item[$key]) ? $item[$key] : null);
@@ -360,9 +366,9 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * 集合最大值
      *
      * @param string $key  二维数组键名
-     * @return integer|float
+     * @return integer|float|null 空集合返回null
      */
-    public function max(string $key = ''): int|float
+    public function max(string $key = ''): int|float|null
     {
         return $this->reduce(function ($result, $item) use ($key) {
             $value = empty($key) ? $item : (isset($item[$key]) ? $item[$key] : null);

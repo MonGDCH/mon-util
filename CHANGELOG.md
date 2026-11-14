@@ -2,6 +2,47 @@
 
 > 所有值得注意的版本信息都将记录在该文件中
 
+#### [1.7.1] (2026-11-14)
+
+> 本次更新主要针对常驻进程（Workerman 等）场景，修复会导致进程退出、跨请求状态串用及静默数据错误的问题
+
+**不兼容变更**
+
+- `Gif`：`GIFEncoder` 构造方法不再 `printf` + `exit(0)`，参数或图像数据非法时抛出 `ImgException`，避免杀死常驻进程；同时对截断的 GIF 数据增加越界检查，修复死循环
+- `Tool`：移除 `requireCache()`、`includeCache()` 方法（静态缓存无上限导致内存泄漏、文件变更不生效），请直接使用 `require`/`include`
+- `IdCard`：`$dataFile` 属性由 `public` 改为 `protected`，新增 `setDataFile()`、`getDataFile()`
+- `Collection`：`max()`、`min()` 返回类型放宽为 `int|float|null`（空集合返回 `null`，此前会抛 `TypeError`）
+- `Date`：`getDayOfWeek()` 返回本周对应日期（此前 `strtotime('monday')` 返回的是下周一）
+- `Tool::exportExcel()`：单元格校验条件修正后，非法单元格（既无 `text` 也无 `img`）将抛出异常，此前会静默输出空单元格
+- `Container`：魔术访问 `__get()`、`__call()` 仅允许已绑定的标识，未绑定时抛出 `NotFoundException`；实例化未绑定的类请显式调用 `get()`
+
+**新增**
+
+- `Network::sendHTTP()`、`sendMultiHTTP()`、`sendFile()`、`getRequest()` 新增 `$sslVerify` 参数控制是否校验服务端 TLS 证书，**默认不校验**（保持原有行为）；批量请求可用单项配置 `ssl_verify` 覆盖
+
+**修复**
+
+- 修复`View::flush()`未清理`extends`，导致同一实例后续渲染错误复用上一次父视图的问题
+- 修复`Spids`构造方法`require_once`导致第二次实例化后黑名单为空的问题
+- 修复`Instance`单例trait中子类与父类共用同一静态属性，`Child::instance()`返回父类实例的问题
+- 修复`Lang::detect()`把语言包数组赋值给`string`类型属性导致`TypeError`的问题
+- 修复`Lang`请求级语言状态无法复位的问题，新增`reset()`、`setDefaultRange()`
+- 修复`Container::set()`声明`string $id`导致数组批量绑定不可用的问题，新增`remove()`、`clear()`、`getMaxService()`、`setMaxService()`
+- 修复`Container`实例缓存无上限的问题，超过上限后不再缓存新的标识
+- 修复`IPLocation::instance()`忽略后续传入的IP库路径的问题，并修正数据文件打开失败时的异常提示
+- 修复`socket_write`使用`mb_strlen`计算长度导致多字节命令被静默截断的问题
+- 修复`Network`复用已被对端关闭的TCP/UDP连接后持续失败的问题，读取异常时回收缓存
+- 修复`Network::sendHTTP()`、`sendMultiHTTP()`、`sendFile()`只把 200 视为成功的问题（改为 2xx），并补充请求失败时的句柄关闭
+- 修复`Network::sendMultiHTTP()`滚动窗口补位时未传递TLS校验参数的问题
+- 修复`Collection::svg()`空集合除零错误
+- 修复`Common::strToMap()`解析无等号参数时的未定义索引警告
+- 修复`DocParse::formatParam()`解析无描述注解时的未定义索引警告
+- 修复`HttpResponse`解析非HTTP报文时`substr()`类型错误致命异常
+- 修复`File::getDirContent()`在`scandir()`返回`false`时的类型错误
+- 修复`HttpRequest`解析`Content-Disposition`时值被截断的问题
+- 修复`Tree::data()`遍历引用未断开导致数据被污染的问题
+- 修复`helpers.php`中`check()`复用验证器实例导致状态跨调用残留的问题
+
 #### [1.6.1] (2026-11-07)
 
 - 修复`File`类`pathReplace`方法，路径归一化处理`.`、`..`路径段，防止路径穿越

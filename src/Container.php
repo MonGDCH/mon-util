@@ -46,6 +46,14 @@ class Container implements ContainerInterface
     protected array $service = [];
 
     /**
+     * 实例容器最大条目数，超出后不再缓存新的实例（显式绑定的标识不受限制），
+     * 避免常驻进程（如 workerman）中内存持续增长
+     *
+     * @var integer
+     */
+    protected int $maxService = 1024;
+
+    /**
      * 私有化构造方法
      */
     protected function __construct() {}
@@ -127,8 +135,8 @@ class Container implements ContainerInterface
                 $object = $this->invokeClass($id, $val);
             }
 
-            // 保存实例
-            if (!$new) {
+            // 保存实例，超过上限后不再缓存新的标识，防止常驻进程内存无限增长
+            if (!$new && (isset($this->bind[$id]) || count($this->service) < $this->maxService)) {
                 $this->service[$id] = $object;
             }
         }
@@ -139,16 +147,16 @@ class Container implements ContainerInterface
     /**
      * 绑定类、闭包、实例、接口实现到容器
      *
-     * @param  mixed  $id       类名称或标识符或者数组
+     * @param  string|array  $id     类名称或标识符，或批量绑定的关联数组
      * @param  mixed  $server   要绑定的实例
      * @return Container
      */
-    public function set(string $id, $server = null): Container
+    public function set(string|array $id, $server = null): Container
     {
         // 传入数组，批量注册
         if (is_array($id)) {
             foreach ($id as $name => $service) {
-                $this->bindServer($name, $service);
+                $this->bindServer((string)$name, $service);
             }
         } else {
             $this->bindServer($id, $server);
@@ -166,6 +174,61 @@ class Container implements ContainerInterface
     public function has(string $id): bool
     {
         return isset($this->bind[$id]) || isset($this->service[$id]);
+    }
+
+    /**
+     * 移除容器中已缓存的实例（保留绑定关系），用于常驻进程清理请求级服务
+     *
+     * @param string $id 类名称或标识符
+     * @return boolean 是否存在并移除成功
+     */
+    public function remove(string $id): bool
+    {
+        if (!isset($this->service[$id])) {
+            return false;
+        }
+        unset($this->service[$id]);
+
+        return true;
+    }
+
+    /**
+     * 清理容器，用于常驻进程在请求结束后重置容器状态
+     *
+     * @param boolean $bind 是否同时清理绑定关系，默认只清理已缓存的实例
+     * @return Container
+     */
+    public function clear(bool $bind = false): Container
+    {
+        $this->service = [];
+        if ($bind) {
+            $this->bind = [];
+        }
+
+        return $this;
+    }
+
+    /**
+     * 获取实例容器最大条目数
+     *
+     * @return integer
+     */
+    public function getMaxService(): int
+    {
+        return $this->maxService;
+    }
+
+    /**
+     * 设置实例容器最大条目数
+     *
+     * @param integer $max 最大条目数
+     * @return Container
+     */
+    public function setMaxService(int $max): Container
+    {
+        $this->maxService = $max > 0 ? $max : 1;
+
+        return $this;
     }
 
     /**
@@ -345,24 +408,36 @@ class Container implements ContainerInterface
 
     /**
      * 魔术方法获取实例
+     * 仅允许访问已绑定的标识，禁止通过魔术方法实例化任意类（防止用户输入驱动的对象构造）
      *
      * @param  string $name 对象名称或标识
+     * @throws NotFoundException
      * @return mixed
      */
     public function __get(string $name)
     {
+        if (!$this->has($name)) {
+            throw new NotFoundException('service not bound: ' . $name, 404);
+        }
+
         return $this->get($name);
     }
 
     /**
      * 魔术方法获取实例
+     * 仅允许调用已绑定的标识，需要实例化类时请显式调用 get()
      *
      * @param  string $id 对象名称或标识
      * @param  array  $args 参数
+     * @throws NotFoundException
      * @return mixed
      */
     public function __call(string $id, array $args)
     {
+        if (!$this->has($id)) {
+            throw new NotFoundException('service not bound: ' . $id, 404);
+        }
+
         return $this->get($id, $args);
     }
 }

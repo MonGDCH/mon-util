@@ -221,8 +221,9 @@ class File
                 if (is_dir($file)) {
                     // 是否文件夹
                     $data[$i]['is_dir'] = true;
-                    // 文件夹是否包含文件
-                    $data[$i]['has_file'] = (count(scandir($file)) > 2);
+                    // 文件夹是否包含文件，scandir 在无权限时返回false，不能直接 count
+                    $entries = @scandir($file);
+                    $data[$i]['has_file'] = is_array($entries) ? (count($entries) > 2) : false;
                     // 文件大小
                     $data[$i]['filesize'] = 0;
                     // 文件类别，用扩展名判断
@@ -230,13 +231,13 @@ class File
                 } else {
                     $data[$i]['is_dir'] = false;
                     $data[$i]['has_file'] = false;
-                    $data[$i]['filesize'] = filesize($file);
+                    $data[$i]['filesize'] = (int)@filesize($file);
                     $data[$i]['filetype'] = static::getExt($file);
                 }
                 // 文件名，包含扩展名
                 $data[$i]['filename'] = $filename;
                 // 文件最后修改时间
-                $data[$i]['datetime'] = date('Y-m-d H:i:s', filemtime($file));
+                $data[$i]['datetime'] = date('Y-m-d H:i:s', (int)@filemtime($file));
                 $i++;
             }
             closedir($handle);

@@ -73,7 +73,8 @@ class Spids
             $this->minLength = $minLength;
         }
 
-        $blocklist = empty($blocklist) ? require_once(__DIR__ . '/data/spids.php') : $blocklist;
+        // 注意：不能使用 require_once，第二次实例化时会返回 true 导致黑名单丢失
+        $blocklist = empty($blocklist) ? require(__DIR__ . '/data/spids.php') : $blocklist;
         $filteredBlocklist = [];
         $alphabetChars = str_split(strtolower($this->alphabet));
         foreach ((array) $blocklist as $word) {

@@ -297,8 +297,13 @@ class Common
             if (empty($item)) {
                 continue;
             }
-            list($key, $val) = explode("=", $item, 2);
-            $result[$key] = $val;
+            // 必须做键存在判断，无等号的参数（如 a=1&b）在PHP8下会产生未定义索引警告
+            $pair = explode("=", $item, 2);
+            $key = trim($pair[0]);
+            if ($key === '') {
+                continue;
+            }
+            $result[$key] = $pair[1] ?? '';
         }
 
         return $result;

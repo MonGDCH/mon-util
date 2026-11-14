@@ -13,21 +13,23 @@ use ReflectionClass;
  * @version 1.0.1   修正获取当前实例的方式为static而非self
  * @version 2.0.0   重构逻辑，兼容Container容器
  * @version 2.0.1   改用反射判断构造方法可见性，不再依赖异常消息
+ * @version 2.0.2   单例按类名分桶存储，避免父子类共用同一静态属性导致串用
  */
 trait Instance
 {
     /**
-     * 单例实体
+     * 单例实体，按类名分桶存储
+     * 注意：trait 的静态属性会被子类共享，必须按 static::class 区分，
+     * 否则 Child::instance() 会拿到父类的实例
      *
-     * @var static
+     * @var array
      */
-    protected static $instance = null;
+    protected static $instance = [];
 
     /**
      * 获取当前对象实例
-
      *
-     * @param mixed ...$args      变量c桉树
+     * @param mixed ...$args      构造方法参数
      * @return static
      */
     public static function instance(...$args)
@@ -77,9 +79,11 @@ trait Instance
      */
     protected static function getInstance(array $args, bool $isNew)
     {
-        if (is_null(static::$instance) || $isNew) {
-            static::$instance = new static(...$args);
+        // 按当前类名分桶，保证父类与子类各自持有独立的单例
+        $class = static::class;
+        if (!isset(static::$instance[$class]) || $isNew) {
+            static::$instance[$class] = new static(...$args);
         }
-        return static::$instance;
+        return static::$instance[$class];
     }
 }

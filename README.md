@@ -18,6 +18,8 @@
 composer require mongdch/mon-util
 ```
 
+> 当前版本 `1.7.1`，包含若干行为调整（`Gif` 异常化、`Tool` 移除两个静态缓存方法、`IdCard::$dataFile` 私有化、`Container` 魔术访问限制等），升级前请先阅读 [CHANGELOG.md](CHANGELOG.md) 的「不兼容变更」。
+
 ## 功能清单
 
 **核心**
@@ -85,11 +87,18 @@ $db2 = Container::gen('db', [], true);
 // 判断服务是否存在
 Container::instance()->has('db');
 
+// 移除已缓存的实例（保留绑定关系），用于常驻进程清理请求级服务
+Container::instance()->remove('db');
+// 清理实例缓存；传入 true 时同时清空绑定关系
+Container::instance()->clear();
+
 // 反射执行类方法，支持参数依赖注入（格式：类名@方法名）
 Container::instance()->invokeMethod('Test@say', ['name' => 'mon']);
 ```
 
 > 类不存在时抛出 `mon\util\exception\NotFoundException`（实现 PSR-11 的 `NotFoundExceptionInterface`），反射实例化失败时抛出 `mon\util\exception\ContainerException`。
+
+> 魔术访问（`$container->db`、`$container->db()`）仅对**已绑定**的标识生效，未绑定时抛出 `NotFoundException`，避免用户输入驱动任意类实例化；需要实例化未绑定的类请显式调用 `get()`。
 
 ### 单例 trait
 
@@ -106,6 +115,8 @@ class Service
 Service::instance();                 // 获取单例
 Service::createInstance([1], true);  // 强制创建新实例
 ```
+
+> 单例按 `static::class` 分桶存储，父类与子类各自持有独立实例，`Child::instance()` 不会拿到父类实例。
 
 ### 验证器
 
@@ -177,7 +188,51 @@ $idcard->check('110101199003077777');   // 校验合法性（位数、省份码�
 $idcard->getProvinces($id);             // 获取省份
 $idcard->getCity($id);                  // 获取城市
 $idcard->getLocation($id);              // 获取地区信息
+
+$idcard->setDataFile('/path/to/idcard.php');   // 更换扩展数据文件
+$idcard->getDataFile();                        // 获取当前数据文件路径
 ```
+
+### 多语言
+
+```php
+use mon\util\Lang;
+
+$lang = Lang::instance();
+$lang->set('hello', '你好', 'zh-cn');    // 写入语言包
+$lang->range('zh-cn');                   // 切换当前语言
+$lang->get('hello');                     // 获取翻译
+$lang->detect();                         // 依据 Accept-Language 自动侦测
+$lang->reset();                          // 复位为默认语言（常驻进程请在请求结束时调用）
+```
+
+### 网络请求
+
+```php
+use mon\util\Network;
+
+// HTTP请求（2xx 均视为成功，$toJson 为 true 时解析 JSON）
+$res = Network::sendHTTP('https://api.example.com/user', ['id' => 1]);
+
+// 第10个参数 $sslVerify 控制是否校验服务端TLS证书，默认 false（不校验）
+$res = Network::sendHTTP('https://api.example.com/user', ['id' => 1], 'GET', [], true, 5, '', '', '', true);
+
+// 批量并发请求，默认参数中的 $sslVerify 可被单项 ssl_verify 覆盖
+$list = Network::sendMultiHTTP([
+    ['url' => 'https://a.example.com/1', 'ssl_verify' => true],
+    ['url' => 'https://b.example.com/2', 'ssl_verify' => false],
+], 5);
+// $list = ['success' => [...], 'error' => [...]]
+
+// 模拟表单上传文件
+Network::sendFile('https://api.example.com/upload', '/path/to/a.zip', ['uid' => 1]);
+
+// TCP / UDP，$toJson 解析返回内容，$close 控制是否关闭连接（false 时复用连接）
+Network::sendTCP('127.0.0.1', 9501, "ping\n", true, 3, 1024, true);
+Network::sendUDP('127.0.0.1', 9502, 'ping', true, 3, 1024, true);
+```
+
+> 开启 TLS 校验前请确保 PHP 已配置 CA 证书包（`curl.cainfo` 或 `openssl.cafile`），否则会因 `unable to get local issuer certificate` 请求失败。
 
 ### 大文件分片上传
 
@@ -209,9 +264,23 @@ check('mobile', '13800138000');  // 快捷验证，支持Validate所有规则
 buildURL('/index', ['id' => 1]); // 构建URL
 ```
 
+## 常驻进程（Workerman 等）使用注意
+
+本库的部分类为单例或持有静态状态，在常驻进程中会被跨请求复用，使用前请对应处理：
+
+* `Container`：实例缓存默认上限 1024 条（`setMaxService()` 可调），可用 `remove($id)`、`clear()` 在请求结束时清理请求级服务。**不要**把用户输入作为容器标识符使用。
+* `Lang`：`range()` 是请求级状态，请求结束后调用 `Lang::instance()->reset()` 复位（`setDefaultRange()` 可改默认语言）。
+* `View`：实例可复用，渲染时已自动清理继承关系与片段，但模板中 `block()` 未闭合时请确保异常被捕获在业务层。
+* `IdCard`：数据文件路径通过 `setDataFile()` 设置，不再允许直接改写属性。
+* `IPLocation`：`IPLocation::instance($dbPath)` 每次传入路径都会按该路径重新初始化，避免首个路径被固化。
+* `SnowFlake`：多进程部署时每个 worker 进程必须使用不同的 `workerId`/`datacenterId`（在 `onWorkerStart` 中设置），否则会生成重复 ID。
+* 依赖 `$_SERVER`、`$_FILES`、`$_COOKIE`、`header()`、`setcookie()`、`ob_*` 的方法（`Tool::ip()`、`Tool::createTicket()`、`Tool::exportCsv()`、`Image::output()`、`UploadFile` 等）为传统 FPM 场景设计，常驻进程下需改用框架的请求/响应对象。
+* `HttpRequest` 上传文件会通过 `tempnam()` 落盘，请在使用完毕后自行 `unlink()` 清理。
+* `Gif`、`Image` 处理非法/截断的图片数据时抛出 `ImgException`（不再 `printf` + `exit(0)`），请按异常方式捕获，避免 worker 进程被直接终止。
+
 ## 安全注意事项
 
-* `Network` 与 `Tool::download` 对 HTTPS 请求默认**不校验证书**（`SSL_VERIFYPEER=false`），生产环境涉及敏感数据时请自行评估并加强。
+* `Network` 与 `Tool::download` 对 HTTPS 请求默认**不校验证书**（`SSL_VERIFYPEER=false`），生产环境涉及敏感数据时请自行评估并加强。`Network::sendHTTP()`、`sendMultiHTTP()`、`sendFile()`、`getRequest()` 均已支持末尾传入 `$sslVerify=true` 开启证书校验（批量请求可用单项 `ssl_verify` 覆盖）；开启前需确保 PHP 已配置 CA 证书包（`curl.cainfo` 或 `openssl.cafile`），否则会因 `unable to get local issuer certificate` 失败。
 * `UploadSlice::merge`、`Tool::download` 的文件名与保存路径参数直接参与路径拼接，务必在业务侧校验。
 * `OS` 类依赖 `shell_exec`/`exec` 函数获取系统信息，部署时请注意相关函数是否被禁用。
 

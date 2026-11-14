@@ -459,15 +459,18 @@ class Tool
     {
         $ret = '';
         if (is_array($td) && Common::isAssoc($td)) {
-            if (!isset($td['text']) && !isset($td['img']) && (isset($td['img']) && !is_array($td['img']))) {
-                throw new RuntimeException('Excel表格【单元格】参数错误');
+            if (!isset($td['text']) && !isset($td['img'])) {
+                throw new RuntimeException('Excel表格【单元格】参数错误，必须指定 text 或 img');
+            }
+            if (isset($td['img']) && !is_array($td['img'])) {
+                throw new RuntimeException('Excel表格【单元格】图片参数错误，img 必须为数组');
             }
             // 关联数组，支持style样式设置
             $style = isset($td['style']) ? $td['style'] : '';
             $rowspan = isset($td['rowspan']) ? $td['rowspan'] : '';
             $colspan = isset($td['colspan']) ? $td['colspan'] : '';
             if (isset($td['img']) && is_array($td['img'])) {
-                $text = '<img width="' . $td['img']['width'] . '" height="' . $td['img']['height'] . '" src="' . $td['img']['url'] . '">';
+                $text = '<img width="' . ($td['img']['width'] ?? '') . '" height="' . ($td['img']['height'] ?? '') . '" src="' . ($td['img']['url'] ?? '') . '">';
             } else {
                 $text = $td['text'];
             }
@@ -1072,43 +1075,5 @@ class Tool
         $content = chunk_split(base64_encode(file_get_contents($path)));
         $base64 = 'data:' . $img['mime'] . ';base64,' . $content;
         return $base64;
-    }
-
-    /**
-     * require_once 优化版本
-     *
-     * @param string $file  文件地址
-     * @throws InvalidArgumentException
-     * @return mixed
-     */
-    public static function requireCache(string $file)
-    {
-        static $import_files = [];
-        if (!isset($import_files[$file])) {
-            if (!is_readable($file)) {
-                throw new RuntimeException('Require file not exists or unreadable: ' . $file);
-            }
-            $import_files[$file] = require $file;
-        }
-        return $import_files[$file];
-    }
-
-    /**
-     * include_once 优化版本
-     *
-     * @param string $file  文件地址
-     * @throws InvalidArgumentException
-     * @return mixed
-     */
-    public static function includeCache(string $file)
-    {
-        static $import_files = [];
-        if (!isset($import_files[$file])) {
-            if (!is_readable($file)) {
-                throw new RuntimeException('Include file not exists or unreadable: ' . $file);
-            }
-            $import_files[$file] = include $file;
-        }
-        return $import_files[$file];
     }
 }

@@ -21,10 +21,11 @@ class IdCard
 
     /**
      * 省份城市地区扩展数据配置文件路径
+     * 私有化避免常驻进程中被任意改写后影响所有调用方，需通过 setDataFile() 配置
      *
      * @var string
      */
-    public string $dataFile = __DIR__ . '/data/idcard.php';
+    protected string $dataFile = __DIR__ . '/data/idcard.php';
 
     /**
      * 正则验证规则
@@ -82,6 +83,33 @@ class IdCard
      * @var array
      */
     protected ?array $location = null;
+
+    /**
+     * 设置扩展数据文件路径
+     *
+     * @param string $file 数据文件路径
+     * @return IdCard
+     */
+    public function setDataFile(string $file): IdCard
+    {
+        if ($file !== '' && $file !== $this->dataFile) {
+            $this->dataFile = $file;
+            // 路径变化后已加载的缓存数据失效
+            $this->location = null;
+        }
+
+        return $this;
+    }
+
+    /**
+     * 获取扩展数据文件路径
+     *
+     * @return string
+     */
+    public function getDataFile(): string
+    {
+        return $this->dataFile;
+    }
 
     /**
      * 校验身份证号码

@@ -27,18 +27,22 @@ class Network
      * @param   string  $agent   请求user-agent
      * @param   string  $ssl_cer SSL证书
      * @param   string  $ssl_key SSL密钥
+     * @param   boolean $sslVerify 是否校验服务端TLS证书，默认不校验
      * @throws  NetWorkException
      * @return  mixed 结果集
      */
-    public static function sendHTTP(string $url, array $data = [], string $type = 'GET', array $header = [], bool $toJson = true, int $timeOut = 2, string $agent = '', string $ssl_cer = '', string $ssl_key = '')
+    public static function sendHTTP(string $url, array $data = [], string $type = 'GET', array $header = [], bool $toJson = true, int $timeOut = 2, string $agent = '', string $ssl_cer = '', string $ssl_key = '', bool $sslVerify = false)
     {
-        $ch = static::getRequest($url, $data, $type, $header, $timeOut, $agent, $ssl_cer, $ssl_key);
+        $ch = static::getRequest($url, $data, $type, $header, $timeOut, $agent, $ssl_cer, $ssl_key, $sslVerify);
         // 发起请求
         $html = curl_exec($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($html === false || $status != 200) {
+        // 2xx 均视为成功，避免 201/204 等正常响应被当作失败
+        if ($html === false || $status < 200 || $status >= 300) {
             $error = curl_error($ch);
-            throw new NetWorkException('发起HTTP请求失败！' . $error, 0, null, $ch);
+            $exception = new NetWorkException('发起HTTP请求失败！' . $error . ' (HTTP ' . $status . ')', 0, null, $ch);
+            curl_close($ch);
+            throw $exception;
         }
         // 关闭请求句柄
         curl_close($ch);
@@ -56,9 +60,10 @@ class Network
      * @param string $agent 默认user-agent
      * @param string $ssl_cer SSL证书
      * @param string $ssl_key SSL密钥
+     * @param boolean $sslVerify 是否校验服务端TLS证书，默认不校验，可被单项配置 ssl_verify 覆盖
      * @return array 成功结果集与失败结果集
      */
-    public static function sendMultiHTTP(array $queryList, int $rolling = 5, array $header = [], int $timeOut = 2, string $agent = '', string $ssl_cer = '', string $ssl_key = ''): array
+    public static function sendMultiHTTP(array $queryList, int $rolling = 5, array $header = [], int $timeOut = 2, string $agent = '', string $ssl_cer = '', string $ssl_key = '', bool $sslVerify = false): array
     {
         $result = [];
         $errors = [];
@@ -70,7 +75,7 @@ class Network
         for ($i = 0; $i < $rolling; $i++) {
             $item = $queryList[$i];
             // 获取curl
-            $ch = static::getCh($item, $header, $timeOut, $agent, $ssl_cer, $ssl_key);
+            $ch = static::getCh($item, $header, $timeOut, $agent, $ssl_cer, $ssl_key, $sslVerify);
             // 写入批量请求
             curl_multi_add_handle($master, $ch);
             // 记录队列
@@ -90,8 +95,8 @@ class Network
             while ($done = curl_multi_info_read($master)) {
                 // 获取请求信息
                 $info = curl_getinfo($done['handle']);
-                // 请求成功
-                if ($info['http_code'] == 200) {
+                // 请求成功，2xx 均视为成功
+                if ($info['http_code'] >= 200 && $info['http_code'] < 300) {
                     // 获取返回内容
                     $output = curl_multi_getcontent($done['handle']);
                     // 请求成功，存在回调函数，执行回调函数
@@ -114,7 +119,7 @@ class Network
                 // 执行下一个句柄
                 if ($i < $queryListCount) {
                     $nextItem = $queryList[$i++];
-                    $ch = static::getCh($nextItem, $header, $timeOut, $agent, $ssl_cer, $ssl_key);
+                    $ch = static::getCh($nextItem, $header, $timeOut, $agent, $ssl_cer, $ssl_key, $sslVerify);
                     curl_multi_add_handle($master, $ch);
                     $key2 = is_object($ch) ? spl_object_hash($ch) : (string)$ch;
                     $curls[$key2] = [
@@ -146,9 +151,10 @@ class Network
      * @param string $agent 请求user-agent
      * @param string $ssl_cer 证书路径
      * @param string $ssl_key 证书密钥
+     * @param boolean $sslVerify 是否校验服务端TLS证书，默认不校验
      * @return mixed
      */
-    public static function sendFile(string $url, string $path, array $data = [], string $filename = '', string $name = 'file', array $header = [], bool $toJson = true, int $timeout = 300, string $agent = '', string $ssl_cer = '', string $ssl_key = '')
+    public static function sendFile(string $url, string $path, array $data = [], string $filename = '', string $name = 'file', array $header = [], bool $toJson = true, int $timeout = 300, string $agent = '', string $ssl_cer = '', string $ssl_key = '', bool $sslVerify = false)
     {
         // 处理文件上传数据集
         $filename = empty($filename) ? basename($path) : $filename;
@@ -164,16 +170,18 @@ class Network
                 }
             }
         }
-        $ch = static::getRequest($url, $sendData, 'POST', $header, $timeout, $agent, $ssl_cer, $ssl_key);
+        $ch = static::getRequest($url, $sendData, 'POST', $header, $timeout, $agent, $ssl_cer, $ssl_key, $sslVerify);
         // 发起请求
         $html = curl_exec($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($html === false || $status != 200) {
+        if ($html === false || $status < 200 || $status >= 300) {
             $error = curl_error($ch);
-            throw new NetWorkException('发起文件上传请求失败！' . $error, 0, null, $ch);
+            $exception = new NetWorkException('发起文件上传请求失败！' . $error . ' (HTTP ' . $status . ')', 0, null, $ch);
+            curl_close($ch);
+            throw $exception;
         }
         // 关闭请求句柄
-        // curl_close($ch);
+        curl_close($ch);
         $result = ($toJson) ? json_decode(trim($html), true) : $html;
         return $result;
     }
@@ -214,19 +222,34 @@ class Network
             $sockets[$key] = $socket;
         }
 
-        $send_len = mb_strlen($cmd, 'UTF-8');
+        // 注意：socket_write 的长度为字节数，必须使用 strlen，mb_strlen 会把多字节命令截断
+        $send_len = strlen($cmd);
         $sent = socket_write($socket, $cmd, $send_len);
+        $released = false;
         if ($sent != $send_len) {
+            // 连接已损坏，清理缓存避免后续调用持续复用失效连接
+            @socket_close($socket);
+            unset($sockets[$key]);
             throw new NetWorkException('发送TCP套接字数据失败');
         }
-        // 读取返回数据
-        $data = socket_read($socket, $readLen);
+        // 读取返回数据，读取失败/超时由返回值判断，抑制底层警告避免污染日志
+        $data = @socket_read($socket, $readLen);
+        if ($data === false || $data === '') {
+            // 对端已关闭连接或读取超时，回收连接
+            @socket_close($socket);
+            unset($sockets[$key]);
+            $released = true;
+            if ($data === false) {
+                throw new NetWorkException('读取TCP套接字数据失败');
+            }
+            $data = '';
+        }
         // 是否转换Json格式
         $result = $toJson ? json_decode(trim($data), true) : $data;
         // 是否关闭链接
-        if ($close) {
+        if ($close && !$released) {
             // 关闭链接，返回结果集
-            socket_close($socket);
+            @socket_close($socket);
             unset($sockets[$key]);
         }
         return $result;
@@ -268,19 +291,34 @@ class Network
             $sockets[$key] = $socket;
         }
 
-        $send_len = mb_strlen($cmd, 'UTF-8');
+        // 注意：socket_write 的长度为字节数，必须使用 strlen，mb_strlen 会把多字节命令截断
+        $send_len = strlen($cmd);
         $sent = socket_write($socket, $cmd, $send_len);
+        $released = false;
         if ($sent != $send_len) {
+            // 连接已损坏，清理缓存避免后续调用持续复用失效连接
+            @socket_close($socket);
+            unset($sockets[$key]);
             throw new NetWorkException('发送UDP套接字数据失败');
         }
-        // 读取返回数据
-        $data = socket_read($socket, $readLen);
+        // 读取返回数据，读取失败/超时由返回值判断，抑制底层警告避免污染日志
+        $data = @socket_read($socket, $readLen);
+        if ($data === false || $data === '') {
+            // 读取失败或超时，回收连接
+            @socket_close($socket);
+            unset($sockets[$key]);
+            $released = true;
+            if ($data === false) {
+                throw new NetWorkException('读取UDP套接字数据失败');
+            }
+            $data = '';
+        }
         // 是否转换Json格式
         $result = $toJson ? json_decode(trim($data), true) : $data;
         // 是否关闭链接
-        if ($close) {
+        if ($close && !$released) {
             // 关闭链接，返回结果集
-            socket_close($socket);
+            @socket_close($socket);
             unset($sockets[$key]);
         }
 
@@ -298,9 +336,10 @@ class Network
      * @param  string  $agent   请求user-agent
      * @param  string  $ssl_cer ssl证书
      * @param  string  $ssl_key ssl秘钥
+     * @param  boolean $sslVerify 是否校验服务端TLS证书，默认不校验
      * @return \CurlHandle cURL句柄
      */
-    public static function getRequest(string $url, array $data = [], string $type = 'GET', array $header = [], int $timeOut = 2, string $agent = '', string $ssl_cer = '', string $ssl_key = ''): \CurlHandle
+    public static function getRequest(string $url, array $data = [], string $type = 'GET', array $header = [], int $timeOut = 2, string $agent = '', string $ssl_cer = '', string $ssl_key = '', bool $sslVerify = false): \CurlHandle
     {
         $ch = curl_init();
         // 判断请求类型
@@ -345,10 +384,15 @@ class Network
 
         $isHttps = stripos($url, 'https://') === 0 || (parse_url($url, PHP_URL_SCHEME) === 'https');
         if ($isHttps) {
-            // 跳过证书检查
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            // 从证书中检查SSL加密算法是否存在
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            if ($sslVerify) {
+                // 校验服务端证书，并校验证书中的主机名
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+            } else {
+                // 默认跳过证书检查，保持原有行为
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            }
         }
         // 设置内容以文本形式返回，而不直接返回
         curl_setopt($ch, CURLOPT_HEADER, false);
@@ -401,9 +445,10 @@ class Network
      * @param string $agent 请求user-agent
      * @param string $ssl_cer ssl证书
      * @param string $ssl_key ssl秘钥
+     * @param boolean $sslVerify 是否校验服务端TLS证书
      * @return \CurlHandle cURL句柄
      */
-    protected static function getCh(array $item, array $header = [], int $timeOut = 2, string $agent = '', string $ssl_cer = '', string $ssl_key = ''): \CurlHandle
+    protected static function getCh(array $item, array $header = [], int $timeOut = 2, string $agent = '', string $ssl_cer = '', string $ssl_key = '', bool $sslVerify = false): \CurlHandle
     {
         // 请求URL
         if (!isset($item['url']) || empty($item['url'])) {
@@ -428,8 +473,10 @@ class Network
         $header = (isset($item['header']) && !empty($item['header'])) ? $item['header'] : $header;
         // 请求user-agent
         $agent = (isset($item['agent']) && !empty($item['agent'])) ? $item['agent'] : $agent;
+        // 是否校验TLS证书，支持单项配置覆盖
+        $sslVerify = isset($item['ssl_verify']) ? (bool)$item['ssl_verify'] : $sslVerify;
         // 获取curl请求
-        $ch = static::getRequest($url, $data, $method, $header, $timeOut, $agent, $ssl_cer, $ssl_key);
+        $ch = static::getRequest($url, $data, $method, $header, $timeOut, $agent, $ssl_cer, $ssl_key, $sslVerify);
 
         return $ch;
     }

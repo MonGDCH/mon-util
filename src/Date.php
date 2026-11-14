@@ -433,7 +433,11 @@ class Date
     public function getDayOfWeek($n): Date
     {
         $week = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        return new self($week[$n]);
+        $day = $week[(int)$n] ?? 'monday';
+        // 必须限定 this week，否则 strtotime('monday') 返回的是下一个周一而非本周一
+        $time = strtotime($day . ' this week', $this->date);
+
+        return new self($time === false ? $this->date : $time);
     }
 
     /**

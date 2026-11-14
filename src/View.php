@@ -558,7 +558,9 @@ class View implements ArrayAccess
         unset(
             $this->sections[$this->offset],
             $this->sectionStacks[$this->offset],
-            $this->sectionsNotFound[$this->offset]
+            $this->sectionsNotFound[$this->offset],
+            // 必须清理当前层级的继承信息，否则同一实例的下一次渲染会错误复用上一次的父视图
+            $this->extends[$this->offset]
         );
     }
 

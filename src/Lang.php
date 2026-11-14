@@ -24,6 +24,13 @@ class Lang
     protected array $lang = [];
 
     /**
+     * 默认语言
+     *
+     * @var string
+     */
+    protected string $defaultRange = 'zh-cn';
+
+    /**
      * 当前选择的默认语言
      *
      * @var string
@@ -187,12 +194,44 @@ class Lang
         if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
             // 自动侦测浏览器语言
             preg_match('/^([a-z\d\-]+)/i', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $matches);
-            $lang = strtolower($matches[1]);
+            $lang = isset($matches[1]) ? strtolower($matches[1]) : '';
             if ($lang && isset($this->lang[$lang])) {
-                $this->range = $this->lang[$lang];
+                // 注意：赋值为语言标识而非语言包数组
+                $this->range = $lang;
             }
         }
 
         return $this->range;
+    }
+
+    /**
+     * 重置当前语言为默认语言，用于常驻进程在请求结束时清理请求级状态
+     *
+     * @param boolean $clearLang 是否同时清空已加载的语言包，默认保留
+     * @return Lang
+     */
+    public function reset(bool $clearLang = false): Lang
+    {
+        $this->range = $this->defaultRange;
+        if ($clearLang) {
+            $this->lang = [];
+        }
+
+        return $this;
+    }
+
+    /**
+     * 设置默认语言（reset() 重置的目标语言）
+     *
+     * @param string $range 语言标识
+     * @return Lang
+     */
+    public function setDefaultRange(string $range): Lang
+    {
+        if ($range) {
+            $this->defaultRange = $range;
+        }
+
+        return $this;
     }
 }
