@@ -43,7 +43,28 @@
 - 修复`Tree::data()`遍历引用未断开导致数据被污染的问题
 - 修复`helpers.php`中`check()`复用验证器实例导致状态跨调用残留的问题
 
-#### [1.6.1] (2026-11-07)
+#### [1.7.0] (2026-11-07)
+
+**新增**
+
+- 新增 `mon\util\exception\ContainerException`、`mon\util\exception\NotFoundException`，分别实现 PSR-11 的 `ContainerExceptionInterface`、`NotFoundExceptionInterface`
+
+**优化**
+
+- `Container`：类不存在时抛出 `NotFoundException`，反射实例化失败（抽象类、私有构造等）归一为 `ContainerException`；`invokeMethod()` 增加方法格式校验；构造参数绑定支持命名类型（联合/交叉类型不再误判为类类型参数），类类型参数优先使用传入值，`array_key_exists()` 替代 `isset()` 以支持显式传入 `null`
+- `Instance`：改用反射判断构造方法可见性，私有/保护构造的类不再依赖异常消息判断
+- `File::pathReplace()`：规范化 `.`、`..` 与重复分隔符，增强路径穿越防护
+- `Lottery::gen()`：改为引用方式写入概率并 `unset()`，避免奖项数据被污染
+
+**修复**
+
+- 修复 `Validate` 的 `postal` 规则未加首尾锚点导致部分匹配即可通过的问题
+
+#### [1.6.2] ~ [1.6.11] (2025-06-14 ~ 2026-10-14)
+
+> 该区间版本未逐版本记录日志，主要包含：验证器重构与规则调整；`Network`、`OS`、`Tree`、`UploadSlice`、`UploadFile`、`SnowFlake`、`Sql` 等模块优化；`Tool`、`Common`、`Collection`、`Date` 功能补全；新增 `Minifier`（代码压缩）、`Obfuscator`（代码混淆）类；支持 PHP 8.5。详见对应版本的提交记录。
+
+#### [1.6.1] (2025-06-12)
 
 - 修复`File`类`pathReplace`方法，路径归一化处理`.`、`..`路径段，防止路径穿越
 - 修复`Container`容器类`PSR-11`异常契约，新增`NotFoundException`、`ContainerException`异常类，类不存在时抛出`NotFoundExceptionInterface`
