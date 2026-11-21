@@ -407,6 +407,9 @@ class Validate
 		$this->checkMessage = [];
 		$this->checkScope = [];
 		$this->result = [];
+		$this->error = null;
+		$this->errorKey = null;
+		$this->errorRule = null;
 		return $this;
 	}
 
